@@ -1,13 +1,10 @@
 package com.mymensor;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.hardware.Camera;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.Surface;
 import android.widget.Toast;
 
 import com.amazonaws.AmazonClientException;
@@ -37,41 +34,42 @@ public class MymUtils {
 
     private static final String TAG = "MymUtils";
 
-    public static boolean isNewFileAvailable(   AmazonS3Client s3,
-                                                String localFileName,
-                                                String remoteFileName,
-                                                String bucketName,
-                                                Context context) {
-        File localFile = new File(context.getFilesDir(), localFileName );
+    public static boolean isNewFileAvailable(AmazonS3Client s3,
+                                             String localFileName,
+                                             String remoteFileName,
+                                             String bucketName,
+                                             Context context) {
+        File localFile = new File(context.getFilesDir(), localFileName);
 
-        if ((!localFile.exists())||(localFile.length()<4)) { return true; }
+        if ((!localFile.exists()) || (localFile.length() < 4)) {
+            return true;
+        }
         try {
-            ObjectMetadata metadata = s3.getObjectMetadata(bucketName,remoteFileName);
+            ObjectMetadata metadata = s3.getObjectMetadata(bucketName, remoteFileName);
             long remoteLastModified = metadata.getLastModified().getTime();
-            if (localFile.lastModified()<remoteLastModified) {
+            if (localFile.lastModified() < remoteLastModified) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
-        } catch (AmazonClientException ace){
-            Log.e(TAG,"isNewFileAvailable: exception: "+ace.toString());
+        } catch (AmazonClientException ace) {
+            Log.e(TAG, "isNewFileAvailable: exception: " + ace.toString());
             return false;
         }
     }
 
-    public static TransferObserver storeRemoteFileLazy( TransferUtility transferUtility,
-                                                    String fileName,
-                                                    String bucketName,
-                                                    File file,
-                                                    ObjectMetadata objectMetadata){
+    public static TransferObserver storeRemoteFileLazy(TransferUtility transferUtility,
+                                                       String fileName,
+                                                       String bucketName,
+                                                       File file,
+                                                       ObjectMetadata objectMetadata) {
 
         boolean fileOK = false;
         long loopStart = System.currentTimeMillis();
 
         do {
             fileOK = file.exists();
-        } while ((!fileOK)||((System.currentTimeMillis()-loopStart)>20000));
+        } while ((!fileOK) || ((System.currentTimeMillis() - loopStart) > 20000));
 
         if (fileOK) {
             TransferObserver observer = transferUtility.upload(
@@ -86,11 +84,11 @@ public class MymUtils {
         }
     }
 
-    public static TransferObserver storeRemoteFile( TransferUtility transferUtility,
-                                                    String fileName,
-                                                    String bucketName,
-                                                    File file,
-                                                    ObjectMetadata objectMetadata){
+    public static TransferObserver storeRemoteFile(TransferUtility transferUtility,
+                                                   String fileName,
+                                                   String bucketName,
+                                                   File file,
+                                                   ObjectMetadata objectMetadata) {
 
         TransferObserver observer = transferUtility.upload(
                 bucketName,		/* The bucket to upload to */
@@ -102,62 +100,58 @@ public class MymUtils {
         return observer;
     }
 
-    public static TransferObserver getRemoteFile( TransferUtility transferUtility,
-                                                  String fileName,
-                                                  String bucketName,
-                                                  File file) {
+    public static TransferObserver getRemoteFile(TransferUtility transferUtility,
+                                                 String fileName,
+                                                 String bucketName,
+                                                 File file) {
 
         TransferObserver observer = transferUtility.download(bucketName, fileName, file);
         return observer;
     }
 
 
-    public static InputStream getLocalFile( String fileName, Context context ) {
+    public static InputStream getLocalFile(String fileName, Context context) {
         try {
             return context.openFileInput(fileName);
-        }
-        catch ( FileNotFoundException exception ) {
+        } catch (FileNotFoundException exception) {
             return null;
         }
     }
 
 
-    public static Long timeNow (Boolean clockSetSuccess, Long sntpTime, Long sntpTimeReference){
+    public static Long timeNow(Boolean clockSetSuccess, Long sntpTime, Long sntpTimeReference) {
 
-        if (clockSetSuccess){
+        if (clockSetSuccess) {
             Long now;
             now = sntpTime + SystemClock.elapsedRealtime() - sntpTimeReference;
             return now;
-        }
-        else
-        {
+        } else {
             return System.currentTimeMillis();
         }
 
     }
 
-    public static void extractAllAssets(Context context){
+    public static void extractAllAssets(Context context) {
 
         AssetManager assetManager = context.getAssets();
-        String[] assetsList =  null;
+        String[] assetsList = null;
         try {
             assetsList = assetManager.list(".");
-        } catch(Exception e1) {
+        } catch (Exception e1) {
             Log.e(TAG, "extractAllAssets: Failed to list assets: " + e1.toString());
         }
         InputStream in = null;
         OutputStream out = null;
-        if (assetsList!=null){
-            for (String asset : assetsList){
+        if (assetsList != null) {
+            for (String asset : assetsList) {
                 try {
                     in = assetManager.open(asset);
                     File outFile = new File(context.getFilesDir(), asset);
                     out = new FileOutputStream(outFile);
                     copyFile(in, out);
-                } catch(IOException e) {
+                } catch (IOException e) {
                     Log.e(TAG, "extractAllAssets: Failed to copy asset file: " + asset, e);
-                }
-                finally {
+                } finally {
                     if (in != null) {
                         try {
                             in.close();
@@ -215,7 +209,7 @@ public class MymUtils {
 
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
+        for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = hexArray[v >>> 4];
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
@@ -228,16 +222,16 @@ public class MymUtils {
         MessageDigest md;
         byte[] digest = null;
         InputStream is = new FileInputStream(file);
-        try{
+        try {
             md = MessageDigest.getInstance("SHA-256");
             byte[] buf = new byte[1024];
             is = new DigestInputStream(is, md);
-            while(is.read(buf, 0, buf.length) != -1);
+            while (is.read(buf, 0, buf.length) != -1) ;
             digest = md.digest();
-        } catch (NoSuchAlgorithmException eNSAE){
-            Log.d(TAG,"NoSuchAlgorithmException:"+eNSAE.toString());
+        } catch (NoSuchAlgorithmException eNSAE) {
+            Log.d(TAG, "NoSuchAlgorithmException:" + eNSAE.toString());
         } catch (Exception e) {
-            Log.d(TAG,"Exception:"+e.toString());
+            Log.d(TAG, "Exception:" + e.toString());
         } finally {
             is.close();
         }
@@ -245,26 +239,26 @@ public class MymUtils {
     }
 
 
-    public static boolean isS3Available(AmazonS3 s3Amazon){
+    public static boolean isS3Available(AmazonS3 s3Amazon) {
         boolean result = false;
         int retries = 4;
         boolean nthtry = false;
-        try{
+        try {
             do {
-                nthtry = s3Amazon.doesObjectExist(Constants.BUCKET_NAME,(Constants.CONN_TST_FILE));
+                nthtry = s3Amazon.doesObjectExist(Constants.BUCKET_NAME, (Constants.CONN_TST_FILE));
                 if (nthtry) {
                     result = true;
-                    Log.d(TAG,"Request to s3Amazon.doesObjectExist succeeded");
+                    Log.d(TAG, "Request to s3Amazon.doesObjectExist succeeded");
                 } else {
-                    Log.d(TAG,"Request to s3Amazon.doesObjectExist failed or object does not exist");
+                    Log.d(TAG, "Request to s3Amazon.doesObjectExist failed or object does not exist");
                 }
             } while (retries-- > 0);
-        } catch (AmazonServiceException ase){
-            Log.d(TAG, "AmazonServiceException="+ase.toString());
+        } catch (AmazonServiceException ase) {
+            Log.d(TAG, "AmazonServiceException=" + ase.toString());
         } catch (AmazonClientException ace) {
-            Log.d(TAG, "AmazonClientException="+ace.toString());
+            Log.d(TAG, "AmazonClientException=" + ace.toString());
         } catch (Exception e) {
-            Log.d(TAG, "Exception="+e.toString());
+            Log.d(TAG, "Exception=" + e.toString());
         }
         return result;
     }
@@ -277,11 +271,11 @@ public class MymUtils {
      * @return A string that represents the bytes in a proper scale.
      */
     public static String getBytesString(long bytes) {
-        String[] quantifiers = new String[] {
+        String[] quantifiers = new String[]{
                 "KB", "MB", "GB", "TB"
         };
         double speedNum = bytes;
-        for (int i = 0;; i++) {
+        for (int i = 0; ; i++) {
             if (i >= quantifiers.length) {
                 return "";
             }
@@ -311,7 +305,7 @@ public class MymUtils {
         map.put("percentage", progress + "%");
     }
 
-    public static void showToastMessage(Context context, String message){
+    public static void showToastMessage(Context context, String message) {
         int duration = Toast.LENGTH_LONG;
         Toast toast = Toast.makeText(context, message, duration);
         toast.show();

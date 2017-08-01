@@ -16,6 +16,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -285,7 +286,7 @@ public class ConfigActivity extends Activity implements
             mymIsRunningOnKitKat = true;
         }
 
-        sharedPref = this.getSharedPreferences("com.mymensor.app", Context.MODE_PRIVATE);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);

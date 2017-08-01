@@ -114,8 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
         mAccountManager = AccountManager.get(this);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED)
-            ;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED);
 
         final Account availableAccounts[] = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 

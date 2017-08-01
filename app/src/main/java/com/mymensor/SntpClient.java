@@ -7,8 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class SntpClient
-{
+public class SntpClient {
     private static final String TAG = "SntpClient";
 
     private static final int REFERENCE_TIME_OFFSET = 16;
@@ -37,7 +36,7 @@ public class SntpClient
     /**
      * Sends an SNTP request to the given host and processes the response.
      *
-     * @param host host name of the server.
+     * @param host    host name of the server.
      * @param timeout network timeout in milliseconds.
      * @return true if the transaction was successful.
      */
@@ -81,7 +80,7 @@ public class SntpClient
             //             = ((transit + skew) + (transmitTime - transmitTime - transit + skew))/2
             //             = (transit + skew - transit + skew)/2
             //             = (2 * skew)/2 = skew
-            long clockOffset = ((receiveTime - originateTime) + (transmitTime - responseTime))/2;
+            long clockOffset = ((receiveTime - originateTime) + (transmitTime - responseTime)) / 2;
             // if (false) Log.d(TAG, "round trip: " + roundTripTime + " ms");
             // if (false) Log.d(TAG, "clock offset: " + clockOffset + " ms");
 
@@ -135,9 +134,9 @@ public class SntpClient
      */
     private long read32(byte[] buffer, int offset) {
         byte b0 = buffer[offset];
-        byte b1 = buffer[offset+1];
-        byte b2 = buffer[offset+2];
-        byte b3 = buffer[offset+3];
+        byte b1 = buffer[offset + 1];
+        byte b2 = buffer[offset + 2];
+        byte b3 = buffer[offset + 3];
 
         // convert signed bytes to unsigned values
         int i0 = ((b0 & 0x80) == 0x80 ? (b0 & 0x7F) + 0x80 : b0);
@@ -145,7 +144,7 @@ public class SntpClient
         int i2 = ((b2 & 0x80) == 0x80 ? (b2 & 0x7F) + 0x80 : b2);
         int i3 = ((b3 & 0x80) == 0x80 ? (b3 & 0x7F) + 0x80 : b3);
 
-        return ((long)i0 << 24) + ((long)i1 << 16) + ((long)i2 << 8) + (long)i3;
+        return ((long) i0 << 24) + ((long) i1 << 16) + ((long) i2 << 8) + (long) i3;
     }
 
     /**
@@ -168,17 +167,17 @@ public class SntpClient
         seconds += OFFSET_1900_TO_1970;
 
         // write seconds in big endian format
-        buffer[offset++] = (byte)(seconds >> 24);
-        buffer[offset++] = (byte)(seconds >> 16);
-        buffer[offset++] = (byte)(seconds >> 8);
-        buffer[offset++] = (byte)(seconds >> 0);
+        buffer[offset++] = (byte) (seconds >> 24);
+        buffer[offset++] = (byte) (seconds >> 16);
+        buffer[offset++] = (byte) (seconds >> 8);
+        buffer[offset++] = (byte) (seconds >> 0);
 
         long fraction = milliseconds * 0x100000000L / 1000L;
         // write fraction in big endian format
-        buffer[offset++] = (byte)(fraction >> 24);
-        buffer[offset++] = (byte)(fraction >> 16);
-        buffer[offset++] = (byte)(fraction >> 8);
+        buffer[offset++] = (byte) (fraction >> 24);
+        buffer[offset++] = (byte) (fraction >> 16);
+        buffer[offset++] = (byte) (fraction >> 8);
         // low order bits should be random data
-        buffer[offset++] = (byte)(Math.random() * 255.0);
+        buffer[offset++] = (byte) (Math.random() * 255.0);
     }
 }

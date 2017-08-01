@@ -1,8 +1,5 @@
 package com.mymensor;
 
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
-
 public class TrackingValues {
 
     private int posX;
@@ -26,14 +23,14 @@ public class TrackingValues {
         TrackingValues trackingValues = new TrackingValues();
 
 
-        trackingValues.posX = Math.round(rawTracking[0]+Constants.xAxisTrackingCorrection);
-        trackingValues.posY = Math.round(rawTracking[1]+Constants.yAxisTrackingCorrection);
+        trackingValues.posX = Math.round(rawTracking[0] + Constants.xAxisTrackingCorrection);
+        trackingValues.posY = Math.round(rawTracking[1] + Constants.yAxisTrackingCorrection);
         trackingValues.posXid = Math.round(rawTracking[0]);
         trackingValues.posYid = Math.round(rawTracking[1]);
         trackingValues.posZ = Math.round(rawTracking[2]);
-        trackingValues.rotX = (int) Math.round(rawTracking[3]*(180.0f/Math.PI));
-        trackingValues.rotY = (int) Math.round(rawTracking[4]*(180.0f/Math.PI));
-        trackingValues.rotZ = (int) Math.round(rawTracking[5]*(180.0f/Math.PI));
+        trackingValues.rotX = (int) Math.round(rawTracking[3] * (180.0f / Math.PI));
+        trackingValues.rotY = (int) Math.round(rawTracking[4] * (180.0f / Math.PI));
+        trackingValues.rotZ = (int) Math.round(rawTracking[5] * (180.0f / Math.PI));
         trackingValues.vpNumber = Math.round(rawTracking[6]);
         trackingValues.rawX = rawTracking[0];
         trackingValues.rawY = rawTracking[1];
@@ -45,52 +42,64 @@ public class TrackingValues {
         return trackingValues;
     }
 
-    public int getVpNumberTrackedInPose(){
+    public int getVpNumberTrackedInPose() {
         return vpNumber;
     }
 
-    public int getX(){
+    public int getX() {
         return posX;
     }
 
-    public int getY(){
+    public int getY() {
         return posY;
     }
 
-    public int getXid(){
+    public int getXid() {
         return posXid;
     }
 
-    public int getYid(){
+    public int getYid() {
         return posYid;
     }
 
-    public int getZ(){
+    public int getZ() {
         return posZ;
     }
 
-    public int getEAX(){
+    public int getEAX() {
         return rotX;
     }
 
-    public int getEAY(){
+    public int getEAY() {
         return rotY;
     }
 
-    public int getEAZ(){
+    public int getEAZ() {
         return rotZ;
     }
 
-    public float getRawRotX() {return rawRotX; }
+    public float getRawRotX() {
+        return rawRotX;
+    }
 
-    public float getRawRotY() {return rawRotY; }
+    public float getRawRotY() {
+        return rawRotY;
+    }
 
-    public float getRawRotZ() {return rawRotZ; }
+    public float getRawRotZ() {
+        return rawRotZ;
+    }
 
-    public float getRawX() {return rawX; }
+    public float getRawX() {
+        return rawX;
+    }
 
-    public float getRawY() {return rawY; }
+    public float getRawY() {
+        return rawY;
+    }
 
-    public float getRawZ() {return rawZ; }
+    public float getRawZ() {
+        return rawZ;
+    }
 
 }

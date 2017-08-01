@@ -8,7 +8,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.Volley;
 
-public class VolleyHelper extends Application{
+public class VolleyHelper extends Application {
 
     public static final String TAG = "VolleyQueues";
     private static VolleyHelper mInstance;

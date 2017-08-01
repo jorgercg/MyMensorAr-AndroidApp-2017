@@ -50,7 +50,7 @@ public class AmazonCognitoSampleDeveloperAuthenticationClient {
     }
 
     /**
-     * Using the given username and password, securily communictes the Key for
+     * Using the given username and password, securely communicates the Key for
      * the user's account.
      */
     public Response login(String mymToken) {

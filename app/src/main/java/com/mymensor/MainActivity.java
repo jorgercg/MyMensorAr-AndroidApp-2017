@@ -19,17 +19,17 @@ import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
@@ -37,13 +37,12 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferType;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.mymensor.cognitoclient.AwsUtil;
+import com.mymensorar.R;
 
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.UUID;
-
-import com.mymensor.cognitoclient.AwsUtil;
-import com.mymensorar.R;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 
@@ -68,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public enum AppStart {
         FIRST_TIME, FIRST_TIME_VERSION, NORMAL;
     }
+
     private static final String LAST_APP_VERSION = Constants.CURR_APP_VERSION;
     private static AppStart appStart = null;
     private String appStartState;
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             Toast.makeText(getBaseContext(), getString(R.string.sdk_lower_then_kitkat), Toast.LENGTH_LONG).show();
         }
 
@@ -114,31 +114,32 @@ public class MainActivity extends AppCompatActivity {
 
         mAccountManager = AccountManager.get(this);
 
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.GET_ACCOUNTS)!= PackageManager.PERMISSION_GRANTED);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED)
+            ;
 
         final Account availableAccounts[] = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        mymClientGUIDEncrypted = sharedPref.getString(Constants.MYM_CLIENT_GUID,"NOTSET");
+        mymClientGUIDEncrypted = sharedPref.getString(Constants.MYM_CLIENT_GUID, "NOTSET");
 
         aesKey = MymCrypt.getSecretKeySecurely(getSecretKeyFromJNI(), sharedPref);
 
-        if (mymClientGUIDEncrypted.equals("NOTSET")){
+        if (mymClientGUIDEncrypted.equals("NOTSET")) {
             final String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
             //mymClientGUID = UUID.nameUUIDFromBytes(androidId.getBytes(Charset.forName("ISO-8859-1"))).toString();
             //mymClientGUID = UUID.randomUUID().toString();
             mymClientGUID = androidId;
             mymClientGUIDEncrypted = new String(MymCrypt.encryptData(mymClientGUID.getBytes(Charset.forName("ISO-8859-1")),
                     MymCrypt.retrieveIv(sharedPref),
-                    aesKey),Charset.forName("ISO-8859-1"));
+                    aesKey), Charset.forName("ISO-8859-1"));
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString(Constants.MYM_CLIENT_GUID, mymClientGUIDEncrypted);
             editor.commit();
         } else {
             mymClientGUID = new String(MymCrypt.decryptData(mymClientGUIDEncrypted.getBytes(Charset.forName("ISO-8859-1")),
                     MymCrypt.retrieveIv(sharedPref),
-                    aesKey),Charset.forName("ISO-8859-1"));
+                    aesKey), Charset.forName("ISO-8859-1"));
         }
 
 
@@ -149,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         CognitoSyncClientManager.init(getApplicationContext());
 
         setContentView(R.layout.activity_main);
-        mainLinearLayout = (LinearLayout)findViewById(R.id.MainActivityLinearLayout);
+        mainLinearLayout = (LinearLayout) findViewById(R.id.MainActivityLinearLayout);
         appLogo = (ImageView) findViewById(R.id.mainactivity_logo);
         userLogged = (TextView) findViewById(R.id.userlogstate_message);
         logInOut = (Button) findViewById(R.id.buttonlog);
@@ -160,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
         initData();
 
-        switch (checkAppStart(this,sharedPref)) {
+        switch (checkAppStart(this, sharedPref)) {
             case NORMAL:
                 // We don't want to get on the user's nerves
                 appStartState = "normal";
@@ -178,10 +179,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        if (availableAccounts.length == 0){
+        if (availableAccounts.length == 0) {
             Log.d(TAG, "availableAccounts[] = " + "nada!!!!" + " Qty= 0");
         } else {
-            Log.d(TAG, "availableAccounts[] = " + availableAccounts[0] + " Qty="+availableAccounts.length);
+            Log.d(TAG, "availableAccounts[] = " + availableAccounts[0] + " Qty=" + availableAccounts.length);
         }
 
         if (availableAccounts.length == 0) {
@@ -190,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
             noUserLogged = true;
         } else {
             logInOut.setVisibility(View.GONE);
-            if (availableAccounts.length == 1){
-                userLogged.setText(getText(R.string.userstate_loggedin)+" "+availableAccounts[0].name);
+            if (availableAccounts.length == 1) {
+                userLogged.setText(getText(R.string.userstate_loggedin) + " " + availableAccounts[0].name);
                 noUserLogged = false;
                 getExistingAccountAuthToken(availableAccounts[0], Constants.AUTHTOKEN_TYPE_FULL_ACCESS);
             }
@@ -209,23 +210,23 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        Log.d(TAG, "showDialog = " + showDialog + " invalidate="+invalidate);
+        Log.d(TAG, "showDialog = " + showDialog + " invalidate=" + invalidate);
 
-        if (availableAccounts.length > 1){
+        if (availableAccounts.length > 1) {
             showAccountPicker(Constants.AUTHTOKEN_TYPE_FULL_ACCESS, invalidate);
         }
 
         if (!noUserLogged) {
             do {
                 //Nothing....
-            } while (sharedPref.getString(Constants.MYM_USER,"").equals(""));
+            } while (sharedPref.getString(Constants.MYM_USER, "").equals(""));
         }
 
-        if (!noUserLogged){
-            Log.d(TAG, "OnCreate - Calling the imagecapactivity, with user="+sharedPref.getString(Constants.MYM_USER,""));
-            Intent launch_intent = new Intent(getApplicationContext(),LoaderActivity.class);
+        if (!noUserLogged) {
+            Log.d(TAG, "OnCreate - Calling the imagecapactivity, with user=" + sharedPref.getString(Constants.MYM_USER, ""));
+            Intent launch_intent = new Intent(getApplicationContext(), LoaderActivity.class);
             launch_intent.putExtra("activitytobecalled", "imagecapactivity");
-            launch_intent.putExtra("account", sharedPref.getString(Constants.MYM_USER,""));
+            launch_intent.putExtra("account", sharedPref.getString(Constants.MYM_USER, ""));
             launch_intent.putExtra("deviceid", mymClientGUID);
             launch_intent.putExtra("appstartstate", appStartState);
             startActivity(launch_intent);
@@ -264,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the project native library,
      * which is packaged with this application.
 
-    public static native String stringFromJNI();
+     public static native String stringFromJNI();
      */
 
     /**
@@ -298,7 +299,8 @@ public class MainActivity extends AppCompatActivity {
     private void showAccountPicker(final String authTokenType, final boolean invalidate) {
         mInvalidate = invalidate;
 
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.GET_ACCOUNTS)!= PackageManager.PERMISSION_GRANTED);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED)
+            ;
 
         final Account availableAccounts[] = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
@@ -318,12 +320,12 @@ public class MainActivity extends AppCompatActivity {
                         invalidateAuthToken(availableAccounts[which], authTokenType);
                     else
                         getExistingAccountAuthToken(availableAccounts[which], authTokenType);
-                    userLogged.setText(getText(R.string.userstate_loggedin)+" "+availableAccounts[which].name);
+                    userLogged.setText(getText(R.string.userstate_loggedin) + " " + availableAccounts[which].name);
                     noUserLogged = false;
-                    Log.d(TAG, "Account Picker - Calling the imagecapactivity, with user="+sharedPref.getString(Constants.MYM_USER,""));
-                    Intent launch_intent = new Intent(getApplicationContext(),LoaderActivity.class);
+                    Log.d(TAG, "Account Picker - Calling the imagecapactivity, with user=" + sharedPref.getString(Constants.MYM_USER, ""));
+                    Intent launch_intent = new Intent(getApplicationContext(), LoaderActivity.class);
                     launch_intent.putExtra("activitytobecalled", "imagecapactivity");
-                    launch_intent.putExtra("account", sharedPref.getString(Constants.MYM_USER,""));
+                    launch_intent.putExtra("account", sharedPref.getString(Constants.MYM_USER, ""));
                     launch_intent.putExtra("deviceid", mymClientGUID);
                     launch_intent.putExtra("appstartstate", appStartState);
                     startActivity(launch_intent);
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void invalidateAuthToken(final Account account, String authTokenType) {
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, this, null,null);
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, this, null, null);
 
         new Thread(new Runnable() {
             @Override
@@ -364,8 +366,8 @@ public class MainActivity extends AppCompatActivity {
                     final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
                     final String userName = bnd.getString(AccountManager.KEY_ACCOUNT_NAME);
                     SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putString(Constants.MYM_USER ,userName);
-                    editor.putString(Constants.MYM_KEY,authtoken);
+                    editor.putString(Constants.MYM_USER, userName);
+                    editor.putString(Constants.MYM_KEY, authtoken);
                     editor.commit();
                     Log.d(TAG, "GetToken Bundle is " + bnd);
                     logInOut.setVisibility(View.GONE);
@@ -379,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void getCognitoIdAndToken(String authToken){
+    private void getCognitoIdAndToken(String authToken) {
         // Clear the existing credentials
         CognitoSyncClientManager.credentialsProvider
                 .clearCredentials();
@@ -399,14 +401,21 @@ public class MainActivity extends AppCompatActivity {
                     Bundle bnd = future.getResult();
                     Log.d(TAG, "AddNewAccount Bundle is " + bnd.toString());
                     logInOut.setVisibility(View.GONE);
-                    userLogged.setText(getText(R.string.userstate_loggedin)+" "+ bnd.getString("authAccount"));
-                    String mymtoken = sharedPref.getString(Constants.MYM_KEY," ");
+                    userLogged.setText(getText(R.string.userstate_loggedin) + " " + bnd.getString("authAccount"));
+
+                    Map<String,?> keys = sharedPref.getAll();
+
+                    for(Map.Entry<String,?> entry : keys.entrySet()){
+                        Log.d(TAG, "map values: "+entry.getKey() + ": " + entry.getValue().toString());
+                    }
+
+                    String mymtoken = sharedPref.getString(Constants.MYM_KEY, "ERROR!!!!!!!!! NO TOKEN FOUND ON SHAREDPREF");
                     Log.d(TAG, "AddNewAccount Token is " + mymtoken);
                     getCognitoIdAndToken(mymtoken);
-                    Log.d(TAG, "addNewAccount - Calling the imagecapactivity Capture Activity, with user="+sharedPref.getString(Constants.MYM_USER,""));
-                    Intent launch_intent = new Intent(getApplicationContext(),LoaderActivity.class);
+                    Log.d(TAG, "addNewAccount - Calling the imagecapactivity Capture Activity, with user=" + sharedPref.getString(Constants.MYM_USER, "ERROR!!!!!!!!! NO USER FOUND ON SHAREDPREF"));
+                    Intent launch_intent = new Intent(getApplicationContext(), LoaderActivity.class);
                     launch_intent.putExtra("activitytobecalled", "imagecapactivity");
-                    launch_intent.putExtra("account", sharedPref.getString(Constants.MYM_USER,""));
+                    launch_intent.putExtra("account", sharedPref.getString(Constants.MYM_USER, ""));
                     launch_intent.putExtra("deviceid", mymClientGUID);
                     launch_intent.putExtra("appstartstate", appStartState);
                     startActivity(launch_intent);
@@ -420,12 +429,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         if (back_pressed + 2000 > System.currentTimeMillis())
             super.onBackPressed();
         else
-            Snackbar.make(mainLinearLayout,getString(R.string.double_bck_exit), Snackbar.LENGTH_LONG).show();
+            Snackbar.make(mainLinearLayout, getString(R.string.double_bck_exit), Snackbar.LENGTH_LONG).show();
 
         back_pressed = System.currentTimeMillis();
     }
@@ -446,8 +454,8 @@ public class MainActivity extends AppCompatActivity {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
             int lastVersionCode = sharedPreferences.getInt(LAST_APP_VERSION, -1);
             int currentVersionCode = pInfo.versionCode;
-            Log.d(TAG,"checkAppStart: version from sharedPreferences="+lastVersionCode);
-            Log.d(TAG,"checkAppStart: version from PackageInfo="+currentVersionCode);
+            Log.d(TAG, "checkAppStart: version from sharedPreferences=" + lastVersionCode);
+            Log.d(TAG, "checkAppStart: version from PackageInfo=" + currentVersionCode);
             appStart = checkAppStart(currentVersionCode, lastVersionCode);
             // Update version in preferences
             sharedPreferences.edit().putInt(LAST_APP_VERSION, currentVersionCode).commit();
@@ -478,25 +486,24 @@ public class MainActivity extends AppCompatActivity {
     // Requests app permissions
     public void permissionsRequest() {
 
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.INTERNET)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.LOCATION_HARDWARE)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.CAPTURE_VIDEO_OUTPUT)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO)!= PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.GET_ACCOUNTS)!= PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.INTERNET,
-                                                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                                                Manifest.permission.READ_EXTERNAL_STORAGE,
-                                                                Manifest.permission.CAMERA,
-                                                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                                                Manifest.permission.LOCATION_HARDWARE,
-                                                                Manifest.permission.CAPTURE_VIDEO_OUTPUT,
-                                                                Manifest.permission.RECORD_AUDIO,
-                                                                Manifest.permission.GET_ACCOUNTS},111);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.LOCATION_HARDWARE) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAPTURE_VIDEO_OUTPUT) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.LOCATION_HARDWARE,
+                    Manifest.permission.CAPTURE_VIDEO_OUTPUT,
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.GET_ACCOUNTS}, 111);
         }
     }
 
@@ -506,8 +513,8 @@ public class MainActivity extends AppCompatActivity {
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 111: {
-                if (grantResults.length > 0 && grantResults[0]== PackageManager.PERMISSION_GRANTED ) {
-                    Log.d(TAG,"onRequestPermissionsResult: Permissions OK");
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "onRequestPermissionsResult: Permissions OK");
                 } else {
                     permissionsNotSelected();
                 }
@@ -516,10 +523,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void permissionsNotSelected() {
-        AlertDialog.Builder builder = new AlertDialog.Builder (this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.permrequired));
         builder.setMessage(getString(R.string.permmessage));
-        builder.setNeutralButton(getString(R.string.cancel), new DialogInterface.OnClickListener () {
+        builder.setNeutralButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
                 System.exit(1);

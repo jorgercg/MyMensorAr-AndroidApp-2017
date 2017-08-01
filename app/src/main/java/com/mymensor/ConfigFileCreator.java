@@ -493,6 +493,43 @@ public class ConfigFileCreator {
     }
 
 
+    public static void createLocalDescvpFile(Context context,
+                                        File directory,
+                                        String fileName){
+
+        String internalAssetsFileName = "mymensordescvp.png";
+        AssetManager assetManager = context.getAssets();
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = assetManager.open(internalAssetsFileName);
+            File outFile = new File(directory, fileName);
+            out = new FileOutputStream(outFile);
+            copyFile(in, out);
+            Log.e(TAG, "createLocalDescvpFile: CREATED: " + fileName);
+        } catch(IOException e) {
+            Log.e(TAG, "createLocalDescvpFile: Failed to copy asset file: " + fileName, e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+        }
+
+    }
+
+
     public static void createMarkervpFile(Context context,
                                           File directory,
                                           String fileName,
@@ -569,6 +606,41 @@ public class ConfigFileCreator {
         });
     }
 
+
+    public static void createLocalMarkervpFile(Context context,
+                                          File directory,
+                                          String fileName){
+
+        String internalAssetsFileName = "mymensormarkervpbw.png";
+        AssetManager assetManager = context.getAssets();
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = assetManager.open(internalAssetsFileName);
+            File outFile = new File(directory, fileName);
+            out = new FileOutputStream(outFile);
+            copyFile(in, out);
+            Log.e(TAG, "createLocalMarkervpFile: CREATED: " + fileName);
+        } catch(IOException e) {
+            Log.e(TAG, "createLocalMarkervpFile: Failed to copy asset file: " + fileName, e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+        }
+    }
 
 
     private static void copyFile(InputStream in, OutputStream out) throws IOException {

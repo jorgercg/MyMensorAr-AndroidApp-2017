@@ -667,6 +667,7 @@ public class LoaderActivity extends Activity {
 
             Long vpDescFileSize[] = new Long[qtyVps];
             Long vpMarkerFileSize[] = new Long[qtyVps];
+            boolean vpArIsConfigured[] = new boolean[qtyVps];
 
             short vpListOrder = -1;
 
@@ -691,6 +692,9 @@ public class LoaderActivity extends Activity {
                         } else if (myparser.getName().equalsIgnoreCase("VpMarkerFileSize")) {
                             eventType = myparser.next();
                             vpMarkerFileSize[vpListOrder] = Long.parseLong(myparser.getText());
+                        } else if (myparser.getName().equalsIgnoreCase("VpArIsConfigured")) {
+                            eventType = myparser.next();
+                            vpArIsConfigured[vpListOrder] = Boolean.parseBoolean(myparser.getText());
                         }
                     } else if (eventType == XmlPullParser.END_TAG) {
                         //Log.d(TAG,"End tag "+myparser.getName());
@@ -718,7 +722,7 @@ public class LoaderActivity extends Activity {
                 for (int j = 0; j < (qtyVps); j++) {
                     descvpFileCHK[j] = false;
                     final int j_inner = j;
-                    if (true) {
+                    if (vpArIsConfigured[j]) {
                         Log.d(TAG, "loadFinalDefinitions:####### LOADING: VPDESCFILES CONTENTS j=" + j);
                         File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
                         Log.d(TAG, "loadFinalDefinitions: vpLocationDescImageFilePath Dropbox: " + descvpRemotePath + "descvp" + (j) + ".png");
@@ -764,8 +768,17 @@ public class LoaderActivity extends Activity {
                             });
                         } else {
                             descvpFileCHK[j] = true;
-                            Log.d(TAG, "descvpFile loadFinalDefinitions: " + "descvp" + (j) + ".jpg" + " isNewFileAvailable= FALSE  :::::  descvpFileCHK[j] =" + descvpFileCHK[j]);
+                            Log.d(TAG, "descvpFile loadFinalDefinitions: " + "descvp" + (j) + ".png" + " isNewFileAvailable= FALSE  :::::  descvpFileCHK[j] =" + descvpFileCHK[j]);
                         }
+                    } else {
+                        File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
+                        if (!descvpFile.exists()) {
+                            ConfigFileCreator.createLocalDescvpFile(getApplicationContext(),
+                                    getApplicationContext().getFilesDir(),
+                                    "descvp" + (j) + ".png");
+                        }
+                        descvpFileCHK[j] = true;
+                        Log.d(TAG, "descvpFile loadFinalDefinitions: " + "descvp" + (j) + ".png" + " vpArIsConfigured= FALSE  :::::  descvpFileCHK[j] =" + descvpFileCHK[j]);
                     }
 
                 }
@@ -804,7 +817,7 @@ public class LoaderActivity extends Activity {
                 for (int j = 0; j < (qtyVps); j++) {
                     markervpFileCHK[j] = false;
                     final int j_inner = j;
-                    if (true) {
+                    if (vpArIsConfigured[j]) {
                         Log.d(TAG, "loadFinalDefinitions:####### LOADING: MARKERVP CONTENTS j=" + j);
                         final File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
                         Log.d(TAG, "loadFinalDefinitions: markervpRemotePath: " + markervpRemotePath + "markervp" + (j) + ".png");
@@ -850,8 +863,17 @@ public class LoaderActivity extends Activity {
                             });
                         } else {
                             markervpFileCHK[j] = true;
-                            Log.d(TAG, "markervpFile loadFinalDefinitions: " + "markervp" + (j) + ".jpg" + " isNewFileAvailable= FALSE   ::::::   markervpFileCHK[j]=" + markervpFileCHK[j]);
+                            Log.d(TAG, "markervpFile loadFinalDefinitions: " + "markervp" + (j) + ".png" + " isNewFileAvailable= FALSE   ::::::   markervpFileCHK[j]=" + markervpFileCHK[j]);
                         }
+                    } else {
+                        File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
+                        if (!markervpFile.exists()) {
+                            ConfigFileCreator.createLocalMarkervpFile(getApplicationContext(),
+                                    getApplicationContext().getFilesDir(),
+                                    "markervp" + (j) + ".png");
+                        }
+                        markervpFileCHK[j] = true;
+                        Log.d(TAG, "markervpFile loadFinalDefinitions: " + "markervp" + (j) + ".png" + " vpArIsConfigured= FALSE   ::::::   markervpFileCHK[j]=" + markervpFileCHK[j]);
                     }
                 }
             } catch (Exception e) {

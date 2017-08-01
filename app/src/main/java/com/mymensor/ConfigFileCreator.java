@@ -42,54 +42,41 @@ public class ConfigFileCreator {
         short assetId = 1;
         String frequencyUnit = Constants.frequencyUnit;
         int frequencyValue = Constants.frequencyValue;
-        short qtyVps =2;
+        short qtyVps =Constants.maxQtyVps;
         float tolerancePosition = Constants.tolerancePosition;
         float toleranceRotation = Constants.toleranceRotation;
         boolean vpArIsConfigured[] = new boolean[qtyVps];
-        vpArIsConfigured[0]=false;
-        vpArIsConfigured[1]=false;
         boolean vpIsVideo[] = new boolean[qtyVps];
-        vpIsVideo[0]=false;
-        vpIsVideo[1]=false;
         int vpXCameraDistance[] = new int[qtyVps];
-        vpXCameraDistance[0]=0;
-        vpXCameraDistance[1]=0;
         int vpYCameraDistance[] = new int[qtyVps];
-        vpYCameraDistance[0]=0;
-        vpYCameraDistance[1]=0;
         int vpZCameraDistance[] = new int[qtyVps];
-        vpZCameraDistance[0]=0;
-        vpZCameraDistance[1]=0;
         int vpXCameraRotation[] = new int[qtyVps];
-        vpXCameraRotation[0]=0;
-        vpXCameraRotation[1]=0;
         int vpYCameraRotation[] = new int[qtyVps];
-        vpYCameraRotation[0]=0;
-        vpYCameraRotation[1]=0;
         int vpZCameraRotation[] = new int[qtyVps];
-        vpZCameraRotation[0]=0;
-        vpZCameraRotation[1]=0;
-        String vpLocationDesText[] = new String[qtyVps+1];
-        vpLocationDesText[0] = context.getString(R.string.vp_capture_placeholder_description_freevp);
-        vpLocationDesText[1] = context.getString(R.string.vp_capture_placeholder_description)+"1";
+        String vpLocationDesText[] = new String[qtyVps];
         short vpMarkerlessMarkerWidth[] = new short[qtyVps];
-        vpMarkerlessMarkerWidth[0] = Constants.standardMarkerlessMarkerWidth;
-        vpMarkerlessMarkerWidth[1] = Constants.standardMarkerlessMarkerWidth;
         short vpMarkerlessMarkerHeigth[] = new short[qtyVps];
-        vpMarkerlessMarkerHeigth[0] = Constants.standardMarkerlessMarkerHeigth;
-        vpMarkerlessMarkerHeigth[1] = Constants.standardMarkerlessMarkerHeigth;
         boolean vpIsAmbiguous[] = new boolean[qtyVps];
-        vpIsAmbiguous[0]=false;
-        vpIsAmbiguous[1]=false;
         boolean vpFlashTorchIsOn[] = new boolean[qtyVps];
-        vpFlashTorchIsOn[0]=false;
-        vpFlashTorchIsOn[1]=false;
         boolean vpIsSuperSingle[] = new boolean[qtyVps];
-        vpIsSuperSingle[0]=false;
-        vpIsSuperSingle[1]=false;
         int vpSuperMarkerId[] = new int[qtyVps];
-        vpSuperMarkerId[0] = 0;
-        vpSuperMarkerId[1] = 0;
+        for (int j=0; j<(qtyVps); j++) {
+            vpArIsConfigured[j]=false;
+            vpIsVideo[j]=false;
+            vpXCameraDistance[j]=0;
+            vpYCameraDistance[j]=0;
+            vpZCameraDistance[j]=0;
+            vpXCameraRotation[j]=0;
+            vpYCameraRotation[j]=0;
+            vpZCameraRotation[j]=0;
+            vpLocationDesText[j] = context.getString(R.string.vp_capture_placeholder_description)+j;
+            vpMarkerlessMarkerWidth[j] = Constants.standardMarkerlessMarkerWidth;
+            vpMarkerlessMarkerHeigth[j] = Constants.standardMarkerlessMarkerHeigth;
+            vpIsAmbiguous[j]=false;
+            vpFlashTorchIsOn[j]=false;
+            vpIsSuperSingle[j]=false;
+            vpSuperMarkerId[j] = 0;
+        }
         // Saving Vps Data initial configuration.
         try
         {
@@ -156,15 +143,13 @@ public class ConfigFileCreator {
                 xmlSerializer.text("\t");
                 xmlSerializer.text("\t");
                 xmlSerializer.startTag("","VpDescFileSize");
-                File descvp = new File(context.getFilesDir(),"descvp"+i+".png");
-                xmlSerializer.text(Long.toString(descvp.length()));
+                xmlSerializer.text(Long.toString(Constants.VpDescFileSize));
                 xmlSerializer.endTag("","VpDescFileSize");
                 xmlSerializer.text("\n");
                 xmlSerializer.text("\t");
                 xmlSerializer.text("\t");
                 xmlSerializer.startTag("","VpMarkerFileSize");
-                File markervp = new File(context.getFilesDir(),"markervp"+i+".png");
-                xmlSerializer.text(Long.toString(markervp.length()));
+                xmlSerializer.text(Long.toString(Constants.VpMarkerFileSize));
                 xmlSerializer.endTag("","VpMarkerFileSize");
                 xmlSerializer.text("\n");
                 xmlSerializer.text("\t");
@@ -334,7 +319,7 @@ public class ConfigFileCreator {
                                             String vpsCheckedRemotePath,
                                             String mymensorAccount){
 
-        short qtyVps=2;
+        short qtyVps=Constants.maxQtyVps;
         // Saving vpChecked state.
         try {
             XmlSerializer xmlSerializer = Xml.newSerializer();

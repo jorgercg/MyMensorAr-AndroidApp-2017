@@ -296,48 +296,6 @@ public class LoaderActivity extends Activity {
     private void firstTimeLoader() {
         try {
             File vpsFile = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-            File vpsCheckedFile = new File(getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
-            File descvpFile0 = new File(getApplicationContext().getFilesDir(), "descvp0.png");
-            File descvpFile1 = new File(getApplicationContext().getFilesDir(), "descvp1.png");
-            File markervpFile0 = new File(getApplicationContext().getFilesDir(), "markervp0.png");
-            File markervpFile1 = new File(getApplicationContext().getFilesDir(), "markervp1.png");
-
-            if (!descvpFile0.exists()) {
-                ConfigFileCreator.createDescvpFile(getApplicationContext(),
-                        getApplicationContext().getFilesDir(),
-                        "descvp0.png",
-                        transferUtility,
-                        descvpRemotePath,
-                        0,
-                        mymensorAccount);
-            }
-            if (!descvpFile1.exists()) {
-                ConfigFileCreator.createDescvpFile(getApplicationContext(),
-                        getApplicationContext().getFilesDir(),
-                        "descvp1.png",
-                        transferUtility,
-                        descvpRemotePath,
-                        1,
-                        mymensorAccount);
-            }
-            if (!markervpFile0.exists()) {
-                ConfigFileCreator.createMarkervpFile(getApplicationContext(),
-                        getApplicationContext().getFilesDir(),
-                        "markervp0.png",
-                        transferUtility,
-                        markervpRemotePath,
-                        0,
-                        mymensorAccount);
-            }
-            if (!markervpFile1.exists()) {
-                ConfigFileCreator.createMarkervpFile(getApplicationContext(),
-                        getApplicationContext().getFilesDir(),
-                        "markervp1.png",
-                        transferUtility,
-                        markervpRemotePath,
-                        1,
-                        mymensorAccount);
-            }
             if (!vpsFile.exists()) {
                 ConfigFileCreator.createVpsfile(getApplicationContext(),
                         getApplicationContext().getFilesDir(),
@@ -346,6 +304,7 @@ public class LoaderActivity extends Activity {
                         vpsRemotePath,
                         mymensorAccount);
             }
+            File vpsCheckedFile = new File(getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
             if (!vpsCheckedFile.exists()) {
                 ConfigFileCreator.createVpsCheckedFile(getApplicationContext(),
                         getApplicationContext().getFilesDir(),
@@ -354,7 +313,28 @@ public class LoaderActivity extends Activity {
                         vpsCheckedRemotePath,
                         mymensorAccount);
             }
-
+            for (int j = 0; j < (Constants.maxQtyVps); j++) {
+                File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
+                if (!descvpFile.exists()) {
+                    ConfigFileCreator.createDescvpFile(getApplicationContext(),
+                            getApplicationContext().getFilesDir(),
+                            "descvp" + (j) + ".png",
+                            transferUtility,
+                            descvpRemotePath,
+                            0,
+                            mymensorAccount);
+                }
+                File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
+                if (!markervpFile.exists()) {
+                    ConfigFileCreator.createMarkervpFile(getApplicationContext(),
+                            getApplicationContext().getFilesDir(),
+                            "markervp" + (j) + ".png",
+                            transferUtility,
+                            markervpRemotePath,
+                            0,
+                            mymensorAccount);
+                }
+            }
             Log.d(TAG, "firstTimeLoader: Waiting for initial config files and image to be created");
 
             Boolean configFilesOK = false;
@@ -366,16 +346,6 @@ public class LoaderActivity extends Activity {
             } while (!configFilesOK);
 
             Log.d(TAG, "firstTimeLoader: initial config files CREATION DONE: configFilesOK=" + configFilesOK);
-
-            Boolean imageFilesOK = false;
-
-            do {
-                File descvpFileCHK0 = new File(getApplicationContext().getFilesDir(), "descvp0.png");
-                File descvpFileCHK1 = new File(getApplicationContext().getFilesDir(), "descvp1.png");
-                imageFilesOK = ((descvpFileCHK0.exists()) && (descvpFileCHK1.exists()));
-            } while (!imageFilesOK);
-
-            Log.d(TAG, "firstTimeLoader: initial image files CREATION DONE: imageFilesOK=" + imageFilesOK);
 
         } catch (Exception e) {
             e.printStackTrace();

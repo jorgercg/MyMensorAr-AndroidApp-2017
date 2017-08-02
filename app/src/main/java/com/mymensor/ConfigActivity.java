@@ -2394,6 +2394,8 @@ public class ConfigActivity extends Activity implements
             intent.putExtra("sntpTime", sntpTime);
             intent.putExtra("sntpReference", sntpTimeReference);
             intent.putExtra("isTimeCertified", isTimeCertified);
+            intent.putExtra("origmymacc", origMymAcc);
+            intent.putExtra("deviceid", deviceId);
             startActivity(intent);
         }
         catch (Exception e)

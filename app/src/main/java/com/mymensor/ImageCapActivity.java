@@ -910,6 +910,8 @@ public class ImageCapActivity extends Activity implements
                     intent.putExtra("sntpReference", sntpTimeReference);
                     intent.putExtra("isTimeCertified", isTimeCertified);
                     intent.putExtra("lastVpSelectedByUser", lastVpSelectedByUser);
+                    intent.putExtra("origmymacc", origMymAcc);
+                    intent.putExtra("deviceid", deviceId);
                     startActivity(intent);
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);

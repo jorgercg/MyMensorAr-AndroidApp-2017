@@ -676,7 +676,7 @@ public class LoaderActivity extends Activity {
                 fis.close();
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(TAG, "loadConfiguration(): load vpArIsConfigured FromVpsFile loading failed, see stack trace");
+                Log.e(TAG, "loadConfiguration(): load vpArIsConfigured FromVpsFile loading failed, see stack trace. vpListOrder="+vpListOrder);
                 publishProgress(getString(R.string.checkcfgfiles));
                 finishApp = true;
                 finish();

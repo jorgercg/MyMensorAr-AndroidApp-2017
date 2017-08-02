@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,86 +10,83 @@
         android:id="@+id/config_javaCameraView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:visibility="visible" />
 
     <com.mymensor.TouchImageView
         android:id="@+id/imageView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        />
+        android:layout_centerVertical="true"
+        android:visibility="gone" />
 
     <ListView
         android:id="@+id/vp_list"
-        android:padding="1dp"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
         android:background="@android:color/transparent"
-        android:layout_width="120dp" />
+        android:padding="1dp" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="4dp"
         android:layout_gravity="top|center"
+        android:background="@android:color/holo_blue_dark"
+        android:padding="4dp"
         android:text="@string/vp_00"
         android:textColor="@android:color/white"
-        android:background="@android:color/holo_blue_dark"
-        android:visibility="gone"
-        />
+        android:visibility="gone" />
 
     <EditText
         android:id="@+id/descVPEditText"
-        android:layout_toEndOf="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="4dp"
-        android:lines="2"
         android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/textView2"
+        android:background="@android:color/background_dark"
         android:gravity="center"
+        android:imeOptions="actionDone"
+        android:inputType="text|textCapSentences|textAutoCorrect"
+        android:lines="2"
+        android:padding="4dp"
         android:text="@string/desc_vp_empty"
         android:textColor="@android:color/holo_blue_light"
-        android:background="@android:color/background_dark"
-        android:visibility="invisible"
-        android:inputType="text|textCapSentences|textAutoCorrect"
-        android:imeOptions="actionDone"
-        />
+        android:visibility="invisible" />
 
 
     <LinearLayout
         android:id="@+id/linearLayoutVpArStatus"
-        android:layout_below="@id/descVPEditText"
-        android:layout_toEndOf="@id/vp_list"
-        android:orientation="horizontal"
-        android:visibility="invisible"
-        android:background="@drawable/border_marker_id_blue"
-        android:layout_margin="8dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_below="@id/descVPEditText"
+        android:layout_margin="8dp"
+        android:layout_toEndOf="@id/vp_list"
+        android:background="@drawable/border_marker_id_blue"
+        android:orientation="horizontal"
+        android:visibility="invisible">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical|center"
             android:padding="8dp"
-            android:textColor="@android:color/white"
             android:text="@string/textview_vp_ar"
-            android:textAlignment="gravity" />
+            android:textAlignment="gravity"
+            android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/vpAcquiredStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
             android:gravity="center_vertical|center"
             android:padding="8dp"
-            android:textColor="@android:color/white"
             android:text="--"
-            android:layout_gravity="end" />
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 
@@ -99,145 +95,78 @@
         android:id="@+id/waitingTrkLoading"
         android:layout_width="252.67dp"
         android:layout_height="252.33dp"
-        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/circulo_seamensor"
+        android:layout_centerVertical="true"
         android:padding="0dp"
-        android:visibility="gone"        />
+        android:src="@drawable/circulo_seamensor"
+        android:visibility="gone" />
 
 
     <LinearLayout
         android:id="@+id/linearLayoutQtyVps"
-        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:gravity="end"
-        android:visibility="visible"
-        >
+        android:orientation="vertical"
+        android:visibility="visible">
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/buttonCallImagecap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:clickable="true"
-            opencv:fabSize="mini"
-            opencv:srcCompat="@drawable/logo_mymensor"
-            android:visibility="visible"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginBottom="20dp"
-            />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
             android:visibility="visible"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
-                android:textColor="@android:color/white"
-                android:text="@string/button_text_decrease_qtyvps"
-                android:layout_marginBottom="2dp"
-                android:layout_marginEnd="8dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/buttonDecreaseQtyVps"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:clickable="true"
-                opencv:fabSize="mini"
-                opencv:srcCompat="@drawable/ic_remove_black_18dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="2dp"
-                opencv:elevation="0dp"
-                 />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:visibility="visible"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
-                android:textColor="@android:color/white"
-                android:text="@string/button_text_increase_qtyvps"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="2dp"
-                />
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/buttonIncreaseQtyVps"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:clickable="true"
-                opencv:fabSize="mini"
-                opencv:srcCompat="@drawable/ic_add_black_18dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="16dp"
-                opencv:elevation="0dp"
-                 />
-
-
-        </LinearLayout>
+            opencv:fabSize="mini"
+            opencv:srcCompat="@drawable/logo_mymensor" />
 
     </LinearLayout>
 
 
     <LinearLayout
         android:id="@+id/linearLayoutConfigCaptureVps"
-        android:layout_below="@id/descVPEditText"
-        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
-
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_below="@id/descVPEditText"
         android:layout_marginBottom="16dp"
-        android:gravity="end">
+
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:gravity="end"
+        android:orientation="vertical"
+        android:visibility="invisible">
 
         <LinearLayout
             android:id="@+id/linearLayoutCaptureNewVp"
-            android:layout_below="@id/descVPEditText"
-            android:orientation="horizontal"
-            android:layout_alignParentEnd="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/descVPEditText"
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:layout_marginBottom="1dp"
                 android:layout_marginEnd="8dp"
-                android:textColor="@android:color/white"
                 android:text="@string/button_text_request_photo"
-                android:layout_marginBottom="1dp" />
+                android:textColor="@android:color/white" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/buttonRequestPhoto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:clickable="true"
-                opencv:fabSize="mini"
-                opencv:srcCompat="@drawable/ic_add_a_photo_white_18dp"
                 android:layout_marginBottom="1dp"
-                opencv:elevation="0dp"/>
+                android:clickable="true"
+                opencv:elevation="0dp"
+                opencv:fabSize="mini"
+                opencv:srcCompat="@drawable/ic_add_a_photo_white_18dp" />
 
         </LinearLayout>
 
@@ -246,13 +175,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:clickable="true"
-            opencv:fabSize="normal"
-            opencv:srcCompat="@android:drawable/ic_menu_camera"
-            android:visibility="invisible"
             android:layout_margin="0dp"
+            android:clickable="true"
+            android:visibility="invisible"
             opencv:backgroundTint="@android:color/holo_blue_bright"
-            opencv:elevation="0dp"/>
+            opencv:elevation="0dp"
+            opencv:fabSize="normal"
+            opencv:srcCompat="@android:drawable/ic_menu_camera" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -261,31 +190,31 @@
 
             <LinearLayout
                 android:id="@+id/linearLayoutMarkerId"
-                android:orientation="horizontal"
-                android:visibility="invisible"
-                android:background="@drawable/border_marker_id_blue"
-                android:layout_marginBottom="1dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="1dp"
+                android:background="@drawable/border_marker_id_blue"
+                android:orientation="horizontal"
+                android:visibility="invisible">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical|center"
                     android:padding="8dp"
-                    android:textColor="@android:color/white"
                     android:text="@string/button_marker_id"
-                    android:textAlignment="gravity" />
+                    android:textAlignment="gravity"
+                    android:textColor="@android:color/white" />
 
                 <TextView
                     android:id="@+id/idMarkerNumberTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="end"
                     android:gravity="center_vertical|center"
                     android:padding="8dp"
-                    android:textColor="@android:color/white"
                     android:text="--"
-                    android:layout_gravity="end" />
+                    android:textColor="@android:color/white" />
 
             </LinearLayout>
 
@@ -293,76 +222,75 @@
                 android:id="@+id/vpIdMarkerUsedTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="end"
                 android:gravity="center_vertical|center"
                 android:padding="8dp"
-                android:textColor="@color/Red"
-                android:visibility="gone"
                 android:text=" @ VP#"
-                android:layout_gravity="end" />
+                android:textColor="@color/Red"
+                android:visibility="gone" />
 
         </LinearLayout>
 
 
-
         <LinearLayout
             android:id="@+id/linearLayoutAmbiguousVp"
-            android:orientation="horizontal"
-            android:layout_alignParentEnd="true"
-            android:visibility="invisible"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:orientation="horizontal"
+            android:visibility="invisible">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginEnd="8dp"
-                android:textColor="@android:color/white"
-                android:text="@string/button_ambiguous_vp_toggle"
                 android:layout_marginBottom="1dp"
-                android:textAlignment="gravity" />
+                android:layout_marginEnd="8dp"
+                android:text="@string/button_ambiguous_vp_toggle"
+                android:textAlignment="gravity"
+                android:textColor="@android:color/white" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/buttonAmbiguousVpToggle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
-                opencv:fabSize="mini"
-                opencv:srcCompat="@android:drawable/ic_dialog_alert"
-                android:layout_marginBottom="1dp"
                 android:layout_gravity="end"
-                opencv:elevation="0dp"/>
+                android:layout_marginBottom="1dp"
+                android:clickable="true"
+                opencv:elevation="0dp"
+                opencv:fabSize="mini"
+                opencv:srcCompat="@android:drawable/ic_dialog_alert" />
 
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/linearLayoutSuperSingleVp"
-            android:orientation="horizontal"
-            android:layout_alignParentEnd="true"
-            android:visibility="invisible"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:orientation="horizontal"
+            android:visibility="invisible">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginEnd="8dp"
-                android:textColor="@android:color/white"
-                android:text="@string/button_super_single_vp_toggle"
                 android:layout_marginBottom="2dp"
-                android:textAlignment="gravity" />
+                android:layout_marginEnd="8dp"
+                android:text="@string/button_super_single_vp_toggle"
+                android:textAlignment="gravity"
+                android:textColor="@android:color/white" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/buttonSuperSingleVpToggle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
-                opencv:fabSize="mini"
-                opencv:srcCompat="@drawable/circulo_seamensor"
-                android:layout_marginBottom="2dp"
                 android:layout_gravity="end"
-                opencv:elevation="0dp"/>
+                android:layout_marginBottom="2dp"
+                android:clickable="true"
+                opencv:elevation="0dp"
+                opencv:fabSize="mini"
+                opencv:srcCompat="@drawable/circulo_seamensor" />
 
         </LinearLayout>
 
@@ -373,38 +301,35 @@
         android:layout_width="100dp"
         android:layout_height="50dp"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="110dp"
         android:layout_marginStart="4dp"
-        android:gravity="center"
-        android:padding="0dp"
+        android:layout_marginTop="110dp"
         android:background="@drawable/yesbutton"
+        android:clickable="true"
+        android:gravity="center"
+        android:onClick="onButtonClick"
+        android:padding="0dp"
+        android:text="@string/button_accept_vp_photo"
         android:textColor="#000000"
         android:textSize="20dp"
-        android:onClick="onButtonClick"
-        android:clickable="true"
-        android:text="@string/button_accept_vp_photo"
-        android:visibility="gone"
-        />
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/buttonRejectVpPhoto"
         android:layout_width="100dp"
         android:layout_height="50dp"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="235dp"
-        android:layout_marginStart="4dp"
         android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:padding="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="235dp"
         android:background="@drawable/nobutton"
+        android:clickable="true"
+        android:gravity="center"
+        android:onClick="onButtonClick"
+        android:padding="0dp"
+        android:text="@string/button_reject_vp_photo"
         android:textColor="#FFFFFF"
         android:textSize="20dp"
-        android:onClick="onButtonClick"
-        android:clickable="true"
-        android:text="@string/button_reject_vp_photo"
-        android:visibility="gone"
-        />
-
+        android:visibility="gone" />
 
 
 </RelativeLayout>

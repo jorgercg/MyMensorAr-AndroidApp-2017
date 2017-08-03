@@ -16,7 +16,7 @@ public class Constants {
     public static final String usersConfigFolder = "usrcfg";
     public static final String vpsConfigFileName = "vps.xml";
     public static final String vpsCheckedConfigFileName = "vpschecked.xml";
-    public static final long VpDescFileSize = 36156;
+    public static final long VpDescFileSize = 36043;
     public static final long VpMarkerFileSize = 32209;
     public static final short captureMarkerWidth = 400;
     public static final short captureMarkerHeight = 400;

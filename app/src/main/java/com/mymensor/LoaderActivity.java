@@ -890,8 +890,8 @@ public class LoaderActivity extends Activity {
                         try {
                             File descvpFileCHK = new File(getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
                             File markervpFileCHK = new File(getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
-                            //Log.d(TAG, "descvp" + (k) + ".png : exists=" + descvpFileCHK.exists() + " Length=" + descvpFileCHK.length() + " vpDescFileSize[k]=" + vpDescFileSize[k]);
-                            //Log.d(TAG, "markervp" + (k) + ".png : exists=" + markervpFileCHK.exists() + " Length=" + markervpFileCHK.length() + " vpMarkerFileSize[k]=" + vpMarkerFileSize[k]);
+                            Log.d(TAG, "descvp" + (k) + ".png : exists=" + descvpFileCHK.exists() + " Length=" + descvpFileCHK.length() + " vpDescFileSize[k]=" + vpDescFileSize[k]);
+                            Log.d(TAG, "markervp" + (k) + ".png : exists=" + markervpFileCHK.exists() + " Length=" + markervpFileCHK.length() + " vpMarkerFileSize[k]=" + vpMarkerFileSize[k]);
                             if (descvpFileCHK.exists() &&
                                     markervpFileCHK.exists() &&
                                     descvpFileCHK.length() == vpDescFileSize[k] &&

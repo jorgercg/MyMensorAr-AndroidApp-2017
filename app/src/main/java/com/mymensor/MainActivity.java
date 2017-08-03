@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private static AppStart appStart = null;
     private String appStartState;
     public static String mymClientGUID;
-    private String mymClientGUIDEncrypted;
+    private String mymClientGUIDStored;
 
     private AccountManager mAccountManager;
     private AlertDialog mAlertDialog;
@@ -114,51 +114,12 @@ public class MainActivity extends AppCompatActivity {
 
         mAccountManager = AccountManager.get(this);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED)
+            ;
 
         final Account availableAccounts[] = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        mymClientGUIDEncrypted = sharedPref.getString(Constants.MYM_CLIENT_GUID, "NOTSET");
-
-        aesKey = MymCrypt.getSecretKeySecurely(getSecretKeyFromJNI(), sharedPref);
-
-        if (mymClientGUIDEncrypted.equals("NOTSET")) {
-            final String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-            //mymClientGUID = UUID.nameUUIDFromBytes(androidId.getBytes(Charset.forName("ISO-8859-1"))).toString();
-            //mymClientGUID = UUID.randomUUID().toString();
-            mymClientGUID = androidId;
-            mymClientGUIDEncrypted = new String(MymCrypt.encryptData(mymClientGUID.getBytes(Charset.forName("ISO-8859-1")),
-                    MymCrypt.retrieveIv(sharedPref),
-                    aesKey), Charset.forName("ISO-8859-1"));
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(Constants.MYM_CLIENT_GUID, mymClientGUIDEncrypted);
-            editor.commit();
-        } else {
-            mymClientGUID = new String(MymCrypt.decryptData(mymClientGUIDEncrypted.getBytes(Charset.forName("ISO-8859-1")),
-                    MymCrypt.retrieveIv(sharedPref),
-                    aesKey), Charset.forName("ISO-8859-1"));
-        }
-
-
-
-        /*
-         * Initializes the sync client. This must be call before you can use it.
-         */
-        CognitoSyncClientManager.init(getApplicationContext());
-
-        setContentView(R.layout.activity_main);
-        mainLinearLayout = (LinearLayout) findViewById(R.id.MainActivityLinearLayout);
-        appLogo = (ImageView) findViewById(R.id.mainactivity_logo);
-        userLogged = (TextView) findViewById(R.id.userlogstate_message);
-        logInOut = (Button) findViewById(R.id.buttonlog);
-
-        s3Client = CognitoSyncClientManager.getInstance();
-
-        transferUtility = AwsUtil.getTransferUtility(s3Client, getApplicationContext());
-
-        initData();
 
         switch (checkAppStart(this, sharedPref)) {
             case NORMAL:
@@ -177,6 +138,43 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        mymClientGUIDStored = sharedPref.getString(Constants.MYM_CLIENT_GUID, "NOTSET");
+
+        aesKey = MymCrypt.getSecretKeySecurely(getSecretKeyFromJNI(), sharedPref);
+
+        if (mymClientGUIDStored.equals("NOTSET")) {
+            final String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+            mymClientGUID = androidId;
+            mymClientGUIDStored = new String(MymCrypt.encryptData(mymClientGUID.getBytes(Charset.forName("ISO-8859-1")),
+                    MymCrypt.retrieveIv(sharedPref),
+                    aesKey), Charset.forName("ISO-8859-1"));
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(Constants.MYM_CLIENT_GUID, mymClientGUIDStored);
+            editor.commit();
+        } else {
+            mymClientGUID = new String(MymCrypt.decryptData(mymClientGUIDStored.getBytes(Charset.forName("ISO-8859-1")),
+                    MymCrypt.retrieveIv(sharedPref),
+                    aesKey), Charset.forName("ISO-8859-1"));
+        }
+
+
+
+        /*
+         * Initializes the sync client.
+         */
+        CognitoSyncClientManager.init(getApplicationContext());
+
+        setContentView(R.layout.activity_main);
+        mainLinearLayout = (LinearLayout) findViewById(R.id.MainActivityLinearLayout);
+        appLogo = (ImageView) findViewById(R.id.mainactivity_logo);
+        userLogged = (TextView) findViewById(R.id.userlogstate_message);
+        logInOut = (Button) findViewById(R.id.buttonlog);
+
+        s3Client = CognitoSyncClientManager.getInstance();
+
+        transferUtility = AwsUtil.getTransferUtility(s3Client, getApplicationContext());
+
+        initData();
 
         if (availableAccounts.length == 0) {
             Log.d(TAG, "availableAccounts[] = " + "nada!!!!" + " Qty= 0");
@@ -402,10 +400,10 @@ public class MainActivity extends AppCompatActivity {
                     logInOut.setVisibility(View.GONE);
                     userLogged.setText(getText(R.string.userstate_loggedin) + " " + bnd.getString("authAccount"));
 
-                    Map<String,?> keys = sharedPref.getAll();
+                    Map<String, ?> keys = sharedPref.getAll();
 
-                    for(Map.Entry<String,?> entry : keys.entrySet()){
-                        Log.d(TAG, "map values: "+entry.getKey() + ": " + entry.getValue().toString());
+                    for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                        Log.d(TAG, "map values: " + entry.getKey() + ": " + entry.getValue().toString());
                     }
 
                     String mymtoken = sharedPref.getString(Constants.MYM_KEY, "ERROR!!!!!!!!! NO TOKEN FOUND ON SHAREDPREF");

@@ -17,7 +17,7 @@
         android:layout_alignParentTop="true"
         android:visibility="visible" />
 
-    <com.mymensor.TouchImageView
+    <com.mymensorar.TouchImageView
         android:id="@+id/imageView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

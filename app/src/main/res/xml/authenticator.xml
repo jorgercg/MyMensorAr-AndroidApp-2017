@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="com.mymensor.app"
+    android:accountType="com.mymensorar.app"
     android:icon="@drawable/logo_mymensor"
     android:smallIcon="@drawable/ic_launcher"
     android:label="@string/authlabel"

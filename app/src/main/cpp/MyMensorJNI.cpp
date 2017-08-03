@@ -9,7 +9,7 @@ using namespace mymensor;
 extern "C" {
 
 JNIEXPORT jlong JNICALL
-Java_com_mymensor_filters_ImageDetectionFilter_newSelf(JNIEnv *env, jclass clazz, jobjectArray images, jint qtyVps, jdouble realSize)
+Java_com_mymensorar_filters_ImageDetectionFilter_newSelf(JNIEnv *env, jclass clazz, jobjectArray images, jint qtyVps, jdouble realSize)
 {
     std::vector<cv::Mat> markerImages = std::vector<cv::Mat>();
 
@@ -30,7 +30,7 @@ Java_com_mymensor_filters_ImageDetectionFilter_newSelf(JNIEnv *env, jclass clazz
 }
 
 JNIEXPORT void JNICALL
-Java_com_mymensor_filters_ImageDetectionFilter_deleteSelf(
+Java_com_mymensorar_filters_ImageDetectionFilter_deleteSelf(
         JNIEnv *env, jclass clazz, jlong selfAddr)
 {
     if (selfAddr != 0)
@@ -41,7 +41,7 @@ Java_com_mymensor_filters_ImageDetectionFilter_deleteSelf(
 }
 
 JNIEXPORT jfloatArray JNICALL
-Java_com_mymensor_filters_ImageDetectionFilter_getPose(
+Java_com_mymensorar_filters_ImageDetectionFilter_getPose(
         JNIEnv *env, jclass clazz, jlong selfAddr)
 {
     if (selfAddr == 0)
@@ -65,7 +65,7 @@ Java_com_mymensor_filters_ImageDetectionFilter_getPose(
 }
 
 JNIEXPORT void JNICALL
-Java_com_mymensor_filters_ImageDetectionFilter_apply(JNIEnv *env, jclass clazz, jlong selfAddr, jlong srcAddr, jint isHudOn, jint isSingleImage, jlong projectionAddr)
+Java_com_mymensorar_filters_ImageDetectionFilter_apply(JNIEnv *env, jclass clazz, jlong selfAddr, jlong srcAddr, jint isHudOn, jint isSingleImage, jlong projectionAddr)
 {
     if (selfAddr != 0)
     {
@@ -78,14 +78,14 @@ Java_com_mymensor_filters_ImageDetectionFilter_apply(JNIEnv *env, jclass clazz, 
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mymensor_filters_VpConfigFilter_newSelf(JNIEnv *env, jclass clazz, jlong referenceImageBGRAddr, jdouble realSize) {
+Java_com_mymensorar_filters_VpConfigFilter_newSelf(JNIEnv *env, jclass clazz, jlong referenceImageBGRAddr, jdouble realSize) {
     cv::Mat &referenceImageBGR =  *(cv::Mat *)referenceImageBGRAddr;
     VpConfigureFilter *self = new VpConfigureFilter(referenceImageBGR, realSize);
     return (jlong)self;
 }
 
 JNIEXPORT void JNICALL
-Java_com_mymensor_filters_VpConfigFilter_deleteSelf(JNIEnv *env, jclass clazz, jlong selfAddr) {
+Java_com_mymensorar_filters_VpConfigFilter_deleteSelf(JNIEnv *env, jclass clazz, jlong selfAddr) {
     if (selfAddr != 0)
     {
         VpConfigureFilter *self = (VpConfigureFilter *)selfAddr;
@@ -94,7 +94,7 @@ Java_com_mymensor_filters_VpConfigFilter_deleteSelf(JNIEnv *env, jclass clazz, j
 }
 
 JNIEXPORT jfloatArray JNICALL
-Java_com_mymensor_filters_VpConfigFilter_getPose__J(JNIEnv *env, jclass clazz, jlong selfAddr) {
+Java_com_mymensorar_filters_VpConfigFilter_getPose__J(JNIEnv *env, jclass clazz, jlong selfAddr) {
     if (selfAddr == 0)
     {
         return NULL;
@@ -116,7 +116,7 @@ Java_com_mymensor_filters_VpConfigFilter_getPose__J(JNIEnv *env, jclass clazz, j
 }
 
 JNIEXPORT void JNICALL
-Java_com_mymensor_filters_VpConfigFilter_apply__JJJ(JNIEnv *env, jclass clazz, jlong selfAddr, jlong srcAddr, jlong projectionAddr)
+Java_com_mymensorar_filters_VpConfigFilter_apply__JJJ(JNIEnv *env, jclass clazz, jlong selfAddr, jlong srcAddr, jlong projectionAddr)
 {
     if (selfAddr != 0)
     {
@@ -128,7 +128,7 @@ Java_com_mymensor_filters_VpConfigFilter_apply__JJJ(JNIEnv *env, jclass clazz, j
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mymensor_filters_IdMarkerDetectionFilter_newSelf(JNIEnv *env, jclass clazz, jint qtyVps, jfloat realSize) {
+Java_com_mymensorar_filters_IdMarkerDetectionFilter_newSelf(JNIEnv *env, jclass clazz, jint qtyVps, jfloat realSize) {
 
     IdMarkerDetectionFilter *self = new IdMarkerDetectionFilter(qtyVps, realSize);
     return (jlong)self;
@@ -136,7 +136,7 @@ Java_com_mymensor_filters_IdMarkerDetectionFilter_newSelf(JNIEnv *env, jclass cl
 }
 
 JNIEXPORT void JNICALL
-Java_com_mymensor_filters_IdMarkerDetectionFilter_deleteSelf(JNIEnv *env, jclass clazz,
+Java_com_mymensorar_filters_IdMarkerDetectionFilter_deleteSelf(JNIEnv *env, jclass clazz,
                                                              jlong selfAddr) {
 
     if (selfAddr != 0)
@@ -148,7 +148,7 @@ Java_com_mymensor_filters_IdMarkerDetectionFilter_deleteSelf(JNIEnv *env, jclass
 }
 
 JNIEXPORT jfloatArray JNICALL
-Java_com_mymensor_filters_IdMarkerDetectionFilter_getPose__J(JNIEnv *env, jclass clazz,
+Java_com_mymensorar_filters_IdMarkerDetectionFilter_getPose__J(JNIEnv *env, jclass clazz,
                                                              jlong selfAddr) {
 
     if (selfAddr == 0)
@@ -173,7 +173,7 @@ Java_com_mymensor_filters_IdMarkerDetectionFilter_getPose__J(JNIEnv *env, jclass
 }
 
 JNIEXPORT void JNICALL
-Java_com_mymensor_filters_IdMarkerDetectionFilter_apply__JJIJ(JNIEnv *env, jclass clazz,
+Java_com_mymensorar_filters_IdMarkerDetectionFilter_apply__JJIJ(JNIEnv *env, jclass clazz,
                                                               jlong selfAddr, jlong srcAddr,
                                                               jint isHudOn, jlong projectionAddr) {
 
@@ -189,13 +189,13 @@ Java_com_mymensor_filters_IdMarkerDetectionFilter_apply__JJIJ(JNIEnv *env, jclas
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mymensor_MainActivity_getSecretKeyFromJNI(JNIEnv *env, jobject instance) {
+Java_com_mymensorar_MainActivity_getSecretKeyFromJNI(JNIEnv *env, jobject instance) {
 
     return env->NewStringUTF("gxcXrj5y7e533ATvtyu4jD26f7sV96");
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mymensor_ImageCapActivity_getSecretKeyFromJNI(JNIEnv *env, jobject instance) {
+Java_com_mymensorar_ImageCapActivity_getSecretKeyFromJNI(JNIEnv *env, jobject instance) {
 
     return env->NewStringUTF("Testing");
 }

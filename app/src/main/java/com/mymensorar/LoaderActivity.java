@@ -27,7 +27,6 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-
 import com.mymensorar.cognitoclient.AmazonSharedPreferencesWrapper;
 import com.mymensorar.cognitoclient.AwsUtil;
 import com.mymensorar.cognitoclient.CognitoSampleDeveloperAuthenticationService;
@@ -54,8 +53,6 @@ public class LoaderActivity extends Activity {
     private boolean finishApp = false;
     private boolean localFilesExist = false;
     private boolean responseFromRemoteStorage = false;
-    private boolean searchForServerEnded  = false;
-    public boolean isConnectedToServer = false;
     private boolean areRemoteFilesNewerThanLocal = false;
 
     private boolean clockSetSuccess = false;
@@ -112,8 +109,6 @@ public class LoaderActivity extends Activity {
 
         Log.d(TAG, "onCreate(): calling checkConnectionToServer().");
 
-        checkConnectionToServer();
-
         setContentView(R.layout.activity_loader);
         logoLinearLayout = (LinearLayout) findViewById(R.id.MyMensorLogoLinearLayout1);
         logoLinearLayout.setVisibility(View.VISIBLE);
@@ -155,7 +150,6 @@ public class LoaderActivity extends Activity {
         });
 
 
-
     }
 
     @Override
@@ -190,7 +184,7 @@ public class LoaderActivity extends Activity {
     }
 
 
-    private void startUpLoader(){
+    private void startUpLoader() {
         // Retrieving SeaMensor Account information,
         mymensorAccount = getIntent().getExtras().get("account").toString();
         deviceId = getIntent().getExtras().get("deviceid").toString();
@@ -202,14 +196,48 @@ public class LoaderActivity extends Activity {
                     .setAction(getText(R.string.ok), null).show();
             Log.d(TAG, "Closing the app");
             finish();
+            return;
         }
 
         amazonSharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+        Log.d(TAG, "startUpLoader: Before COG response: isApprovedByCognitoState=" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
+        Log.d(TAG, "startUpLoader: Before COG response: qtyClientsExceededState=" + CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState);
+
+        Long loopStart = System.currentTimeMillis();
+
+        do {
+            //nada!!!!
+        }
+        while (((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 0) || (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 0)) && ((System.currentTimeMillis() - loopStart) < 5000));
+
+        Log.d(TAG, "startUpLoader: After COG response: isApprovedByCognitoState=" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
+        Log.d(TAG, "startUpLoader: After COG response: qtyClientsExceededState=" + CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState);
+
+        if ((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 1) && (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2)) {
+            Log.d(TAG, "startUpLoader: finishing");
+            Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_mob_client_qty_exceeded), Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+            toast.show();
+            finish();
+            return;
+        } else {
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2) || ((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 0) && (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 0))) {
+                Log.d(TAG, "startUpLoader: finishing");
+                Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_no_server_connection), Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+                toast.show();
+                finish();
+                return;
+            }
+        }
+
         do {
             mymensorUserGroup = AmazonSharedPreferencesWrapper.getGroupForUser(amazonSharedPref);
-        } while (mymensorUserGroup==null);
-        Log.d(TAG,"startUpLoader: MYM_USR_GROUP: "+ mymensorUserGroup);
+        } while (mymensorUserGroup == null);
+
+        Log.d(TAG, "startUpLoader: MYM_USR_GROUP: " + mymensorUserGroup);
+
         if (mymensorUserGroup.equalsIgnoreCase("mymARmobileapp")) {
             origMymAcc = mymensorAccount;
             mymensorAccount = mymensorAccount.substring(7, mymensorAccount.length());
@@ -217,15 +245,15 @@ public class LoaderActivity extends Activity {
             origMymAcc = mymensorAccount;
         }
 
-        descvpRemotePath = Constants.usersConfigFolder+"/"+mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "dsc" + "/";
-        markervpRemotePath = Constants.usersConfigFolder+"/"+mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "mrk" + "/";
-        vpsRemotePath = Constants.usersConfigFolder+"/"+mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/";
-        vpsCheckedRemotePath = Constants.usersConfigFolder+"/"+mymensorAccount + "/" + "chk" + "/" + dciNumber + "/";
+        descvpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "dsc" + "/";
+        markervpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "mrk" + "/";
+        vpsRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/";
+        vpsCheckedRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "chk" + "/" + dciNumber + "/";
 
-        Log.d(TAG,"startUpLoader: appStartState ="+appStartState);
+        Log.d(TAG, "startUpLoader: appStartState =" + appStartState);
         if (appStartState.equalsIgnoreCase("firstever")) {
-            Log.d(TAG,"startUpLoader: confirmation of server connection RECEIVED: isConnectedToServer="+CognitoSampleDeveloperAuthenticationService.isConnectedToServer);
-            if (!CognitoSampleDeveloperAuthenticationService.isConnectedToServer){
+            Log.d(TAG, "startUpLoader: confirmation of server connection RECEIVED: isConnectedToServer=" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
+            if (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -250,45 +278,18 @@ public class LoaderActivity extends Activity {
                     }
                 });
             } else {
-                Log.d(TAG,"startUpLoader: connected to server proceeding normally");
+                Log.d(TAG, "startUpLoader: connected to server proceeding normally");
                 backgroundLoader.execute();
             }
         } else {
-            Log.d(TAG,"startUpLoader: not the first time app install is run in this device proceeding normally");
+            Log.d(TAG, "startUpLoader: not the first time app install is run in this device proceeding normally");
             backgroundLoader.execute();
         }
 
-        Log.d(TAG,"startUpLoader: END");
+        Log.d(TAG, "startUpLoader: END");
 
     }
 
-
-    private void checkConnectionToServer() {
-
-        new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            protected void onPreExecute() {
-                Log.d(TAG, "checkConnectionToServer: onPreExecute");
-            }
-
-            @Override
-            protected Boolean doInBackground(Void... params) {
-                return MymUtils.isS3Available(s3Amazon);
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                Log.d(TAG, "checkConnectionToServer: onPostExecute: result=" + result);
-                searchForServerEnded = true;
-                if (result) {
-                    isConnectedToServer = true;
-                } else {
-                    isConnectedToServer = false;
-                }
-                Log.d(TAG, "checkConnectionToServer(): CONNECTION TO SERVER EXISTS:" + isConnectedToServer);
-            }
-        }.execute();
-    }
 
     private void firstTimeLoader() {
         try {
@@ -391,7 +392,7 @@ public class LoaderActivity extends Activity {
                 if (now != 0)
                     Log.d(TAG, "backgroundLoader: ntp:now=" + now);
 
-            } while ((now == 0) && ((System.currentTimeMillis() - loopStart) < 10000));
+            } while ((now == 0) && ((System.currentTimeMillis() - loopStart) < 5000));
             Log.d(TAG, "backgroundLoader: ending the loop querying pool.ntp.org for 10 seconds max:" + (System.currentTimeMillis() - loopStart) + " millis:" + now);
             if (clockSetSuccess) {
                 Log.d(TAG, "backgroundLoader: System.currentTimeMillis() before setTime=" + System.currentTimeMillis());
@@ -429,7 +430,7 @@ public class LoaderActivity extends Activity {
              */
 
             Log.d(TAG, "loadConfiguration(): Starting LOGIC to determine startup");
-            Log.d(TAG, "loadConfiguration(): Connected to server? : " + isConnectedToServer);
+            Log.d(TAG, "loadConfiguration(): Approved by Cognito? : (1=true; 2=False)" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
             Log.d(TAG, "loadConfiguration(): Local files exist? : " + localFilesExist);
             Log.d(TAG, "loadConfiguration(): Remote files exist and are accessible? : " + configFromRemoteStorageExistsAndAccessible);
             if (configFromRemoteStorageExistsAndAccessible) {
@@ -673,7 +674,7 @@ public class LoaderActivity extends Activity {
                 fis.close();
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(TAG, "loadConfiguration(): load vpArIsConfigured FromVpsFile loading failed, see stack trace. vpListOrder="+vpListOrder);
+                Log.e(TAG, "loadConfiguration(): load vpArIsConfigured FromVpsFile loading failed, see stack trace. vpListOrder=" + vpListOrder);
                 publishProgress(getString(R.string.checkcfgfiles));
                 finishApp = true;
                 finish();
@@ -956,6 +957,9 @@ public class LoaderActivity extends Activity {
         Log.d(TAG, "callingActivities");
         Log.d(TAG, "callingActivities:####### LOADING: onPostExecute: callingARVewactivity: isTimeCertified=" + clockSetSuccess);
         Log.d(TAG, "callingActivities:####### LOADING: onPostExecute: callingARVewactivity: activityToBeCalled=" + activityToBeCalled);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(Constants.MYM_LAST_USER, origMymAcc);
+        editor.commit();
         if (activityToBeCalled.equalsIgnoreCase("configactivity")) {
             try {
                 Intent intent = new Intent(getApplicationContext(), ConfigActivity.class);

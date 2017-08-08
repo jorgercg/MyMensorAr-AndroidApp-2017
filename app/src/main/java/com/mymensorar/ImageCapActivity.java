@@ -1060,7 +1060,7 @@ public class ImageCapActivity extends Activity implements
                         Log.e(TAG, "shareMediaButton2: Failed to copy Photo file to share");
                     }
                     File shareFile = new File(getApplicationContext().getFilesDir(), "MyMensorPhotoCaptureShare.jpg");
-                    Uri shareFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.mymensor.fileprovider", shareFile);
+                    Uri shareFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.mymensorar.fileprovider", shareFile);
                     List<ResolveInfo> resInfoList = getPackageManager().queryIntentActivities(shareIntent, PackageManager.MATCH_DEFAULT_ONLY);
                     for (ResolveInfo resolveInfo : resInfoList) {
                         String packageName = resolveInfo.activityInfo.packageName;
@@ -1083,7 +1083,7 @@ public class ImageCapActivity extends Activity implements
                         Log.e(TAG, "shareMediaButton2: Failed to copy Video file to share");
                     }
                     File shareFile = new File(getApplicationContext().getFilesDir(), "MyMensorVideoCaptureShare.mp4");
-                    Uri shareFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.mymensor.fileprovider", shareFile);
+                    Uri shareFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.mymensorar.fileprovider", shareFile);
                     List<ResolveInfo> resInfoList = getPackageManager().queryIntentActivities(shareIntent, PackageManager.MATCH_DEFAULT_ONLY);
                     for (ResolveInfo resolveInfo : resInfoList) {
                         String packageName = resolveInfo.activityInfo.packageName;
@@ -2638,6 +2638,7 @@ public class ImageCapActivity extends Activity implements
                     userMetadata.put("mymensoraccount",mymensorAccount);
                     userMetadata.put("origmymacc",origMymAcc);
                     userMetadata.put("deviceid",deviceId);
+                    userMetadata.put("clitype",Constants.CLIENT_SOFTWARE_TYPE);
                     userMetadata.put("locprecisioninm", locPhotoToExif[4]);
                     userMetadata.put("localtitude", locPhotoToExif[7]);
                     userMetadata.put("locmillis", locPhotoToExif[5]);
@@ -2978,6 +2979,7 @@ public class ImageCapActivity extends Activity implements
                     userMetadata.put("mymensoraccount",mymensorAccount);
                     userMetadata.put("origmymacc",origMymAcc);
                     userMetadata.put("deviceid",deviceId);
+                    userMetadata.put("clitype",Constants.CLIENT_SOFTWARE_TYPE);
                     userMetadata.put("locprecisioninm", locPhotoToExif[4]);
                     userMetadata.put("localtitude", locPhotoToExif[7]);
                     userMetadata.put("locmillis", locPhotoToExif[5]);

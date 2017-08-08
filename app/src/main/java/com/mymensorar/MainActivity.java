@@ -37,6 +37,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferType;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.mymensorar.cognitoclient.AmazonSharedPreferencesWrapper;
 import com.mymensorar.cognitoclient.AwsUtil;
 
 import java.nio.charset.Charset;
@@ -120,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+        Map<String, ?> keys = sharedPref.getAll();
+
+        for (Map.Entry<String, ?> entry : keys.entrySet()) {
+            Log.d(TAG, "onCreate: sharedPref: " + entry.getKey() + "=[" + entry.getValue().toString() +"]");
+        }
+
         switch (checkAppStart(this, sharedPref)) {
             case NORMAL:
                 // We don't want to get on the user's nerves
@@ -177,8 +184,18 @@ public class MainActivity extends AppCompatActivity {
 
         if (availableAccounts.length == 0) {
             Log.d(TAG, "availableAccounts[] = " + "nada!!!!" + " Qty= 0");
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(Constants.MYM_LAST_USER, null);
+            editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_GROUP, null);
+            editor.commit();
         } else {
             Log.d(TAG, "availableAccounts[] = " + availableAccounts[0] + " Qty=" + availableAccounts.length);
+            if (!sharedPref.getString(Constants.MYM_LAST_USER, "").equals(availableAccounts[0].name)) {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(Constants.MYM_LAST_USER, null);
+                editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_GROUP, null);
+                editor.commit();
+            };
         }
 
         if (availableAccounts.length == 0) {
@@ -402,7 +419,18 @@ public class MainActivity extends AppCompatActivity {
                     Map<String, ?> keys = sharedPref.getAll();
 
                     for (Map.Entry<String, ?> entry : keys.entrySet()) {
-                        Log.d(TAG, "map values: " + entry.getKey() + ": " + entry.getValue().toString());
+                        Log.d(TAG, "BEFORE: map values: " + entry.getKey() + ": " + entry.getValue().toString());
+                    }
+
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_KEY, "");
+                    editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_GROUP, null);
+                    editor.commit();
+
+                    Map<String, ?> keysafter = sharedPref.getAll();
+
+                    for (Map.Entry<String, ?> entry : keysafter.entrySet()) {
+                        Log.d(TAG, "AFTER: map values: " + entry.getKey() + ": " + entry.getValue().toString());
                     }
 
                     String mymtoken = sharedPref.getString(Constants.MYM_KEY, "ERROR!!!!!!!!! NO TOKEN FOUND ON SHAREDPREF");

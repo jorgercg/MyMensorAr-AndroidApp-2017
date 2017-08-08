@@ -4,8 +4,8 @@ import com.amazonaws.regions.Regions;
 
 public class Constants {
 
-    public static final String CURR_APP_VERSION = "10010";
-    public static final String CLIENT_SOFTWARE_TYPE = "GA1001111"; // G->Android A->AR 10011->code 11->version
+    public static final String CURR_APP_VERSION = "10012";
+    public static final String CLIENT_SOFTWARE_TYPE = "GA1001211"; // G->Android A->AR 10012->code 11->version
 
     public static final short maxQtyVps = 31;
     public static final String frequencyUnit = "millis";
@@ -62,7 +62,7 @@ public class Constants {
     public static final String REGISTER_SERVER = "https://app.mymensor.com/accounts/register/";
     public static final String MYM_KEY = "mymar_authToken";
     public static final String MYM_USER = "mymar_user";
-    public static final String MYM_USR_GROUP = "MYMar_USER_GROUP";
+    public static final String MYM_LAST_USER = "mymar_last_user";
     public static final String MYM_CLIENT_GUID = "mymar_client_guid";
     public static final String MYM_CLIENT_SALT = "mymar_client_salt";
     public static final String MYM_CLIENT_IV = "mymar_client_iv";

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-
 import com.mymensorar.cognitoclient.Response;
 
 /**
@@ -50,15 +49,17 @@ public class DeveloperAuthenticationTask extends
         }
         return null;
     }
+
     @Override
     protected void onPostExecute(Void result) {
         if (isSuccessful) {
-            Log.d("DvlpAuthTask"," Login OK ");
+            Log.d("DvlpAuthTask", " Login OK ");
             //new AlertDialog.Builder(context).setTitle("Login OK").setMessage("Success!!").show();
         }
         if (!isSuccessful) {
-            Log.d("DvlpAuthTask"," Login error ");
+            Log.d("DvlpAuthTask", " Login error ");
             //new AlertDialog.Builder(context).setTitle("Login error").setMessage("Credentials not accepted!!").show();
+
         }
     }
 }

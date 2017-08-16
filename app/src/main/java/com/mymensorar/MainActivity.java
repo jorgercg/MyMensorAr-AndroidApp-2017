@@ -124,7 +124,11 @@ public class MainActivity extends AppCompatActivity {
         Map<String, ?> keys = sharedPref.getAll();
 
         for (Map.Entry<String, ?> entry : keys.entrySet()) {
-            Log.d(TAG, "onCreate: sharedPref: " + entry.getKey() + "=[" + entry.getValue().toString() +"]");
+            try {
+                Log.d(TAG, "onCreate: sharedPref: " + entry.getKey() + "=[" + entry.getValue().toString() +"]");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         switch (checkAppStart(this, sharedPref)) {
@@ -419,7 +423,11 @@ public class MainActivity extends AppCompatActivity {
                     Map<String, ?> keys = sharedPref.getAll();
 
                     for (Map.Entry<String, ?> entry : keys.entrySet()) {
-                        Log.d(TAG, "BEFORE: map values: " + entry.getKey() + ": " + entry.getValue().toString());
+                        try {
+                            Log.d(TAG, "BEFORE: map values: " + entry.getKey() + ": " + entry.getValue().toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     SharedPreferences.Editor editor = sharedPref.edit();
@@ -430,7 +438,11 @@ public class MainActivity extends AppCompatActivity {
                     Map<String, ?> keysafter = sharedPref.getAll();
 
                     for (Map.Entry<String, ?> entry : keysafter.entrySet()) {
-                        Log.d(TAG, "AFTER: map values: " + entry.getKey() + ": " + entry.getValue().toString());
+                        try {
+                            Log.d(TAG, "AFTER: map values: " + entry.getKey() + ": " + entry.getValue().toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     String mymtoken = sharedPref.getString(Constants.MYM_KEY, "ERROR!!!!!!!!! NO TOKEN FOUND ON SHAREDPREF");

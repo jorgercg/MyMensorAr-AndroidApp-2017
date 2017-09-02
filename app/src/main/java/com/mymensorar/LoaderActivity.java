@@ -209,7 +209,7 @@ public class LoaderActivity extends Activity {
         do {
             //nada!!!!
         }
-        while (((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 0) || (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 0)) && ((System.currentTimeMillis() - loopStart) < 5000));
+        while (((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 0) || (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 0)) && ((System.currentTimeMillis() - loopStart) < 3000));
 
         Log.d(TAG, "startUpLoader: After COG response: isApprovedByCognitoState=" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
         Log.d(TAG, "startUpLoader: After COG response: qtyClientsExceededState=" + CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState);
@@ -222,7 +222,7 @@ public class LoaderActivity extends Activity {
             finish();
             return;
         } else {
-            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2) || ((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 0) && (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 0))) {
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2) ) {
                 Log.d(TAG, "startUpLoader: finishing");
                 Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_no_server_connection), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
@@ -231,6 +231,8 @@ public class LoaderActivity extends Activity {
                 return;
             }
         }
+
+        // || ((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 0) && (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 0))
 
         do {
             mymensorUserGroup = AmazonSharedPreferencesWrapper.getGroupForUser(amazonSharedPref);

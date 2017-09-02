@@ -4,8 +4,8 @@ import com.amazonaws.regions.Regions;
 
 public class Constants {
 
-    public static final String CURR_APP_VERSION = "10014";
-    public static final String CLIENT_SOFTWARE_TYPE = "GA1001411"; // G->Android A->AR 10014->code 11->version
+    public static final String CURR_APP_VERSION = "10015";
+    public static final String CLIENT_SOFTWARE_TYPE = "GA10015115"; // G->Android A->AR 10015->code 115->version
 
     public static final short maxQtyVps = 31;
     public static final String frequencyUnit = "millis";

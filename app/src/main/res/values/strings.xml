@@ -132,7 +132,7 @@
     <string name="first_time_usage">Creating local configuration files.</string>
     <string name="start_with_server_connection">Connected to server. Starting with latest configuration.</string>
     <string name="start_with_no_server_connection">No connection with server. Using locally available configuration.</string>
-    <string name="checkcfgfiles_online">Something wrong happened while downloading configuration from server. Please try again.</string>
+    <string name="checkcfgfiles_online">Something wrong happened while downloading configuration from server. Please try again or restore smartphone backup on the web app.</string>
     <string name="checkcfgfiles_offline">Something wrong happened while reading local configuration. Please try again and contact support if problem persists.</string>
     <string name="remark">Write remark about capture</string>
     <string name="sizelimit100">Limited to 1000 characters!!!</string>

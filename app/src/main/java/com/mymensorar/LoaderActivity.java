@@ -170,6 +170,14 @@ public class LoaderActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy(): CALLED");
+        if (finishApp) {
+            if (configFromRemoteStorageExistsAndAccessible) {
+                MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_online));
+            } else {
+                MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_offline));
+            }
+            finish();
+        }
         backgroundLoader.cancel(true);
         Log.d(TAG, "onDestroy(): cancelled backgroundLoader = " + backgroundLoader.getStatus());
     }
@@ -618,7 +626,7 @@ public class LoaderActivity extends Activity {
                     e.printStackTrace();
                     Log.e(TAG, "loadConfiguration(): loadQtyVpsFromVpsFile loading failed, see stack trace");
                 }
-            } while ((!(qtyVps > 1)) && ((System.currentTimeMillis() - loopstart) < 10000));
+            } while ((!(qtyVps > 1)) && ((System.currentTimeMillis() - loopstart) < 2000));
 
 
             if (qtyVps < 2) {

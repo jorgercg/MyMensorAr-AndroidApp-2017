@@ -46,15 +46,26 @@ public class CognitoSampleDeveloperAuthenticationService {
             connection.setRequestProperty("Authorization","Token " + mymToken);
             connection.setRequestProperty("From", Constants.CLIENT_SOFTWARE_TYPE);
             connection.setRequestProperty("Warning", MainActivity.mymarClientGUID);
+            Log.i(LOG_TAG, "mymClientGUID : [" + MainActivity.mymarClientGUID + "]");
             responseCode = connection.getResponseCode();
             responseBody = CognitoSampleDeveloperAuthenticationService
                     .getResponse(connection);
             if (responseCode==200) {
                 isApprovedByCognitoState =1;
             } else {
-                isApprovedByCognitoState =2;
+                if (responseCode==432) {
+                    responseBody="Trial Expired";
+                    isApprovedByCognitoState =3;
+                } else {
+                    if (responseCode==434) {
+                        responseBody="Subscription Expired";
+                        isApprovedByCognitoState =4;
+                    } else {
+                        isApprovedByCognitoState =2;
+                    }
+                }
             }
-            if (responseCode==403) {
+            if (responseCode==433) {
                 responseBody="Quantity of concurrent clients limit exceeded";
                 qtyClientsExceededState = 1;
             } else {

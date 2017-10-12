@@ -46,13 +46,16 @@ public final class VpConfigFilter implements ARFilter {
     }
 
     @Override
-    public void apply(final Mat src, final int IsHudOn, final int isSingleImage) {
+    public void apply(final Mat src, final int IsHudOn, final int isSingleImage, final int rotx, final int roty, final int rotz, final int translx, final int transly, final int translz) {
         final Mat projection = mCameraCalibration;
         apply(mSelfAddr, src.getNativeObjAddr(), projection.getNativeObjAddr());
     }
 
     private static native long newSelf(long referenceImageBGRAddr, double realSize);
+
     private static native void deleteSelf(long selfAddr);
+
     private static native float[] getPose(long selfAddr);
+
     private static native void apply(long selfAddr, long srcAddr, long projectionAddr);
- }
+}

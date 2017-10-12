@@ -488,7 +488,7 @@ public class ConfigFileCreator {
             File outFile = new File(directory, fileName);
             out = new FileOutputStream(outFile);
             copyFile(in, out);
-            Log.e(TAG, "createLocalDescvpFile: CREATED: " + fileName);
+            Log.d(TAG, "createLocalDescvpFile: CREATED: " + fileName);
         } catch(IOException e) {
             Log.e(TAG, "createLocalDescvpFile: Failed to copy asset file: " + fileName, e);
         }
@@ -602,7 +602,7 @@ public class ConfigFileCreator {
             File outFile = new File(directory, fileName);
             out = new FileOutputStream(outFile);
             copyFile(in, out);
-            Log.e(TAG, "createLocalMarkervpFile: CREATED: " + fileName);
+            Log.d(TAG, "createLocalMarkervpFile: CREATED: " + fileName);
         } catch(IOException e) {
             Log.e(TAG, "createLocalMarkervpFile: Failed to copy asset file: " + fileName, e);
         }

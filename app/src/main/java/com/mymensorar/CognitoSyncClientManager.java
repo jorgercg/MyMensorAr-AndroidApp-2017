@@ -3,6 +3,7 @@ package com.mymensorar;
 import android.content.Context;
 import android.util.Log;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSAbstractCognitoIdentityProvider;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -57,7 +58,10 @@ public class CognitoSyncClientManager {
         }
 
         //syncClient = new CognitoSyncManager(context, REGION, credentialsProvider);
-        syncClient = new AmazonS3Client(credentialsProvider);
+
+        ClientConfiguration cc = new ClientConfiguration(); cc.setSocketTimeout(120000);
+
+        syncClient = new AmazonS3Client(credentialsProvider, cc);
     }
 
     /**

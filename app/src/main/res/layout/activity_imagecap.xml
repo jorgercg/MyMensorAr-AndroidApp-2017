@@ -103,9 +103,49 @@
             android:background="@android:color/transparent"
             android:textColor="@android:color/white" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_toEndOf="@id/vp_list"
+        android:orientation="vertical">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/buttonShowHelpMainScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:visibility="visible"
+            opencv:backgroundTint="@android:color/holo_blue_dark"
+            opencv:fabSize="mini"
+            opencv:srcCompat="@android:drawable/ic_menu_help" />
 
     </LinearLayout>
 
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:layout_toEndOf="@id/vp_list"
+        android:orientation="vertical">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/buttonShowVpCapturesMainScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            opencv:fabSize="mini"
+            opencv:srcCompat="@android:drawable/ic_menu_gallery"
+            opencv:backgroundTint="@android:color/holo_blue_dark"
+            android:visibility="visible"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayoutConfigCaptureVps"
@@ -472,8 +512,19 @@
             android:gravity="center_vertical|center"
             android:padding="0dp"
             android:text="@string/arSwitchText"
-            android:textColor="@android:color/white"
+            android:textColor="@color/ARgray"
             android:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/ar_load_progressbar"
+            style="@android:style/Widget.ProgressBar.Small"
+            android:gravity="center_vertical|center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="12dp"
+            android:visibility="gone"
+            />
 
     </LinearLayout>
 
@@ -568,6 +619,7 @@
         opencv:srcCompat="@drawable/ic_stop_black_18dp" />
 
     <LinearLayout
+        android:id="@+id/certificationlayot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"

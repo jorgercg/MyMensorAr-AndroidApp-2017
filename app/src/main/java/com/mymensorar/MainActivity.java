@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        // Resolver porque ele chega aqui sem o LAST USER e o USER GROUP ?????????
+
         switch (checkAppStart(this, sharedPref)) {
             case NORMAL:
                 // We don't want to get on the user's nerves
@@ -189,16 +191,16 @@ public class MainActivity extends AppCompatActivity {
         if (availableAccounts.length == 0) {
             Log.d(TAG, "availableAccounts[] = " + "nada!!!!" + " Qty= 0");
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(Constants.MYM_LAST_USER, null);
-            editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_GROUP, null);
+            editor.putString(Constants.MYM_LAST_USER, "");
             editor.commit();
+            AmazonSharedPreferencesWrapper.registerUserGroup(sharedPref, "");
         } else {
             Log.d(TAG, "availableAccounts[] = " + availableAccounts[0] + " Qty=" + availableAccounts.length);
             if (!sharedPref.getString(Constants.MYM_LAST_USER, "").equals(availableAccounts[0].name)) {
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString(Constants.MYM_LAST_USER, null);
-                editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_GROUP, null);
+                editor.putString(Constants.MYM_LAST_USER, "");
                 editor.commit();
+                AmazonSharedPreferencesWrapper.registerUserGroup(sharedPref, "");
             };
         }
 
@@ -234,9 +236,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!noUserLogged) {
+            long startChk3 = System.currentTimeMillis();
             do {
                 //Nothing....
-            } while (sharedPref.getString(Constants.MYM_USER, "").equals(""));
+            } while ((sharedPref.getString(Constants.MYM_USER, "").equals("")) && ((System.currentTimeMillis() - startChk3) < 5000));
         }
 
         if (!noUserLogged) {
@@ -430,10 +433,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_KEY, "");
-                    editor.putString(AmazonSharedPreferencesWrapper.MYM_USER_GROUP, null);
-                    editor.commit();
+                    AmazonSharedPreferencesWrapper.registerUserKey(sharedPref, "");
+                    AmazonSharedPreferencesWrapper.registerUserGroup(sharedPref, "");
 
                     Map<String, ?> keysafter = sharedPref.getAll();
 

@@ -1,8 +1,6 @@
 package com.mymensorar;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -21,9 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -31,11 +26,7 @@ import com.mymensorar.cognitoclient.AmazonSharedPreferencesWrapper;
 import com.mymensorar.cognitoclient.AwsUtil;
 import com.mymensorar.cognitoclient.CognitoSampleDeveloperAuthenticationService;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
-
 import java.io.File;
-import java.io.InputStream;
 
 public class LoaderActivity extends Activity {
     private static final String TAG = "LoaderActvty";
@@ -51,9 +42,6 @@ public class LoaderActivity extends Activity {
     private String markervpRemotePath;
 
     private boolean finishApp = false;
-    private boolean localFilesExist = false;
-    private boolean responseFromRemoteStorage = false;
-    private boolean areRemoteFilesNewerThanLocal = false;
 
     private boolean clockSetSuccess = false;
     private static long back_pressed;
@@ -67,7 +55,7 @@ public class LoaderActivity extends Activity {
     ImageView mymensorLogoTxt;
     ImageView mymensorLogoCircles;
     LinearLayout logoLinearLayout;
-    FloatingActionButton fab;
+    //FloatingActionButton fab;
 
     Animation rotationCircles;
 
@@ -78,12 +66,6 @@ public class LoaderActivity extends Activity {
     private AmazonS3 s3Amazon;
     private AmazonS3Client s3Client;
     private TransferUtility transferUtility;
-
-    private Boolean descvpFileCHK[];
-    private Boolean markervpFileCHK[];
-    private Boolean loadingDescvpFile = false;
-    private Boolean loadingMarkervpFile = false;
-    private Boolean configFromRemoteStorageExistsAndAccessible = false;
 
     SharedPreferences amazonSharedPref;
 
@@ -113,7 +95,7 @@ public class LoaderActivity extends Activity {
         logoLinearLayout = (LinearLayout) findViewById(R.id.MyMensorLogoLinearLayout1);
         logoLinearLayout.setVisibility(View.VISIBLE);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        //fab = (FloatingActionButton) findViewById(R.id.fab);
 
         mymensorLogoTxt = (ImageView) findViewById(R.id.mymensor_logo_txt);
         mymensorLogoTxt.setVisibility(View.VISIBLE);
@@ -124,12 +106,6 @@ public class LoaderActivity extends Activity {
         rotationCircles = AnimationUtils.loadAnimation(this, R.anim.clockwise_rotation);
         mymensorLogoCircles.startAnimation(rotationCircles);
 
-        File vpsFileCHK = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-
-        if (vpsFileCHK.exists()) {
-            localFilesExist = true;
-        }
-
         final View.OnClickListener undoOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -138,6 +114,8 @@ public class LoaderActivity extends Activity {
                 Log.d(TAG, "Reverting the call back to imagecapactivity");
             }
         };
+
+        /*
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,6 +126,7 @@ public class LoaderActivity extends Activity {
                 activityToBeCalled = "configactivity";
             }
         });
+        */
 
 
     }
@@ -170,14 +149,6 @@ public class LoaderActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy(): CALLED");
-        if (finishApp) {
-            if (configFromRemoteStorageExistsAndAccessible) {
-                MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_online));
-            } else {
-                MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_offline));
-            }
-            finish();
-        }
         backgroundLoader.cancel(true);
         Log.d(TAG, "onDestroy(): cancelled backgroundLoader = " + backgroundLoader.getStatus());
     }
@@ -198,14 +169,6 @@ public class LoaderActivity extends Activity {
         deviceId = getIntent().getExtras().get("deviceid").toString();
 
         Log.d(TAG, "startUpLoader: MyMensor Account from Mobile App: " + mymensorAccount);
-
-        if (mymensorAccount.equalsIgnoreCase("")) {
-            Snackbar.make(logoLinearLayout.getRootView(), getText(R.string.nomymensoraccount), Snackbar.LENGTH_LONG)
-                    .setAction(getText(R.string.ok), null).show();
-            Log.d(TAG, "Closing the app");
-            finish();
-            return;
-        }
 
         amazonSharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -230,7 +193,7 @@ public class LoaderActivity extends Activity {
             finish();
             return;
         } else {
-            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2) ) {
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2)) {
                 Log.d(TAG, "startUpLoader: finishing");
                 Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_no_server_connection), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
@@ -238,13 +201,13 @@ public class LoaderActivity extends Activity {
                 finish();
                 return;
             }
-            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 3) ) {
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 3)) {
                 Log.d(TAG, "startUpLoader: TRIAL EXP continuing without server connection");
                 Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_trial_exp_continuing_with_no_server_connection), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
                 toast.show();
             }
-            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 4) ) {
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 4)) {
                 Log.d(TAG, "startUpLoader: SUB EXP continuing without server connection");
                 Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_sub_exp_continuing_with_no_server_connection), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
@@ -256,7 +219,7 @@ public class LoaderActivity extends Activity {
 
         do {
             mymensorUserGroup = AmazonSharedPreferencesWrapper.getGroupForUser(amazonSharedPref);
-        } while (mymensorUserGroup == null);
+        } while (mymensorUserGroup.equalsIgnoreCase(""));
 
         Log.d(TAG, "startUpLoader: MYM_USR_GROUP: " + mymensorUserGroup);
 
@@ -273,42 +236,10 @@ public class LoaderActivity extends Activity {
         vpsCheckedRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "chk" + "/" + dciNumber + "/";
 
         Log.d(TAG, "startUpLoader: appStartState =" + appStartState);
-        if (appStartState.equalsIgnoreCase("firstever")) {
-            Log.d(TAG, "startUpLoader: confirmation of server connection RECEIVED: isConnectedToServer=" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
-            if (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AlertDialog.Builder alert = new AlertDialog.Builder(LoaderActivity.this);
-
-                        alert.setTitle(R.string.caution_no_server);
-                        alert.setMessage(R.string.caution_proceed_or_not);
-
-                        alert.setPositiveButton(R.string.caution_proceed, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                backgroundLoader.execute();
-                            }
-                        });
-
-                        alert.setNegativeButton(R.string.caution_exit, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                finish();
-                            }
-                        });
-
-                        alert.show();
-                    }
-                });
-            } else {
-                Log.d(TAG, "startUpLoader: connected to server proceeding normally");
-                backgroundLoader.execute();
-            }
-        } else {
-            Log.d(TAG, "startUpLoader: not the first time app install is run in this device proceeding normally");
-            backgroundLoader.execute();
-        }
 
         Log.d(TAG, "startUpLoader: END");
+
+        backgroundLoader.execute();
 
     }
 
@@ -377,8 +308,6 @@ public class LoaderActivity extends Activity {
 
     public class BackgroundLoader extends AsyncTask<Void, String, Void> {
 
-        int qtyVps = 0;
-
         @Override
         protected void onPreExecute() {
             Log.d(TAG, "backgroundLoader: onPreExecute()");
@@ -425,529 +354,17 @@ public class LoaderActivity extends Activity {
             }
 
 
-            /*
-            *********************************************************************************************************************
-             */
-
-            Log.d(TAG, "loadConfiguration(): checking if files exist in Remote Storage, if not, create them locally.");
-
-            int retries = 4;
+            // Loading App Assets
             try {
-                do {
-                    responseFromRemoteStorage = s3Amazon.doesObjectExist(Constants.BUCKET_NAME, (vpsRemotePath + Constants.vpsConfigFileName));
-                    if (responseFromRemoteStorage) {
-                        configFromRemoteStorageExistsAndAccessible = true;
-                    } else {
-                        Log.d(TAG, "Request to s3Amazon.doesObjectExist failed or object does not exist");
-                    }
-                } while (retries-- > 0);
-            } catch (Exception es3) {
-                Log.e(TAG, "loadConfiguration(): checking if files exist in Remote Storage error:" + es3.toString());
-            }
-
-            Log.d(TAG, "loadConfiguration(): config files exist and are accessible in remote storage:" + configFromRemoteStorageExistsAndAccessible);
-
-            /*
-            *********************************************************************************************************************
-             */
-
-            Log.d(TAG, "loadConfiguration(): Starting LOGIC to determine startup");
-            Log.d(TAG, "loadConfiguration(): Approved by Cognito? : (1=true; 2=False)" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
-            Log.d(TAG, "loadConfiguration(): Local files exist? : " + localFilesExist);
-            Log.d(TAG, "loadConfiguration(): Remote files exist and are accessible? : " + configFromRemoteStorageExistsAndAccessible);
-            if (configFromRemoteStorageExistsAndAccessible) {
-                try {
-                    areRemoteFilesNewerThanLocal = (MymUtils.isNewFileAvailable(s3Client,
-                            Constants.vpsConfigFileName,
-                            (vpsRemotePath + Constants.vpsConfigFileName),
-                            Constants.BUCKET_NAME,
-                            getApplicationContext()));
-                } catch (Exception e) {
-                    Log.e(TAG, "loadConfiguration(): unable to check remote file age: vpsFile loading failed:" + e.toString());
-                    areRemoteFilesNewerThanLocal = false;
-                }
-            }
-            Log.d(TAG, "loadConfiguration(): Remote files exist and are NEWER than local? : " + areRemoteFilesNewerThanLocal);
-
-            if ((!configFromRemoteStorageExistsAndAccessible) && (!localFilesExist)) {
-                configFromRemoteStorageExistsAndAccessible = false;
-                firstTimeLoader();
-            }
-
-
-            /*
-            *********************************************************************************************************************
-             */
-            Log.d(TAG, "loadConfiguration(): Loading Definitions from Remote Storage and writing to local storage");
-
-            try {
-
-                File vpsFile = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-
-                if (MymUtils.isNewFileAvailable(s3Client,
-                        Constants.vpsConfigFileName,
-                        (vpsRemotePath + Constants.vpsConfigFileName),
-                        Constants.BUCKET_NAME,
-                        getApplicationContext())) {
-                    Log.d(TAG, "vpsFile isNewFileAvailable= TRUE");
-                    TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (vpsRemotePath + Constants.vpsConfigFileName), Constants.BUCKET_NAME, vpsFile);
-                    observer.setTransferListener(new TransferListener() {
-
-                        @Override
-                        public void onStateChanged(int id, TransferState state) {
-                            if (state.equals(TransferState.COMPLETED)) {
-                                Log.d(TAG, "vpsFile TransferListener=" + state.toString());
-                            }
-                        }
-
-                        @Override
-                        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                            if (bytesTotal > 0) {
-                                int percentage = (int) (bytesCurrent / bytesTotal * 100);
-                            }
-
-                            //Display percentage transfered to user
-                        }
-
-                        @Override
-                        public void onError(int id, Exception ex) {
-                            Log.e(TAG, "loadConfiguration() Observer: vpsFile loading failed:" + ex.toString());
-
-                            publishProgress(getString(R.string.checkcfgfiles));
-                            finish();
-                        }
-
-                    });
-                } else {
-                    Log.d(TAG, "vpsFile isNewFileAvailable= FALSE");
-                }
+                Log.d(TAG, "loadFinalDefinitions: backgroundLoader:####### LOADING: LOCAL ASSETS");
+                MymUtils.extractAllAssets(getApplicationContext());
             } catch (Exception e) {
-                Log.e(TAG, "loadConfiguration(): vpsFile loading failed:" + e.toString());
+                Log.e(TAG, "loadFinalDefinitions: backgroundLoader extractAllAssets failed:" + e.toString());
                 publishProgress(getString(R.string.checkcfgfiles));
                 finishApp = true;
                 finish();
             }
 
-
-            /*
-            *********************************************************************************************************************
-            */
-
-
-            try {
-
-                final File vpsCheckedFile = new File(getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
-
-                if (MymUtils.isNewFileAvailable(s3Client,
-                        Constants.vpsCheckedConfigFileName,
-                        (vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName),
-                        Constants.BUCKET_NAME,
-                        getApplicationContext())) {
-                    Log.d(TAG, "vpsCheckedFile isNewFileAvailable= TRUE");
-                    TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName), Constants.BUCKET_NAME, vpsCheckedFile);
-                    observer.setTransferListener(new TransferListener() {
-
-                        @Override
-                        public void onStateChanged(int id, TransferState state) {
-                            if (state.equals(TransferState.COMPLETED)) {
-                                Log.d(TAG, "vpsCheckedFile TransferListener=" + state.toString());
-                            }
-                        }
-
-                        @Override
-                        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                            if (bytesTotal > 0) {
-                                int percentage = (int) (bytesCurrent / bytesTotal * 100);
-                            }
-
-                            //Display percentage transfered to user
-                        }
-
-                        @Override
-                        public void onError(int id, Exception ex) {
-                            Log.e(TAG, "loadConfiguration() Observer: vpsCheckedFile loading failed:" + vpsCheckedFile.getPath() + ex.toString());
-                            publishProgress(getString(R.string.checkcfgfiles));
-                            finishApp = true;
-                            finish();
-                        }
-
-                    });
-                } else {
-                    Log.d(TAG, "vpsCheckedFile isNewFileAvailable= FALSE");
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "loadConfiguration(): vpsCheckedFile loading failed:" + e.toString());
-                publishProgress(getString(R.string.checkcfgfiles));
-                finishApp = true;
-                finish();
-            }
-
-           /*
-            *********************************************************************************************************************
-            */
-
-            Boolean configFilesOK = false;
-
-            do {
-                File vpsFileCHK = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-                File vpsCheckedFileCHK = new File(getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
-                configFilesOK = ((vpsFileCHK.exists()) && (vpsCheckedFileCHK.exists()));
-            } while (!configFilesOK);
-
-            Log.d(TAG, "Loading Config Files: configFilesOK=" + configFilesOK);
-
-            publishProgress(getString(R.string.still_loading_assets));
-
-            /*
-            *********************************************************************************************************************
-            */
-
-            long loopstart = System.currentTimeMillis();
-
-
-            do {
-                try {
-                    try {
-                        Log.d(TAG, "loadQtyVpsFromVpsFile: File=" + Constants.vpsConfigFileName);
-                        InputStream fis = MymUtils.getLocalFile(Constants.vpsConfigFileName, getApplicationContext());
-                        XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
-                        XmlPullParser myparser = xmlFactoryObject.newPullParser();
-                        myparser.setInput(fis, null);
-                        int eventType = myparser.getEventType();
-                        while (eventType != XmlPullParser.END_DOCUMENT) {
-                            if (eventType == XmlPullParser.START_DOCUMENT) {
-                                //Log.d(TAG,"Start document");
-                            } else if (eventType == XmlPullParser.START_TAG) {
-                                //Log.d(TAG,"Start tag "+myparser.getName());
-                                if (myparser.getName().equalsIgnoreCase("QtyVps")) {
-                                    eventType = myparser.next();
-                                    qtyVps = Short.parseShort(myparser.getText());
-                                }
-                            } else if (eventType == XmlPullParser.END_TAG) {
-                                //Log.d(TAG,"End tag "+myparser.getName());
-                            } else if (eventType == XmlPullParser.TEXT) {
-                                //Log.d(TAG,"Text "+myparser.getText());
-                            }
-                            eventType = myparser.next();
-                        }
-                        fis.close();
-                    } finally {
-                        Log.d(TAG, "loadConfiguration(): loadQtyVpsFromVpsFile QtyVps=" + qtyVps);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "loadConfiguration(): loadQtyVpsFromVpsFile loading failed, see stack trace");
-                }
-            } while ((!(qtyVps > 1)) && ((System.currentTimeMillis() - loopstart) < 2000));
-
-
-            if (qtyVps < 2) {
-                Log.e(TAG, "loadConfiguration(): qtyVps<2, i.e. the qtyVps was not read");
-                publishProgress(getString(R.string.checkcfgfiles));
-                finishApp = true;
-                finish();
-            }
-
-
-
-            /*
-            *********************************************************************************************************************
-            * Loading VpDescFileSize[] and VpMarkerFileSize[]
-            */
-
-            Long vpDescFileSize[] = new Long[qtyVps];
-            Long vpMarkerFileSize[] = new Long[qtyVps];
-            boolean vpArIsConfigured[] = new boolean[qtyVps];
-
-            short vpListOrder = -1;
-
-            try {
-                Log.d(TAG, "Loading VpDescFileSize[] and VpMarkerFileSize[] FromVpsFile: File=" + Constants.vpsConfigFileName);
-                InputStream fis = MymUtils.getLocalFile(Constants.vpsConfigFileName, getApplicationContext());
-                XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
-                XmlPullParser myparser = xmlFactoryObject.newPullParser();
-                myparser.setInput(fis, null);
-                int eventType = myparser.getEventType();
-                while (eventType != XmlPullParser.END_DOCUMENT) {
-                    if (eventType == XmlPullParser.START_DOCUMENT) {
-                        //Log.d(TAG,"Start document");
-                    } else if (eventType == XmlPullParser.START_TAG) {
-                        //Log.d(TAG,"Start tag "+myparser.getName());
-                        if (myparser.getName().equalsIgnoreCase("Vp")) {
-                            vpListOrder++;
-                            //MetaioDebug.log("VpListOrder: "+vpListOrder);
-                        } else if (myparser.getName().equalsIgnoreCase("VpDescFileSize")) {
-                            eventType = myparser.next();
-                            vpDescFileSize[vpListOrder] = Long.parseLong(myparser.getText());
-                        } else if (myparser.getName().equalsIgnoreCase("VpMarkerFileSize")) {
-                            eventType = myparser.next();
-                            vpMarkerFileSize[vpListOrder] = Long.parseLong(myparser.getText());
-                        } else if (myparser.getName().equalsIgnoreCase("VpArIsConfigured")) {
-                            eventType = myparser.next();
-                            vpArIsConfigured[vpListOrder] = Boolean.parseBoolean(myparser.getText());
-                        }
-                    } else if (eventType == XmlPullParser.END_TAG) {
-                        //Log.d(TAG,"End tag "+myparser.getName());
-                    } else if (eventType == XmlPullParser.TEXT) {
-                        //Log.d(TAG,"Text "+myparser.getText());
-                    }
-                    eventType = myparser.next();
-                }
-                fis.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "loadConfiguration(): load vpArIsConfigured FromVpsFile loading failed, see stack trace. vpListOrder=" + vpListOrder);
-                publishProgress(getString(R.string.checkcfgfiles));
-                finishApp = true;
-                finish();
-            }
-
-            /*
-            *********************************************************************************************************************
-            */
-
-            descvpFileCHK = new Boolean[qtyVps];
-            try {
-                // Loading Vp Location Description Images from Remote Storage and writing to local storage.
-                for (int j = 0; j < (qtyVps); j++) {
-                    descvpFileCHK[j] = false;
-                    final int j_inner = j;
-                    if (vpArIsConfigured[j]) {
-                        Log.d(TAG, "loadFinalDefinitions:####### LOADING: VPDESCFILES CONTENTS j=" + j);
-                        File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
-                        Log.d(TAG, "loadFinalDefinitions: vpLocationDescImageFilePath Dropbox: " + descvpRemotePath + "descvp" + (j) + ".png");
-                        if (MymUtils.isNewFileAvailable(s3Client,
-                                ("descvp" + (j) + ".png"),
-                                (descvpRemotePath + "descvp" + (j) + ".png"),
-                                Constants.BUCKET_NAME,
-                                getApplicationContext())) {
-                            Log.d(TAG, "descvpFile loadFinalDefinitions: isNewFileAvailable= TRUE");
-                            loadingDescvpFile = true;
-                            final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (descvpRemotePath + "descvp" + (j) + ".png"), Constants.BUCKET_NAME, descvpFile);
-                            observer.setTransferListener(new TransferListener() {
-
-                                @Override
-                                public void onStateChanged(int id, TransferState state) {
-                                    if (state.equals(TransferState.COMPLETED)) {
-                                        descvpFileCHK[j_inner] = true;
-                                        Log.d(TAG, "descvpFile loadFinalDefinitions: TransferListener Descvp=" + observer.getKey() + " j_inner=" + j_inner + " State=" + state.toString());
-                                    }
-                                }
-
-                                @Override
-                                public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                                    if (bytesTotal > 0) {
-                                        int percentage = (int) (bytesCurrent / bytesTotal * 100);
-
-                                    }
-
-                                    //Display percentage transfered to user
-                                }
-
-                                @Override
-                                public void onError(int id, Exception ex) {
-                                    Log.e(TAG, "descvpFile loadFinalDefinitions: Descvp loading failed, see stack trace:" + observer.getKey() + "with Exception:" + ex.toString());
-                                    File faileddescvpFile = new File(getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
-                                    boolean faileddescvpFileIsDeleted = faileddescvpFile.delete();
-                                    Log.e(TAG, "faileddescvpFileIsDeleted =" + faileddescvpFileIsDeleted);
-                                    publishProgress(getString(R.string.checkcfgfiles));
-                                    finishApp = true;
-                                    finish();
-                                }
-
-                            });
-                        } else {
-                            descvpFileCHK[j] = true;
-                            Log.d(TAG, "descvpFile loadFinalDefinitions: " + "descvp" + (j) + ".png" + " isNewFileAvailable= FALSE  :::::  descvpFileCHK[j] =" + descvpFileCHK[j]);
-                        }
-                    } else {
-                        File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
-                        if (!descvpFile.exists()) {
-                            ConfigFileCreator.createLocalDescvpFile(getApplicationContext(),
-                                    getApplicationContext().getFilesDir(),
-                                    "descvp" + (j) + ".png");
-                        }
-                        descvpFileCHK[j] = true;
-                        Log.d(TAG, "descvpFile loadFinalDefinitions: " + "descvp" + (j) + ".png" + " vpArIsConfigured= FALSE  :::::  descvpFileCHK[j] =" + descvpFileCHK[j]);
-                    }
-
-                }
-                publishProgress(getString(R.string.almost_finished_loading_assets));
-                // Loading App Assets
-                try {
-                    Log.d(TAG, "loadFinalDefinitions: backgroundLoader:####### LOADING: LOCAL ASSETS");
-                    MymUtils.extractAllAssets(getApplicationContext());
-                } catch (Exception e) {
-                    Log.e(TAG, "loadFinalDefinitions: backgroundLoader extractAllAssets failed:" + e.toString());
-                    publishProgress(getString(R.string.checkcfgfiles));
-                    finishApp = true;
-                    finish();
-                }
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "loadFinalDefinitions:Error loadFinalDefinitions()");
-                publishProgress(getString(R.string.checkcfgfiles));
-                finishApp = true;
-                finish();
-            }
-
-
-
-
-            /*
-            *********************************************************************************************************************
-            */
-
-            markervpFileCHK = new Boolean[qtyVps];
-            try {
-                // Loading Vp Marker Images from Remote Storage and writing to local storage.
-
-                for (int j = 0; j < (qtyVps); j++) {
-                    markervpFileCHK[j] = false;
-                    final int j_inner = j;
-                    if (vpArIsConfigured[j]) {
-                        Log.d(TAG, "loadFinalDefinitions:####### LOADING: MARKERVP CONTENTS j=" + j);
-                        final File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
-                        Log.d(TAG, "loadFinalDefinitions: markervpRemotePath: " + markervpRemotePath + "markervp" + (j) + ".png");
-                        if (MymUtils.isNewFileAvailable(s3Client,
-                                ("markervp" + (j) + ".png"),
-                                (markervpRemotePath + "markervp" + (j) + ".png"),
-                                Constants.BUCKET_NAME,
-                                getApplicationContext())) {
-                            Log.d(TAG, "markervpFile loadFinalDefinitions: isNewFileAvailable= TRUE");
-                            loadingMarkervpFile = true;
-                            final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (markervpRemotePath + "markervp" + (j) + ".png"), Constants.BUCKET_NAME, markervpFile);
-                            observer.setTransferListener(new TransferListener() {
-
-                                @Override
-                                public void onStateChanged(int id, TransferState state) {
-                                    if (state.equals(TransferState.COMPLETED)) {
-                                        markervpFileCHK[j_inner] = true;
-                                        Log.d(TAG, "markervpFile loadFinalDefinitions: TransferListener Markervp=" + observer.getKey() + " j_inner=" + j_inner + " State=" + state.toString());
-                                    }
-                                }
-
-                                @Override
-                                public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                                    if (bytesTotal > 0) {
-                                        int percentage = (int) (bytesCurrent / bytesTotal * 100);
-
-                                    }
-
-                                    //Display percentage transfered to user
-                                }
-
-                                @Override
-                                public void onError(int id, Exception ex) {
-                                    Log.e(TAG, "markervpFile loadFinalDefinitions: Markervp loading failed, see stack trace:" + observer.getKey());
-                                    File failedmarkervpFile = new File(getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
-                                    boolean failedmarkervpFileIsDeleted = failedmarkervpFile.delete();
-                                    Log.e(TAG, "failedmarkervpFileIsDeleted =" + failedmarkervpFileIsDeleted);
-                                    publishProgress(getString(R.string.checkcfgfiles));
-                                    finishApp = true;
-                                    finish();
-                                }
-
-                            });
-                        } else {
-                            markervpFileCHK[j] = true;
-                            Log.d(TAG, "markervpFile loadFinalDefinitions: " + "markervp" + (j) + ".png" + " isNewFileAvailable= FALSE   ::::::   markervpFileCHK[j]=" + markervpFileCHK[j]);
-                        }
-                    } else {
-                        File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
-                        if (!markervpFile.exists()) {
-                            ConfigFileCreator.createLocalMarkervpFile(getApplicationContext(),
-                                    getApplicationContext().getFilesDir(),
-                                    "markervp" + (j) + ".png");
-                        }
-                        markervpFileCHK[j] = true;
-                        Log.d(TAG, "markervpFile loadFinalDefinitions: " + "markervp" + (j) + ".png" + " vpArIsConfigured= FALSE   ::::::   markervpFileCHK[j]=" + markervpFileCHK[j]);
-                    }
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "markervpFile loading:Error: " + e.toString());
-                publishProgress(getString(R.string.checkcfgfiles));
-                finishApp = true;
-                finish();
-            }
-
-            // Checking if all images are already in the local storage, as network operations take place in background.
-
-            Log.d(TAG, "Checking if all images are already in the local storage, as network operations take place in background.");
-
-            int prod = 0;
-
-            if (configFromRemoteStorageExistsAndAccessible && ((loadingDescvpFile) || (loadingMarkervpFile))) {
-                Log.d(TAG, "configFromRemoteStorageExistsAndAccessible: Starting the wait....");
-                long startChk2 = System.currentTimeMillis();
-                if ((loadingDescvpFile) || (loadingMarkervpFile)) {
-                    do {
-                        for (int k = 0; k < (qtyVps); k++) {
-                            //Log.d(TAG,"descvpFileCHK["+k+"]="+descvpFileCHK[k]+"- markervpFileCHK["+k+"]="+markervpFileCHK[k]);
-                            if (descvpFileCHK[k] && markervpFileCHK[k]) {
-                                if (k == 0) {
-                                    prod = Math.abs(1);
-                                } else {
-                                    prod *= Math.abs(1);
-                                }
-                            } else {
-                                if (k == 0) {
-                                    prod = Math.abs(0);
-                                } else {
-                                    prod *= Math.abs(0);
-                                }
-                            }
-                        }
-                    } while ((prod == 0) && ((System.currentTimeMillis() - startChk2) < 120000));
-                }
-                Log.d(TAG, "configFromRemoteStorageExistsAndAccessible: Wait is Finished!!!!!!");
-            } else {
-                long startChk = System.currentTimeMillis();
-                do {
-                    for (int k = 0; k < (qtyVps); k++) {
-                        try {
-                            File descvpFileCHK = new File(getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
-                            File markervpFileCHK = new File(getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
-                            Log.d(TAG, "descvp" + (k) + ".png : exists=" + descvpFileCHK.exists() + " Length=" + descvpFileCHK.length() + " vpDescFileSize[k]=" + vpDescFileSize[k]);
-                            Log.d(TAG, "markervp" + (k) + ".png : exists=" + markervpFileCHK.exists() + " Length=" + markervpFileCHK.length() + " vpMarkerFileSize[k]=" + vpMarkerFileSize[k]);
-                            if (descvpFileCHK.exists() &&
-                                    markervpFileCHK.exists() &&
-                                    descvpFileCHK.length() == vpDescFileSize[k] &&
-                                    markervpFileCHK.length() == vpMarkerFileSize[k]) {
-                                if (k == 0) {
-                                    prod = Math.abs(1);
-                                } else {
-                                    prod *= Math.abs(1);
-                                }
-                            } else {
-                                if (k == 0) {
-                                    prod = Math.abs(0);
-                                } else {
-                                    prod *= Math.abs(0);
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Image Files Checking Failed:" + e.toString());
-                        }
-                    }
-                } while ((prod == 0) && ((System.currentTimeMillis() - startChk) < 20000));
-            }
-            if (prod == 0) {
-                Log.e(TAG, "Image files downloading verification Error." + (System.currentTimeMillis() - loopstart));
-                publishProgress(getString(R.string.checkcfgfiles));
-                finishApp = true;
-                finish();
-            }
-
-            Log.d(TAG, "Loading Image Config Files: imageFilesOK=" + prod);
-
-            if (!finishApp) {
-                publishProgress(getString(R.string.load_assets_finished));
-            } else {
-                publishProgress(getString(R.string.checkcfgfiles));
-            }
             return null;
         }
 
@@ -956,19 +373,10 @@ public class LoaderActivity extends Activity {
             Log.d(TAG, "onPostExecute CALLED: finishApp=" + finishApp);
             super.onPostExecute(result);
             if (finishApp) {
-                if (configFromRemoteStorageExistsAndAccessible) {
-                    MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_online));
-                } else {
-                    MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_offline));
-                }
+                MymUtils.showToastMessage(getApplicationContext(), getString(R.string.checkcfgfiles_online));
                 finish();
             } else {
-                if (configFromRemoteStorageExistsAndAccessible) {
-                    MymUtils.showToastMessage(getApplicationContext(), getString(R.string.start_with_server_connection));
-                } else {
-                    MymUtils.showToastMessage(getApplicationContext(), getString(R.string.start_with_no_server_connection));
-                }
-                callingActivities(qtyVps);
+                callingActivities(Constants.maxQtyVps);
             }
 
         }
@@ -994,6 +402,8 @@ public class LoaderActivity extends Activity {
                 intent.putExtra("sntpReference", sntpReference);
                 intent.putExtra("isTimeCertified", clockSetSuccess);
                 intent.putExtra("lastVpSelectedByUser", 0);
+                intent.putExtra("appStartState", appStartState);
+                intent.putExtra("previousactivity", "loader");
                 startActivity(intent);
             } catch (Exception e) {
                 Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
@@ -1010,10 +420,12 @@ public class LoaderActivity extends Activity {
                 intent.putExtra("origmymacc", origMymAcc);
                 intent.putExtra("deviceid", deviceId);
                 intent.putExtra("dcinumber", dciNumber);
-                intent.putExtra("QtyVps", qtyVps);
+                intent.putExtra("QtyVps", Constants.maxQtyVps);
                 intent.putExtra("sntpTime", sntpTime);
                 intent.putExtra("sntpReference", sntpReference);
                 intent.putExtra("isTimeCertified", clockSetSuccess);
+                intent.putExtra("appStartState", appStartState);
+                intent.putExtra("previousactivity", "loader");
                 startActivity(intent);
             } catch (Exception e) {
                 Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);

@@ -3,10 +3,10 @@
 
 #include <vector>
 
-//#include <android/log.h>
-//#define  LOG_TAG    "NATIVE IdMrkDetFilter"
-//#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-//#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#include <android/log.h>
+#define  LOG_TAG    "NATIVE IdMrkDetFilter"
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 
 #include <opencv2/core/core.hpp>
@@ -20,7 +20,7 @@ class IdMarkerDetectionFilter
 public:
     IdMarkerDetectionFilter(int qtyVps, float realSize);
     float *getPose();
-    void apply(cv::Mat &src, int isHudOn, cv::Mat &projection);
+    void apply(cv::Mat &src, int isHudOn, cv::Mat &projection, int rotx, int roty, int rotz, int translx, int transly, int translz);
 
 private:
     //void findPose(cv::Mat &projection);
@@ -64,9 +64,6 @@ private:
     // descriptors.
     cv::Ptr<cv::DescriptorMatcher> mDescriptorMatcher;
 
-
-
-
     // Distortion coefficients of the camera's lens.
     cv::Mat mDistCoeffs;
 
@@ -91,7 +88,6 @@ private:
 
     std::vector<cv::Point2f> goodReferencePoints;
     std::vector<cv::Point2f> goodScenePoints;
-
 
 
 };

@@ -4,14 +4,16 @@ import com.amazonaws.regions.Regions;
 
 public class Constants {
 
-    public static final String CURR_APP_VERSION = "10018";
-    public static final String CLIENT_SOFTWARE_TYPE = "GA10018118"; // G->Android A->AR 10018->code 118->version
+    public static final String CURR_APP_VERSION = "10019";
+    public static final String CLIENT_SOFTWARE_TYPE = "GA10019119"; // G->Android A->AR 10019->code 119->version
 
     public static final short maxQtyVps = 31;
     public static final String frequencyUnit = "millis";
     public static final int frequencyValue = 20000;
     public static final float tolerancePosition = 50;
     public static final float toleranceRotation = 10;
+    public static final float tolerancePositionSuper = 3;
+    public static final float toleranceRotationSuper = 6;
     public static final String capturesFolder = "cap";
     public static final String usersConfigFolder = "usrcfg";
     public static final String vpsConfigFileName = "vps.xml";

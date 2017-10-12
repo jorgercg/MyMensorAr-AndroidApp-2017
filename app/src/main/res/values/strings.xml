@@ -67,7 +67,7 @@
     <string name="hostconn_not">Disconnected from server.</string>
     <string name="hostconn_con">Connecting to server...</string>
     <string name="hostconn_yes">Connected to server.</string>
-    <string name="vp_capture_success">VP capture successful. Saving now...</string>
+    <string name="vp_capture_success">VP capture successful. Touch on the description to edit it.</string>
     <string name="vp_capture_failure">VP capture failed, please refer to configuration instructions, try again or change method.</string>
     <string name="vp_acquisition_failure">VP photo captured, but augmentation acquisiton failed, please refer to configuration instructions, try again or change method.</string>
     <string name="vp_capture_placeholder_description">Description of VP#</string>
@@ -106,7 +106,7 @@
     <string name="textview_vp_ar">AR</string>
     <string name="position_is_certified">Location updated.</string>
     <string name="turn_off_location_updates">Turn OFF</string>
-    <string name="position_not_certified">Location NOT UPDATED</string>
+    <string name="position_not_certified">Coloque o radar sobre as suas áreas pré-configuradas para iniciar o procedimento de captura utilizando AR. Aprenda assistindo em mymensor.com o vídeo USANDO A REALIDADE AUMENTADA.</string>
     <string name="turn_on_location_updates">TURN ON</string>
     <string name="connectedtoserver">Connected to server.</string>
     <string name="notconnectedtoserver">Not connected to server.</string>
@@ -130,7 +130,7 @@
     <string name="sdk_lower_then_kitkat">This app is not compatible with Android versions prior to KitKat. Closing now.</string>
     <string name="error_to_obtain_sha256">Error while retrieving Media Signature.</string>
     <string name="first_time_usage">Creating local configuration files.</string>
-    <string name="start_with_server_connection">Connected to server. Starting with latest configuration.</string>
+    <string name="start_with_server_connection">AR config downloaded from server. Using latest configuration.</string>
     <string name="start_with_no_server_connection">No connection with server. Using locally available configuration.</string>
     <string name="checkcfgfiles_online">Something wrong happened while downloading configuration from server. Please try again or restore smartphone backup on the web app.</string>
     <string name="checkcfgfiles_offline">Something wrong happened while reading local configuration. Please try again and contact support if problem persists.</string>
@@ -162,4 +162,30 @@
     <string name="checknotchecked">In order to register to MyMensor you must read and agree to our terms and policies.</string>
     <string name="Email">E-mail</string>
     <string name="SignUp">Register</string>
+    <string name="arconfigloading">AR configuration still loading. Try again later.</string>
+    <string name="arconfignotavailable">AR config not available. Capture media without AR.</string>
+    <string name="loadingarconfigfailed">Configuring AR failed.</string>
+    <string name="loadingarconfiginbackground">Loading AR config in background</string>
+    <string name="new_config_loaded">AR Configuration loaded</string>
+    <string name="new_config_loaded_vps_chk_lost">AR Configuration loaded but Checked VP info was lost.</string>
+    <string name="double_bck_return_capture">Press back twice quickly to return to image capture!</string>
+    <string name="newvpdescription">Create new VP description</string>
+    <string name="findhelp">Find help here</string>
+    <string name="helpmessage">Go to our mymensor.com website to find all the help you will need!</string>
+    <string name="go">GO!</string>
+    <string name="notnow">Not now!</string>
+    <string name="welcometomymensor">Welcome to MyMensor!</string>
+    <string name="walkthrough">Walk trough how to use MyMensor main functions or tap tips inside help when you want a later refresher.</string>
+    <string name="tips">TIPS</string>
+    <string name="laststep">That\'s the end of the walktrough!</string>
+    <string name="checkagainifneeded">Click this button and then TIPS whenerver you need a refresher!</string>
+    <string name="takeaphotosecond">Press this button to take a photo.</string>
+    <string name="makevideosecond">And this one to make short videos.</string>
+    <string name="selectvpsecond">Before you capture media without AR, please select the folder (vp) to which you want them to be archived.</string>
+    <string name="certificationstatus">Status of the current media certification.</string>
+    <string name="certificationstatussecond">Here you check, reload and turn on and off certifications, namely location, time and server connection.</string>
+    <string name="showvpcapsecond">Click here to check the media you captured.</string>
+    <string name="aronoff">Augmented Reality Switch</string>
+    <string name="aronoffsecond">Turn it ON to capture pre-configured photos or OFF to snap photos and videos using the shutter buttons.</string>
+    <string name="radarscansecond">Put the radar over your preconfigured areas to start AR capture. See ou video USING AUGMENTED REALITY.</string>
 </resources>

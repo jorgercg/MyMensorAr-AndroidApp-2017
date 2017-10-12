@@ -41,7 +41,7 @@
         android:textColor="@android:color/white"
         android:visibility="gone" />
 
-    <EditText
+    <TextView
         android:id="@+id/descVPEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -49,10 +49,8 @@
         android:layout_toEndOf="@+id/textView2"
         android:background="@android:color/background_dark"
         android:gravity="center"
-        android:imeOptions="actionDone"
-        android:inputType="text|textCapSentences|textAutoCorrect"
-        android:lines="2"
-        android:maxLength="1024"
+        android:lines="1"
+        android:maxLength="1000"
         android:padding="4dp"
         android:text="@string/desc_vp_empty"
         android:textColor="@android:color/holo_blue_light"
@@ -101,7 +99,6 @@
         android:src="@drawable/circulo_seamensor"
         android:visibility="gone" />
 
-
     <LinearLayout
         android:id="@+id/linearLayoutQtyVps"
         android:layout_width="wrap_content"
@@ -122,6 +119,46 @@
             android:visibility="visible"
             opencv:fabSize="mini"
             opencv:srcCompat="@drawable/logo_mymensor" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/uploadPendingLinearLayout"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|center"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@id/linearLayoutQtyVps"
+        android:background="@drawable/border_ar_switch"
+        android:visibility="invisible"
+        android:layout_margin="8dp">
+
+        <ImageView
+            android:id="@+id/uploadPendingmageview"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@android:color/transparent"
+            android:layout_margin="4dp"
+            android:paddingStart="6dp"
+            android:adjustViewBounds="true"
+            android:cropToPadding="true"
+            android:src="@drawable/ic_cloud_upload_white_18dp"
+            android:scaleType="fitCenter"
+            />
+
+        <TextView
+            android:id="@+id/uploadPendingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            android:gravity="center_vertical|center"
+            android:text="@string/zero"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent"
+            android:visibility="visible"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp" />
 
     </LinearLayout>
 
@@ -174,7 +211,7 @@
             android:layout_gravity="end"
             android:layout_margin="16dp"
             android:clickable="true"
-            android:visibility="invisible"
+            android:visibility="gone"
             opencv:backgroundTint="@android:color/holo_blue_bright"
             opencv:fabSize="normal"
             opencv:srcCompat="@android:drawable/ic_menu_camera" />

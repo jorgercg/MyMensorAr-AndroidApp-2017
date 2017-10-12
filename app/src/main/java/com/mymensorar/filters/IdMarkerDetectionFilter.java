@@ -46,13 +46,13 @@ public final class IdMarkerDetectionFilter implements ARFilter {
     }
 
     @Override
-    public void apply(final Mat src, final int isHudOn, final int isSingleImage) {
+    public void apply(final Mat src, final int isHudOn, final int isSingleImage, final int rotx, final int roty, final int rotz, final int translx, final int transly, final int translz) {
         final Mat projection = mCameraMatrix;
-        apply(mSelfAddr, src.getNativeObjAddr(), isHudOn, projection.getNativeObjAddr());
+        apply(mSelfAddr, src.getNativeObjAddr(), isHudOn, projection.getNativeObjAddr(), rotx, roty, rotz, translx, transly, translz);
     }
 
     private static native long newSelf(int qtyVps, float realSize);
     private static native void deleteSelf(long selfAddr);
     private static native float[] getPose(long selfAddr);
-    private static native void apply(long selfAddr, long srcAddr, int isHudOn, long projectionAddr);
+    private static native void apply(long selfAddr, long srcAddr, int isHudOn, long projectionAddr, int rotx, int roty, int rotz, int translx, int transly, int translz);
 }

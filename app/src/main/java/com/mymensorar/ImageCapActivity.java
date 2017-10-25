@@ -35,6 +35,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.provider.Browser;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -80,6 +81,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.mymensorar.cognitoclient.AmazonSharedPreferencesWrapper;
 import com.mymensorar.cognitoclient.AwsUtil;
 import com.mymensorar.cognitoclient.CognitoSampleDeveloperAuthenticationService;
 import com.mymensorar.filters.ARFilter;
@@ -255,7 +257,9 @@ public class ImageCapActivity extends Activity implements
     FloatingActionButton alphaToggleButton;
     FloatingActionButton showVpCapturesButton;
     FloatingActionButton showVpCapturesMainScreenButton;
+    FloatingActionButton buttonCallWebAppMainScreen;
     FloatingActionButton buttonShowHelpMainScreen;
+    FloatingActionButton buttonDownloadPDFOnShowVpCaptures;
 
     FloatingActionButton deleteLocalMediaButton;
     FloatingActionButton shareMediaButton;
@@ -281,6 +285,7 @@ public class ImageCapActivity extends Activity implements
     LinearLayout linearLayoutVpArStatus;
     LinearLayout linearLayoutMarkerId;
     LinearLayout linearLayoutAcceptImgButtons;
+    LinearLayout linearLayoutCallWebAppMainScreen;
 
     FloatingActionButton buttonAmbiguousVpToggle;
     FloatingActionButton buttonSuperSingleVpToggle;
@@ -681,6 +686,8 @@ public class ImageCapActivity extends Activity implements
 
         linearLayoutMarkerId = (LinearLayout) this.findViewById(R.id.linearLayoutMarkerId);
 
+        linearLayoutCallWebAppMainScreen = (LinearLayout) this.findViewById(R.id.linearLayoutCallWebAppMainScreen);
+
         uploadPendingmageview = (ImageView) this.findViewById(R.id.uploadPendingmageview);
 
         uploadPendingText = (TextView) this.findViewById(R.id.uploadPendingText);
@@ -708,6 +715,23 @@ public class ImageCapActivity extends Activity implements
         cameraShutterButton = (FloatingActionButton) findViewById(R.id.cameraShutterButton);
         videoCameraShutterButton = (FloatingActionButton) findViewById(R.id.videoCameraShutterButton);
         videoCameraShutterStopButton = (FloatingActionButton) findViewById(R.id.videoCameraShutterStopButton);
+
+        positionCertifiedButton = (FloatingActionButton) findViewById(R.id.positionCertifiedButton);
+        timeCertifiedButton = (FloatingActionButton) findViewById(R.id.timeCertifiedButton);
+        connectedToServerButton = (FloatingActionButton) findViewById(R.id.connectedToServerButton);
+
+        callConfigButton = (FloatingActionButton) findViewById(R.id.buttonCallConfig);
+        alphaToggleButton = (FloatingActionButton) findViewById(R.id.buttonAlphaToggle);
+        showVpCapturesButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCaptures);
+        showVpCapturesMainScreenButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCapturesMainScreen);
+        buttonShowHelpMainScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpMainScreen);
+        buttonDownloadPDFOnShowVpCaptures = (FloatingActionButton) findViewById(R.id.buttonDownloadPDFOnShowVpCaptures);
+
+        deleteLocalMediaButton = (FloatingActionButton) findViewById(R.id.deleteLocalMediaButton);
+        shareMediaButton = (FloatingActionButton) findViewById(R.id.shareMediaButton);
+        shareMediaButton2 = (FloatingActionButton) findViewById(R.id.shareMediaButton2);
+
+        buttonCallWebAppMainScreen = (FloatingActionButton) findViewById(R.id.buttonCallWebAppMainScreen);
 
         arSwitch.setChecked(isArSwitchOn);
 
@@ -776,20 +800,6 @@ public class ImageCapActivity extends Activity implements
                 Log.d(TAG, "isArSwitchOn=" + isArSwitchOn);
             }
         });
-
-        positionCertifiedButton = (FloatingActionButton) findViewById(R.id.positionCertifiedButton);
-        timeCertifiedButton = (FloatingActionButton) findViewById(R.id.timeCertifiedButton);
-        connectedToServerButton = (FloatingActionButton) findViewById(R.id.connectedToServerButton);
-
-        callConfigButton = (FloatingActionButton) findViewById(R.id.buttonCallConfig);
-        alphaToggleButton = (FloatingActionButton) findViewById(R.id.buttonAlphaToggle);
-        showVpCapturesButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCaptures);
-        showVpCapturesMainScreenButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCapturesMainScreen);
-        buttonShowHelpMainScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpMainScreen);
-
-        deleteLocalMediaButton = (FloatingActionButton) findViewById(R.id.deleteLocalMediaButton);
-        shareMediaButton = (FloatingActionButton) findViewById(R.id.shareMediaButton);
-        shareMediaButton2 = (FloatingActionButton) findViewById(R.id.shareMediaButton2);
 
         // Camera Shutter Button
 
@@ -1024,6 +1034,7 @@ public class ImageCapActivity extends Activity implements
                     intent.putExtra("origmymacc", origMymAcc);
                     intent.putExtra("deviceid", deviceId);
                     intent.putExtra("previousactivity", "capture");
+                    intent.putExtra("appStartState", appStartState);
                     startActivity(intent);
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
@@ -1114,6 +1125,7 @@ public class ImageCapActivity extends Activity implements
                 mImageDetectionFilterIndex = 0;
                 //alphaToggleButton.setVisibility(View.GONE);
                 showVpCapturesMainScreenButton.setVisibility(View.GONE);
+                linearLayoutCallWebAppMainScreen.setVisibility(View.GONE);
                 buttonShowHelpMainScreen.setVisibility(View.GONE);
                 //callConfigButton.setVisibility(View.GONE);
                 //linearLayoutConfigCaptureVps.setVisibility(View.GONE);
@@ -1124,6 +1136,87 @@ public class ImageCapActivity extends Activity implements
                 showVpCaptures(lastVpSelectedByUser);
             }
         });
+
+
+        // Call WebApp Button
+
+        final View.OnClickListener confirmOnClickListenerCallWebAppMainScreenButton = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Snackbar mSnackBar = Snackbar.make(view, getText(R.string.callingwebapp), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+
+                try {
+                    String key = AmazonSharedPreferencesWrapper.getKeyForUser(sharedPref);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://app.mymensor.com/mobiletowebapp/"));
+                    Bundle bundle = new Bundle();
+                    bundle.putString("Authorization", "Token " + key);
+                    browserIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+                    startActivity(browserIntent);
+                } catch (Exception e) {
+                    Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+                    toast.show();
+                }
+            }
+        };
+
+        buttonCallWebAppMainScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmcallingwebapp), Snackbar.LENGTH_LONG)
+                        .setAction(getText(R.string.confirm), confirmOnClickListenerCallWebAppMainScreenButton);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+        });
+
+
+        // DownloadPDFOnShowVpCaptures Button
+
+        final View.OnClickListener confirmOnClickListenerDownloadPDFOnShowVpCapturesButton = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Snackbar mSnackBar = Snackbar.make(view, getText(R.string.downloadpdfcert), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+                String fileSha256Hash = "";
+                try {
+                    File inFile = new File(getApplicationContext().getFilesDir(), showingMediaFileName);
+                    fileSha256Hash = MymUtils.getFileHash(inFile);
+                } catch (IOException e) {
+                    Log.e(TAG, "shareMediaButton: Failed to hash Photo file to share");
+                }
+                try {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://app.mymensor.com/mcpdf/1/cap/" + mymensorAccount + "/" + showingMediaFileName + "/" + fileSha256Hash));
+                    startActivity(browserIntent);
+                } catch (Exception e) {
+                    Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+                    toast.show();
+                }
+
+
+            }
+        };
+
+        buttonDownloadPDFOnShowVpCaptures.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmdownloadpdfcert), Snackbar.LENGTH_LONG)
+                        .setAction(getText(R.string.confirm), confirmOnClickListenerDownloadPDFOnShowVpCapturesButton);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+        });
+
 
         buttonShowHelpMainScreen.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -2189,7 +2282,28 @@ public class ImageCapActivity extends Activity implements
 
 
     public void startAppTour() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
+                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+
+                final Window window = getWindow();
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    Log.d(TAG, "startAppTour - Calling FULLSCREEN");
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+            }
+        });
         final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
         alert.setIcon(R.drawable.logo_mymensor);
         alert.setTitle(getText(R.string.welcometomymensor));
@@ -2198,7 +2312,12 @@ public class ImageCapActivity extends Activity implements
         alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                showWalktroughStep1();
+                if (isArSwitchOn) {
+                    showWalktroughStep3();
+                } else {
+                    showWalktroughStep1();
+                }
+
             }
         });
 
@@ -2215,29 +2334,8 @@ public class ImageCapActivity extends Activity implements
 
     //                .setPrimaryText(getText(R.string.takeaphoto))
 
-    public void showWalktroughStep1(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                DisplayMetrics metrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+    public void showWalktroughStep1() {
 
-                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
-
-                final Window window = getWindow();
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                    Log.d(TAG, "showWalktroughStep1 - Calling FULLSCREEN");
-                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-                }
-            }
-        });
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.cameraShutterButton))
                 .setPrimaryText("")
@@ -2260,7 +2358,7 @@ public class ImageCapActivity extends Activity implements
 
     //.setPrimaryText(getText(R.string.makevideo))
 
-    public void showWalktroughStep2(){
+    public void showWalktroughStep2() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.videoCameraShutterButton))
                 .setPrimaryText("")
@@ -2278,7 +2376,7 @@ public class ImageCapActivity extends Activity implements
 
     // .setPrimaryText(getText(R.string.selectvp))
 
-    public void showWalktroughStep3(){
+    public void showWalktroughStep3() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.vp_list))
                 .setPrimaryText(getText(R.string.selectvpsecond))
@@ -2294,7 +2392,7 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    public void showWalktroughStep4(){
+    public void showWalktroughStep4() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.certificationlayot))
                 .setPrimaryText(getText(R.string.certificationstatus))
@@ -2303,7 +2401,11 @@ public class ImageCapActivity extends Activity implements
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
                         if (state == MaterialTapTargetPrompt.STATE_FOCAL_PRESSED || state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
-                            showWalktroughStep5();
+                            if (isArSwitchOn){
+                                showWalktroughStep5a();
+                            } else {
+                                showWalktroughStep5();
+                            }
                         }
                     }
                 })
@@ -2312,11 +2414,27 @@ public class ImageCapActivity extends Activity implements
 
     // .setPrimaryText(getText(R.string.showvpcap))
 
-    public void showWalktroughStep5(){
+    public void showWalktroughStep5() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.buttonShowVpCapturesMainScreen))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcapsecond))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showWalktroughStep5a();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showWalktroughStep5a() {
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonCallWebAppMainScreen))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.callwebappsecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2328,7 +2446,7 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    public void showWalktroughStep6(){
+    public void showWalktroughStep6() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.arSwitchLinearLayout))
                 .setPrimaryText(getText(R.string.aronoff))
@@ -2349,7 +2467,7 @@ public class ImageCapActivity extends Activity implements
 
     //.setPrimaryText(getText(R.string.radarscan))
 
-    public void showWalktroughStep7(){
+    public void showWalktroughStep7() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.imageViewRadarScan))
                 .setPrimaryText(getText(R.string.radarscansecond))
@@ -2365,7 +2483,7 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    public void showWalktroughStepLast(){
+    public void showWalktroughStepLast() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.buttonShowHelpMainScreen))
                 .setPrimaryText(getText(R.string.laststep))
@@ -2442,6 +2560,8 @@ public class ImageCapActivity extends Activity implements
                         buttonSuperSingleVpToggle.setVisibility(View.GONE);
                     }
                 }
+
+                linearLayoutCallWebAppMainScreen.setVisibility(View.VISIBLE);
 
                 if (!isArSwitchOn) {
                     cameraShutterButton.setVisibility(View.VISIBLE);
@@ -3249,6 +3369,7 @@ public class ImageCapActivity extends Activity implements
                         videoCameraShutterButton.setVisibility(View.INVISIBLE);
                     }
                     showVpCapturesMainScreenButton.setVisibility(View.GONE);
+                    linearLayoutCallWebAppMainScreen.setVisibility(View.GONE);
                     buttonShowHelpMainScreen.setVisibility(View.GONE);
                     if (radarScanImageView.isShown()) {
                         radarScanImageView.clearAnimation();
@@ -3441,6 +3562,7 @@ public class ImageCapActivity extends Activity implements
                         }
                         showVpCapturesMainScreenButton.setVisibility(View.VISIBLE);
                     }
+                    linearLayoutCallWebAppMainScreen.setVisibility(View.VISIBLE);
                     if (pendingUploadTransfers > 0)
                         uploadPendingLinearLayout.setVisibility(View.VISIBLE);
                     arSwitchLinearLayout.setVisibility(View.VISIBLE);
@@ -3637,6 +3759,7 @@ public class ImageCapActivity extends Activity implements
                         }
                         showVpCapturesMainScreenButton.setVisibility(View.VISIBLE);
                     }
+                    linearLayoutCallWebAppMainScreen.setVisibility(View.VISIBLE);
                     if (pendingUploadTransfers > 0)
                         uploadPendingLinearLayout.setVisibility(View.VISIBLE);
                     arSwitchLinearLayout.setVisibility(View.VISIBLE);
@@ -3784,6 +3907,7 @@ public class ImageCapActivity extends Activity implements
                             videoCameraShutterButton.setVisibility(View.INVISIBLE);
                         }
                         showVpCapturesMainScreenButton.setVisibility(View.GONE);
+                        linearLayoutCallWebAppMainScreen.setVisibility(View.GONE);
                         buttonShowHelpMainScreen.setVisibility(View.GONE);
                         if (radarScanImageView.isShown()) {
                             radarScanImageView.clearAnimation();
@@ -3857,6 +3981,7 @@ public class ImageCapActivity extends Activity implements
                             }
                             showVpCapturesMainScreenButton.setVisibility(View.VISIBLE);
                         }
+                        linearLayoutCallWebAppMainScreen.setVisibility(View.VISIBLE);
                     }
                 });
                 if (isArSwitchOn) {
@@ -4002,6 +4127,7 @@ public class ImageCapActivity extends Activity implements
                             }
                             showVpCapturesMainScreenButton.setVisibility(View.VISIBLE);
                         }
+                        linearLayoutCallWebAppMainScreen.setVisibility(View.VISIBLE);
                         if (pendingUploadTransfers > 0)
                             uploadPendingLinearLayout.setVisibility(View.VISIBLE);
                         arSwitchLinearLayout.setVisibility(View.VISIBLE);
@@ -4181,6 +4307,7 @@ public class ImageCapActivity extends Activity implements
                     arSwitchLinearLayout.setVisibility(View.INVISIBLE);
                     arSwitch.setVisibility(View.INVISIBLE);
                     showVpCapturesMainScreenButton.setVisibility(View.GONE);
+                    linearLayoutCallWebAppMainScreen.setVisibility(View.GONE);
                     buttonShowHelpMainScreen.setVisibility(View.GONE);
                     positionCertifiedButton.setVisibility(View.INVISIBLE);
                     timeCertifiedButton.setVisibility(View.INVISIBLE);

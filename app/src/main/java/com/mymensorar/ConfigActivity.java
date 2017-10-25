@@ -95,6 +95,8 @@ public class ConfigActivity extends Activity implements
     private String markervpRemotePath;
     private String vpsRemotePath;
 
+    private String appStartState;
+
     private short qtyVps = 0;
     private short vpIndex;
     private short lastVpSelectedByUser;
@@ -319,6 +321,7 @@ public class ConfigActivity extends Activity implements
         lastVpSelectedByUser = Short.parseShort(getIntent().getExtras().get("lastVpSelectedByUser").toString());
         origMymAcc = getIntent().getExtras().get("origmymacc").toString();
         deviceId = getIntent().getExtras().get("deviceid").toString();
+        appStartState = getIntent().getExtras().get("appStartState").toString();
 
         descvpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "dsc" + "/";
         markervpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "mrk" + "/";
@@ -478,6 +481,7 @@ public class ConfigActivity extends Activity implements
                 TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
+                Log.d(TAG,"Calling callImageCapActivity()");
                 callImageCapActivity();
 
             }
@@ -2230,6 +2234,7 @@ public class ConfigActivity extends Activity implements
             intent.putExtra("origmymacc", origMymAcc);
             intent.putExtra("deviceid", deviceId);
             intent.putExtra("previousactivity", "config");
+            intent.putExtra("appStartState", appStartState);
             startActivity(intent);
         } catch (Exception e) {
             Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);

@@ -131,6 +131,33 @@
             opencv:backgroundTint="@android:color/holo_blue_dark"
             android:visibility="visible"/>
 
+        <LinearLayout
+            android:id="@+id/linearLayoutCallWebAppMainScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="start|center"
+            android:orientation="horizontal">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/buttonCallWebAppMainScreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:visibility="visible"
+                opencv:fabSize="mini"
+                opencv:srcCompat="@drawable/logo_mymensor" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:text="@string/webapp"
+                android:gravity="center"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
@@ -257,7 +284,6 @@
                 android:clickable="false"
                 opencv:fabSize="mini"
                 opencv:srcCompat="@drawable/circulo_seamensor"
-                android:layout_marginBottom="2dp"
                 android:layout_gravity="end"
                 opencv:elevation="0dp"/>
 
@@ -688,6 +714,8 @@
             android:id="@+id/linearLayoutshareMediaButton2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
             android:orientation="horizontal">
 
             <android.support.design.widget.FloatingActionButton
@@ -698,8 +726,7 @@
                 opencv:fabSize="mini"
                 opencv:srcCompat="@android:drawable/ic_menu_share"
                 opencv:backgroundTint="@color/mymensorgreendark"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="5dp" />
+                 />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -715,6 +742,8 @@
             android:id="@+id/linearLayoutshareMediaButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
             android:orientation="horizontal">
 
             <android.support.design.widget.FloatingActionButton
@@ -725,8 +754,7 @@
                 opencv:fabSize="mini"
                 opencv:srcCompat="@android:drawable/ic_menu_share"
                 opencv:backgroundTint="@color/mymensorbluedark"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="5dp" />
+                 />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -745,18 +773,27 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="top|center"
+        android:gravity="bottom|center"
         android:visibility="gone"
         android:layout_alignParentEnd="true"
         android:layout_above="@id/buttonShowNextVpCapture"
         android:layout_margin="16dp">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/buttonDownloadPDFOnShowVpCaptures"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            opencv:backgroundTint="@color/Red"
+            opencv:fabSize="mini"
+            opencv:srcCompat="@drawable/file_pdf_box" />
 
         <ImageView
             android:id="@+id/positionCertifiedImageview"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@drawable/circular_button_green"
-            android:layout_marginTop="0dp"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
             android:adjustViewBounds="true"
             android:cropToPadding="true"

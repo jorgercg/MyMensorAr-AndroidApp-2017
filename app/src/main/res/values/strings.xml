@@ -46,7 +46,7 @@
     <string name="vpAcquiredStatus">OK</string>
     <string name="not_all_vps_acquired">Error: not all vps acquired</string>
     <string name="vp_location_des_text_missing">Error: vp location text missing</string>
-    <string name="no_photo_captured_in_this_vp">No local media captured in this vp, please check the web.</string>
+    <string name="no_photo_captured_in_this_vp">No local media captured in this vp, click on the WebApp button.</string>
     <string name="logging_in">Logging in to server...</string>
     <string name="authlabel" translatable="false">MyMensorAR</string>
     <string name="userstate_loggedout">Please log in.</string>
@@ -69,7 +69,7 @@
     <string name="hostconn_yes">Connected to server.</string>
     <string name="vp_capture_success">VP capture successful. Touch on the description to edit it.</string>
     <string name="vp_capture_failure">VP capture failed, please refer to configuration instructions, try again or change method.</string>
-    <string name="vp_acquisition_failure">VP photo captured, but augmentation acquisiton failed, please refer to configuration instructions, try again or change method.</string>
+    <string name="vp_acquisition_failure">VP photo captured, but augmentation acquisiton was not possible, due to lack of detail in the image, please refer to configuration instructions, try again or change method.</string>
     <string name="vp_capture_placeholder_description">Description of VP#</string>
     <string name="no_camera">This device has no camera. Closing app!</string>
     <string name="permrequired">Permissions Requred</string>
@@ -188,4 +188,10 @@
     <string name="aronoff">Augmented Reality Switch</string>
     <string name="aronoffsecond">Turn it ON to capture pre-configured photos or OFF to snap photos and videos using the shutter buttons.</string>
     <string name="radarscansecond">Put the radar over your preconfigured areas to start AR capture. See ou video USING AUGMENTED REALITY.</string>
+    <string name="confirmcallingwebapp">Call MyMensor Web App?</string>
+    <string name="callingwebapp">Calling MyMensor Web App!</string>
+    <string name="callwebappsecond">Click here to check all captures you ever made with MyMensor, to see a map showing the location of your captures, all the controls to your account and much, much more!!!</string>
+    <string name="confirmdownloadpdfcert">Download PDF certificate of the current media?</string>
+    <string name="downloadpdfcert">Downloading PDF certificate!</string>
+    <string name="webapp">WebApp</string>
 </resources>

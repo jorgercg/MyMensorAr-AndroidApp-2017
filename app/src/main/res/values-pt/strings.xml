@@ -45,7 +45,7 @@
     <string name="vpAcquiredStatus">OK</string>
     <string name="not_all_vps_acquired">Erro: nem todos vps foram capturados - capture todos antes de salvar - vps NÃO FORAM salvos"</string>
     <string name="vp_location_des_text_missing">Erro: faltando texto de descrição de VP</string>
-    <string name="no_photo_captured_in_this_vp">Nenhuma mídia local capturada neste vp, favor verificar na web.</string>
+    <string name="no_photo_captured_in_this_vp">Nenhuma mídia local capturada neste vp, clique no botão da WebApp.</string>
     <string name="logging_in">Conectando ao servidor...</string>
     <string name="userstate_loggedout">Por favor faça o log in.</string>
     <string name="userstate_loggedin">Autorizado, usando credenciais de</string>
@@ -69,7 +69,7 @@
     <string name="vp_capture_success">VP capturado com sucesso. Toque na descrição para editá-la.</string>
     <string name="action_settings">Configurações</string>
     <string name="vp_capture_placeholder_description">Descrição do VP#</string>
-    <string name="vp_acquisition_failure">A foto do VP capturada, mas ocorreu falha na captura da realidade aumentada, verifique instruções de configuração, tente novamente ou mude o método.</string>
+    <string name="vp_acquisition_failure">A foto do VP capturada, mas foi possível configurar a realidade aumentada devido à falta de detalhes na imagem, verifique as instruções de configuração, tente novamente ou mude o método.</string>
     <string name="no_camera">Este aparelho não possui câmera. Fechando a app!</string>
     <string name="permrequired">Permissões Requeridas</string>
     <string name="permmessage">Por favor ativar as permissões pedidas para poder utlizar esta app.</string>
@@ -187,4 +187,10 @@
     <string name="aronoff">Interruptor da Realidade Aumentada</string>
     <string name="aronoffsecond">LIGUE para capturar fotos pré-configuradas ou DESLIGUE para tirar fotografias e vídeos usando os botões.</string>
     <string name="radarscansecond">Coloque o radar sobre as suas áreas pré-configuradas para iniciar a captura com AR. Veja nosso vídeo USANDO A REALIDADE AUMENTADA.</string>
+    <string name="confirmcallingwebapp">Chamar a Aplicação Web MyMensor?</string>
+    <string name="callingwebapp">Chamando a Aplicação Web MyMensor!</string>
+    <string name="callwebappsecond">Clique aqui para verificar todas as capturas que você já fez com o MyMensor, para ver um mapa que mostra o local de suas capturas, todos os controles da sua conta e muito, muito mais!!!</string>
+    <string name="confirmdownloadpdfcert">Baixar o certificado PDF da mídia atual?</string>
+    <string name="downloadpdfcert">Baixando o certificado PDF!</string>
+    <string name="webapp">WebApp</string>
 </resources>

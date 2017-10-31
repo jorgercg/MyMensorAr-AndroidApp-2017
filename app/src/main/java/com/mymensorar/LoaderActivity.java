@@ -40,6 +40,7 @@ public class LoaderActivity extends Activity {
     private String vpsRemotePath;
     private String vpsCheckedRemotePath;
     private String markervpRemotePath;
+    private String serverConnection;
 
     private boolean finishApp = false;
 
@@ -185,6 +186,8 @@ public class LoaderActivity extends Activity {
         Log.d(TAG, "startUpLoader: After COG response: isApprovedByCognitoState=" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
         Log.d(TAG, "startUpLoader: After COG response: qtyClientsExceededState=" + CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState);
 
+        serverConnection = Constants.MYM_SERVERCONN_NORMAL;
+
         if ((CognitoSampleDeveloperAuthenticationService.qtyClientsExceededState == 1) && (CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 2)) {
             Log.d(TAG, "startUpLoader: finishing");
             Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_mob_client_qty_exceeded), Toast.LENGTH_LONG);
@@ -201,17 +204,35 @@ public class LoaderActivity extends Activity {
                 finish();
                 return;
             }
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 3)&&((appStartState.equalsIgnoreCase(Constants.MYM_STSTATE_FIRSTEVER))||(appStartState.equalsIgnoreCase(Constants.MYM_STSTATE_FIRSTTHISVERSION)))) {
+                Log.d(TAG, "startUpLoader: TRIAL EXP continuing without server connection");
+                Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_trial_expired_cannotinstall), Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+                toast.show();
+                finish();
+                return;
+            }
+            if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 4)&&((appStartState.equalsIgnoreCase(Constants.MYM_STSTATE_FIRSTEVER))||(appStartState.equalsIgnoreCase(Constants.MYM_STSTATE_FIRSTTHISVERSION)))) {
+                Log.d(TAG, "startUpLoader: SUB EXP continuing without server connection");
+                Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_sub_expired_cannotinstall), Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+                toast.show();
+                finish();
+                return;
+            }
             if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 3)) {
                 Log.d(TAG, "startUpLoader: TRIAL EXP continuing without server connection");
                 Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_trial_exp_continuing_with_no_server_connection), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
                 toast.show();
+                serverConnection = Constants.MYM_SERVERCONN_TRIALEXPIRED;
             }
             if ((CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState == 4)) {
                 Log.d(TAG, "startUpLoader: SUB EXP continuing without server connection");
                 Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_sub_exp_continuing_with_no_server_connection), Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
                 toast.show();
+                serverConnection = Constants.MYM_SERVERCONN_SUBEXPIRED;
             }
         }
 
@@ -404,6 +425,7 @@ public class LoaderActivity extends Activity {
                 intent.putExtra("lastVpSelectedByUser", 0);
                 intent.putExtra("appStartState", appStartState);
                 intent.putExtra("previousactivity", "loader");
+                intent.putExtra("serverConnection", serverConnection);
                 startActivity(intent);
             } catch (Exception e) {
                 Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
@@ -426,6 +448,7 @@ public class LoaderActivity extends Activity {
                 intent.putExtra("isTimeCertified", clockSetSuccess);
                 intent.putExtra("appStartState", appStartState);
                 intent.putExtra("previousactivity", "loader");
+                intent.putExtra("serverConnection", serverConnection);
                 startActivity(intent);
             } catch (Exception e) {
                 Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);

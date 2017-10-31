@@ -83,7 +83,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.mymensorar.cognitoclient.AmazonSharedPreferencesWrapper;
 import com.mymensorar.cognitoclient.AwsUtil;
-import com.mymensorar.cognitoclient.CognitoSampleDeveloperAuthenticationService;
 import com.mymensorar.filters.ARFilter;
 import com.mymensorar.filters.Filter;
 import com.mymensorar.filters.IdMarkerDetectionFilter;
@@ -130,6 +129,8 @@ import static com.mymensorar.R.drawable.circular_button_green;
 import static com.mymensorar.R.drawable.circular_button_red;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+//import android.util.Log;
+
 
 public class ImageCapActivity extends Activity implements
         CameraBridgeViewBase.CvCameraViewListener2,
@@ -151,6 +152,7 @@ public class ImageCapActivity extends Activity implements
     private String deviceId;
     private String previousActivity;
     private String appStartState;
+    private String serverConnection;
     private int dciNumber;
     private short qtyVps = 0;
 
@@ -242,7 +244,9 @@ public class ImageCapActivity extends Activity implements
     ImageView vpCheckedView;
 
     TextView vpAcquiredStatus;
+    TextView vpAcquiredStatusHRZ;
     TextView idMarkerNumberTextView;
+    TextView idMarkerNumberTextViewHRZ;
 
     TextView vpLocationDesTextView;
     TextView vpIdNumber;
@@ -253,12 +257,14 @@ public class ImageCapActivity extends Activity implements
     Animation rotationMProgress;
     Animation blinkingText;
 
-    FloatingActionButton callConfigButton;
-    FloatingActionButton alphaToggleButton;
+    FloatingActionButton buttonCallConfig;
+    FloatingActionButton buttonAlphaToggle;
     FloatingActionButton showVpCapturesButton;
     FloatingActionButton showVpCapturesMainScreenButton;
     FloatingActionButton buttonCallWebAppMainScreen;
     FloatingActionButton buttonShowHelpMainScreen;
+    FloatingActionButton buttonShowHelpShowVPCapScreen;
+    FloatingActionButton buttonShowHelpDescVPScreen;
     FloatingActionButton buttonDownloadPDFOnShowVpCaptures;
 
     FloatingActionButton deleteLocalMediaButton;
@@ -282,19 +288,24 @@ public class ImageCapActivity extends Activity implements
     LinearLayout linearLayoutAmbiguousVp;
     LinearLayout linearLayoutSuperSingleVp;
     LinearLayout linearLayoutConfigCaptureVps;
+    LinearLayout linearLayoutConfigCaptureVpsHRZ;
     LinearLayout linearLayoutVpArStatus;
+    LinearLayout linearLayoutVpArStatusHRZ;
     LinearLayout linearLayoutMarkerId;
+    LinearLayout linearLayoutMarkerIdHRZ;
     LinearLayout linearLayoutAcceptImgButtons;
     LinearLayout linearLayoutCallWebAppMainScreen;
 
     FloatingActionButton buttonAmbiguousVpToggle;
+    FloatingActionButton buttonAmbiguousVpToggleHRZ;
     FloatingActionButton buttonSuperSingleVpToggle;
+    FloatingActionButton buttonSuperSingleVpToggleHRZ;
 
     ImageView uploadPendingmageview;
     TextView uploadPendingText;
 
-    ImageView positionCertifiedImageview;
-    ImageView timeCertifiedImageview;
+    ImageButton buttonPositionCertified;
+    ImageButton buttonTimeCertified;
 
     Chronometer videoRecorderChronometer;
 
@@ -378,10 +389,6 @@ public class ImageCapActivity extends Activity implements
     // initially with absolute compute values
     private MatOfDouble mCameraMatrix;
 
-    private float x1 = 0;
-    private float x2 = 0;
-
-
     private SoundPool.Builder soundPoolBuilder;
     private SoundPool soundPool;
     private int camShutterSoundID;
@@ -457,24 +464,24 @@ public class ImageCapActivity extends Activity implements
             mymIsRunningOnKitKat = true;
         }
 
-        Log.d(TAG, "mymIsRunningOnKitKat = " + mymIsRunningOnKitKat);
+        //Log.d(TAG, "mymIsRunningOnKitKat = " + mymIsRunningOnKitKat);
 
         if (Build.MODEL.equals("Nexus 5X")) {
             mymIsRunningOnFlippedDisplay = true;
         }
 
-        Log.d(TAG, "mymIsRunningOnFlippedDisplay = " + mymIsRunningOnFlippedDisplay);
+        //Log.d(TAG, "mymIsRunningOnFlippedDisplay = " + mymIsRunningOnFlippedDisplay);
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-        Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+        //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+        //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
         final Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-            Log.d(TAG, "onCreate - Calling FULLSCREEN");
+            //Log.d(TAG, "onCreate - Calling FULLSCREEN");
             window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -486,19 +493,28 @@ public class ImageCapActivity extends Activity implements
 
         setContentView(R.layout.activity_imagecap);
 
-        // Retrieve SeaMensor configuration info
-        mymensorAccount = getIntent().getExtras().get("mymensoraccount").toString();
-        dciNumber = Integer.parseInt(getIntent().getExtras().get("dcinumber").toString());
-        qtyVps = Constants.maxQtyVps;  //Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
-        sntpTime = Long.parseLong(getIntent().getExtras().get("sntpTime").toString());
-        sntpTimeReference = Long.parseLong(getIntent().getExtras().get("sntpReference").toString());
-        isTimeCertified = Boolean.parseBoolean(getIntent().getExtras().get("isTimeCertified").toString());
-        origMymAcc = getIntent().getExtras().get("origmymacc").toString();
-        deviceId = getIntent().getExtras().get("deviceid").toString();
-        previousActivity = getIntent().getExtras().get("previousactivity").toString();
-        appStartState = getIntent().getExtras().get("appStartState").toString();
+        // Retrieve configuration info
+        Bundle configBundle = getIntent().getExtras();
 
-        Log.d(TAG, "onCreate: Starting ImageCapActivity with qtyVps=" + qtyVps + " MyM Account=" + mymensorAccount + " Orig MyM Account=" + origMymAcc);
+        if (configBundle.getString("mymensoraccount") != null)
+            mymensorAccount = configBundle.getString("mymensoraccount");
+        dciNumber = configBundle.getInt("dcinumber", 1);
+        qtyVps = Constants.maxQtyVps;  //Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
+        sntpTime = configBundle.getLong("sntpTime");
+        sntpTimeReference = configBundle.getLong("sntpReference");
+        isTimeCertified = configBundle.getBoolean("isTimeCertified", false);
+        if (configBundle.getString("origmymacc") != null)
+            origMymAcc = configBundle.getString("origmymacc");
+        if (configBundle.getString("deviceid") != null)
+            deviceId = configBundle.getString("deviceid");
+        if (configBundle.getString("previousactivity") != null)
+            previousActivity = configBundle.getString("previousactivity");
+        if (configBundle.getString("appStartState") != null)
+            appStartState = configBundle.getString("appStartState");
+        if (configBundle.getString("serverConnection") != null)
+            serverConnection = configBundle.getString("serverConnection");
+
+        //Log.d(TAG, "onCreate: Starting ImageCapActivity with qtyVps=" + qtyVps + " MyM Account=" + mymensorAccount + " Orig MyM Account=" + origMymAcc);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -581,10 +597,22 @@ public class ImageCapActivity extends Activity implements
         pt6 = new Point((double) (Constants.xAxisTrackingCorrection + (Constants.standardMarkerlessMarkerWidth / 2) + 20), (double) (Constants.yAxisTrackingCorrection) - 20);
         color = new Scalar((double) 168, (double) 207, (double) 69);
 
+
         final Camera camera;
-        CameraInfo cameraInfo = new CameraInfo();
-        Camera.getCameraInfo(0, cameraInfo);
-        camera = Camera.open(0);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            CameraInfo cameraInfo = new CameraInfo();
+            Camera.getCameraInfo(0, cameraInfo);
+            camera = Camera.open(0);
+        } else {
+            Log.d(TAG, "OnCreate: No permission to use Camera, finishing the app");
+            Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_nopermissiontousecamera), Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+            toast.show();
+            finish();
+            return;
+        }
+
 
         final Parameters parameters = camera.getParameters();
         camera.release();
@@ -678,13 +706,19 @@ public class ImageCapActivity extends Activity implements
 
         linearLayoutConfigCaptureVps = (LinearLayout) this.findViewById(R.id.linearLayoutConfigCaptureVps);
 
+        linearLayoutConfigCaptureVpsHRZ = (LinearLayout) this.findViewById(R.id.linearLayoutConfigCaptureVpsHRZ);
+
         linearLayoutAmbiguousVp = (LinearLayout) this.findViewById(R.id.linearLayoutAmbiguousVp);
 
         linearLayoutSuperSingleVp = (LinearLayout) this.findViewById(R.id.linearLayoutSuperSingleVp);
 
         linearLayoutVpArStatus = (LinearLayout) this.findViewById(R.id.linearLayoutVpArStatus);
 
+        linearLayoutVpArStatusHRZ = (LinearLayout) this.findViewById(R.id.linearLayoutVpArStatusHRZ);
+
         linearLayoutMarkerId = (LinearLayout) this.findViewById(R.id.linearLayoutMarkerId);
+
+        linearLayoutMarkerIdHRZ = (LinearLayout) this.findViewById(R.id.linearLayoutMarkerIdHRZ);
 
         linearLayoutCallWebAppMainScreen = (LinearLayout) this.findViewById(R.id.linearLayoutCallWebAppMainScreen);
 
@@ -692,9 +726,9 @@ public class ImageCapActivity extends Activity implements
 
         uploadPendingText = (TextView) this.findViewById(R.id.uploadPendingText);
 
-        positionCertifiedImageview = (ImageView) this.findViewById(R.id.positionCertifiedImageview);
+        buttonPositionCertified = (ImageButton) this.findViewById(R.id.buttonPositionCertified);
 
-        timeCertifiedImageview = (ImageView) this.findViewById(R.id.timeCertifiedImageview);
+        buttonTimeCertified = (ImageButton) this.findViewById(R.id.buttonTimeCertified);
 
         showPreviousVpCaptureButton = (ImageButton) this.findViewById(R.id.buttonShowPreviousVpCapture);
 
@@ -707,10 +741,14 @@ public class ImageCapActivity extends Activity implements
         arSwitch = (Switch) findViewById(R.id.arSwitch);
 
         idMarkerNumberTextView = (TextView) findViewById(R.id.idMarkerNumberTextView);
+        idMarkerNumberTextViewHRZ = (TextView) findViewById(R.id.idMarkerNumberTextViewHRZ);
         vpAcquiredStatus = (TextView) this.findViewById(R.id.vpAcquiredStatus);
+        vpAcquiredStatusHRZ = (TextView) this.findViewById(R.id.vpAcquiredStatusHRZ);
 
         buttonAmbiguousVpToggle = (FloatingActionButton) findViewById(R.id.buttonAmbiguousVpToggle);
+        buttonAmbiguousVpToggleHRZ = (FloatingActionButton) findViewById(R.id.buttonAmbiguousVpToggleHRZ);
         buttonSuperSingleVpToggle = (FloatingActionButton) findViewById(R.id.buttonSuperSingleVpToggle);
+        buttonSuperSingleVpToggleHRZ = (FloatingActionButton) findViewById(R.id.buttonSuperSingleVpToggleHRZ);
 
         cameraShutterButton = (FloatingActionButton) findViewById(R.id.cameraShutterButton);
         videoCameraShutterButton = (FloatingActionButton) findViewById(R.id.videoCameraShutterButton);
@@ -720,11 +758,13 @@ public class ImageCapActivity extends Activity implements
         timeCertifiedButton = (FloatingActionButton) findViewById(R.id.timeCertifiedButton);
         connectedToServerButton = (FloatingActionButton) findViewById(R.id.connectedToServerButton);
 
-        callConfigButton = (FloatingActionButton) findViewById(R.id.buttonCallConfig);
-        alphaToggleButton = (FloatingActionButton) findViewById(R.id.buttonAlphaToggle);
+        buttonCallConfig = (FloatingActionButton) findViewById(R.id.buttonCallConfig);
+        buttonAlphaToggle = (FloatingActionButton) findViewById(R.id.buttonAlphaToggle);
         showVpCapturesButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCaptures);
         showVpCapturesMainScreenButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCapturesMainScreen);
         buttonShowHelpMainScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpMainScreen);
+        buttonShowHelpShowVPCapScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpShowVPCapScreen);
+        buttonShowHelpDescVPScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpDescVPScreen);
         buttonDownloadPDFOnShowVpCaptures = (FloatingActionButton) findViewById(R.id.buttonDownloadPDFOnShowVpCaptures);
 
         deleteLocalMediaButton = (FloatingActionButton) findViewById(R.id.deleteLocalMediaButton);
@@ -797,7 +837,7 @@ public class ImageCapActivity extends Activity implements
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
-                Log.d(TAG, "isArSwitchOn=" + isArSwitchOn);
+                //Log.d(TAG, "isArSwitchOn=" + isArSwitchOn);
             }
         });
 
@@ -806,7 +846,7 @@ public class ImageCapActivity extends Activity implements
         cameraShutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "Camera Button clicked!!!");
+                //Log.d(TAG, "Camera Button clicked!!!");
                 //Log.d(TAG, "vpIsManuallySelected=" + vpIsManuallySelected);
                 //Log.d(TAG, "vpTrackedInPose=" + vpTrackedInPose);
                 //Log.d(TAG, "vpNumber[vpTrackedInPose]=" + vpNumber[vpTrackedInPose]);
@@ -818,7 +858,7 @@ public class ImageCapActivity extends Activity implements
                 // Is the sound loaded already?
                 if (camShutterSoundIDLoaded) {
                     soundPool.play(camShutterSoundID, volume, volume, 1, 0, 1f);
-                    Log.d(TAG, "cameraShutterButton.setOnClickListener: Played sound");
+                    //Log.d(TAG, "cameraShutterButton.setOnClickListener: Played sound");
                 }
             }
         });
@@ -829,23 +869,32 @@ public class ImageCapActivity extends Activity implements
             videoCameraShutterButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.d(TAG, "Video Camera Start Button clicked!!!");
-                    askForManualVideo = true;
-                    stopManualVideo = false;
-                    videoCameraShutterButton.setVisibility(View.GONE);
-                    videoCameraShutterStopButton.setVisibility(View.VISIBLE);
-                    videoRecorderChronometer.setBase(SystemClock.elapsedRealtime());
-                    videoRecorderChronometer.start();
-                    videoRecorderTimeLayout.setVisibility(View.VISIBLE);
-                    recText.startAnimation(blinkingText);
-                    AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-                    float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-                    float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-                    float volume = actualVolume / maxVolume;
-                    if (videoRecordStartedSoundIDLoaded) {
-                        soundPool.play(videoRecordStartedSoundID, volume, volume, 1, 0, 1f);
-                        Log.d(TAG, "videoCameraShutterButton.setOnClickListener START: Played sound");
+                    //Log.d(TAG, "Video Camera Start Button clicked!!!");
+
+                    if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                        askForManualVideo = true;
+                        stopManualVideo = false;
+                        videoCameraShutterButton.setVisibility(View.GONE);
+                        videoCameraShutterStopButton.setVisibility(View.VISIBLE);
+                        videoRecorderChronometer.setBase(SystemClock.elapsedRealtime());
+                        videoRecorderChronometer.start();
+                        videoRecorderTimeLayout.setVisibility(View.VISIBLE);
+                        recText.startAnimation(blinkingText);
+                        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                        float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                        float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                        float volume = actualVolume / maxVolume;
+                        if (videoRecordStartedSoundIDLoaded) {
+                            soundPool.play(videoRecordStartedSoundID, volume, volume, 1, 0, 1f);
+                            //Log.d(TAG, "videoCameraShutterButton.setOnClickListener START: Played sound");
+                        }
+                    } else {
+                        Log.d(TAG, "OnCreate: No permission to Record Audio, impossible to record video");
+                        Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_nopermissiontorecordaudio), Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+                        toast.show();
                     }
+
 
                 }
             });
@@ -855,7 +904,7 @@ public class ImageCapActivity extends Activity implements
             videoCameraShutterStopButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.d(TAG, "Video Camera Stop Button clicked!!!");
+                    //Log.d(TAG, "Video Camera Stop Button clicked!!!");
                     stopManualVideo = true;
                     videoCameraShutterButton.setVisibility(View.VISIBLE);
                     videoCameraShutterStopButton.setVisibility(View.GONE);
@@ -867,10 +916,30 @@ public class ImageCapActivity extends Activity implements
                     float volume = actualVolume / maxVolume;
                     if (videoRecordStopedSoundIDLoaded) {
                         soundPool.play(videoRecordStopedSoundID, volume, volume, 1, 0, 1f);
-                        Log.d(TAG, "videoCameraShutterButton.setOnClickListener STOP: Played sound");
+                        //Log.d(TAG, "videoCameraShutterButton.setOnClickListener STOP: Played sound");
                     }
                     videoRecorderTimeLayout.setVisibility(View.GONE);
 
+                }
+            });
+
+            buttonAmbiguousVpToggleHRZ.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Snackbar mSnackBar = Snackbar.make(v, getText(R.string.vpisambiguous), Snackbar.LENGTH_LONG);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
+                }
+            });
+
+            buttonSuperSingleVpToggleHRZ.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Snackbar mSnackBar = Snackbar.make(v, getText(R.string.vpissupersingle), Snackbar.LENGTH_LONG);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
                 }
             });
 
@@ -1002,11 +1071,26 @@ public class ImageCapActivity extends Activity implements
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
-                    Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserver), Snackbar.LENGTH_LONG)
-                            .setAction(getText(R.string.trytoconnect), undoOnClickListenerServerButton);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
-                    mainTextView.setTextColor(Color.WHITE);
-                    mSnackBar.show();
+                    if (serverConnection.equals(Constants.MYM_SERVERCONN_TRIALEXPIRED)) {
+                        Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoservertrialexpired), Snackbar.LENGTH_LONG);
+                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        mainTextView.setTextColor(Color.WHITE);
+                        mSnackBar.show();
+                    }
+                    if (serverConnection.equals(Constants.MYM_SERVERCONN_SUBEXPIRED)) {
+                        Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserversubexpired), Snackbar.LENGTH_LONG);
+                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        mainTextView.setTextColor(Color.WHITE);
+                        mSnackBar.show();
+                    }
+                    if (serverConnection.equals(Constants.MYM_SERVERCONN_NORMAL)) {
+                        Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserver), Snackbar.LENGTH_LONG)
+                                .setAction(getText(R.string.trytoconnect), undoOnClickListenerServerButton);
+                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        mainTextView.setTextColor(Color.WHITE);
+                        mSnackBar.show();
+                    }
+
                 }
             }
         });
@@ -1036,19 +1120,26 @@ public class ImageCapActivity extends Activity implements
                     intent.putExtra("previousactivity", "capture");
                     intent.putExtra("appStartState", appStartState);
                     startActivity(intent);
+                    finish();
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
                     toast.show();
-                } finally {
-                    finish();
                 }
             }
         };
 
-        callConfigButton.setOnClickListener(new View.OnClickListener() {
+        buttonCallConfig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (lastVpSelectedByUser == 0) {
+                    String message = getString(R.string.vp_name) + lastVpSelectedByUser + " " + getString(R.string.vp_notconfigurable);
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), message, Snackbar.LENGTH_LONG);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
+                    return;
+                }
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmconfigloading), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerCallConfigButton);
                 TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
@@ -1060,19 +1151,19 @@ public class ImageCapActivity extends Activity implements
 
         // Alpha Channel Toggle Button
 
-        alphaToggleButton.setOnClickListener(new View.OnClickListener() {
+        buttonAlphaToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "Toggling imageView Transparency");
+                //Log.d(TAG, "Toggling imageView Transparency");
                 if (imageView.getImageAlpha() == 128) {
                     imageView.setImageAlpha(255);
                 } else {
                     imageView.setImageAlpha(128);
                 }
                 if (imageView.getImageAlpha() == 128)
-                    alphaToggleButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                    buttonAlphaToggle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
                 if (!(imageView.getImageAlpha() == 128))
-                    alphaToggleButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+                    buttonAlphaToggle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
             }
         });
 
@@ -1081,12 +1172,13 @@ public class ImageCapActivity extends Activity implements
         showVpCapturesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                alphaToggleButton.setVisibility(View.GONE);
+                buttonAlphaToggle.setVisibility(View.GONE);
                 showVpCapturesButton.setVisibility(View.GONE);
-                callConfigButton.setVisibility(View.GONE);
+                buttonCallConfig.setVisibility(View.GONE);
                 linearLayoutConfigCaptureVps.setVisibility(View.GONE);
                 showPreviousVpCaptureButton.setVisibility(View.VISIBLE);
                 showNextVpCaptureButton.setVisibility(View.VISIBLE);
+                buttonShowHelpShowVPCapScreen.setVisibility(View.VISIBLE);
                 imageView.resetZoom();
                 if (imageView.getImageAlpha() == 128) {
                     imageView.setImageAlpha(255);
@@ -1108,7 +1200,7 @@ public class ImageCapActivity extends Activity implements
                     radarScanImageView.setVisibility(View.GONE);
                 }
                 isShowingVpPhoto = true;
-                Log.d(TAG, "isShowingVpPhoto=" + isShowingVpPhoto);
+                //Log.d(TAG, "isShowingVpPhoto=" + isShowingVpPhoto);
                 arSwitchLinearLayout.setVisibility(View.INVISIBLE);
                 arSwitch.setVisibility(View.INVISIBLE);
                 uploadPendingLinearLayout.setVisibility(View.INVISIBLE);
@@ -1123,11 +1215,12 @@ public class ImageCapActivity extends Activity implements
                 vpsListView.setVisibility(View.GONE);
                 // Turning off tracking
                 mImageDetectionFilterIndex = 0;
-                //alphaToggleButton.setVisibility(View.GONE);
+                //buttonAlphaToggle.setVisibility(View.GONE);
                 showVpCapturesMainScreenButton.setVisibility(View.GONE);
                 linearLayoutCallWebAppMainScreen.setVisibility(View.GONE);
                 buttonShowHelpMainScreen.setVisibility(View.GONE);
-                //callConfigButton.setVisibility(View.GONE);
+                buttonShowHelpShowVPCapScreen.setVisibility(View.VISIBLE);
+                //buttonCallConfig.setVisibility(View.GONE);
                 //linearLayoutConfigCaptureVps.setVisibility(View.GONE);
                 showPreviousVpCaptureButton.setVisibility(View.VISIBLE);
                 showNextVpCaptureButton.setVisibility(View.VISIBLE);
@@ -1191,7 +1284,7 @@ public class ImageCapActivity extends Activity implements
                     File inFile = new File(getApplicationContext().getFilesDir(), showingMediaFileName);
                     fileSha256Hash = MymUtils.getFileHash(inFile);
                 } catch (IOException e) {
-                    Log.e(TAG, "shareMediaButton: Failed to hash Photo file to share");
+                    //Log.e(TAG, "shareMediaButton: Failed to hash Photo file to share");
                 }
                 try {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://app.mymensor.com/mcpdf/1/cap/" + mymensorAccount + "/" + showingMediaFileName + "/" + fileSha256Hash));
@@ -1221,7 +1314,21 @@ public class ImageCapActivity extends Activity implements
         buttonShowHelpMainScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showCallMyMensorSite();
+                startAppTour();
+            }
+        });
+
+        buttonShowHelpShowVPCapScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startShowVpCapturesTour();
+            }
+        });
+
+        buttonShowHelpDescVPScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startShowDescVPScreenTour();
             }
         });
 
@@ -1232,7 +1339,7 @@ public class ImageCapActivity extends Activity implements
                         .setAction(getText(R.string.undo), new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                Log.d(TAG, "UNDO deleteLocalMediaButton: File NOT DELETED");
+                                //Log.d(TAG, "UNDO deleteLocalMediaButton: File NOT DELETED");
                             }
                         }).addCallback(new Snackbar.Callback() {
                             @Override
@@ -1242,11 +1349,11 @@ public class ImageCapActivity extends Activity implements
                                         dismissType == DISMISS_EVENT_SWIPE ||
                                         dismissType == DISMISS_EVENT_CONSECUTIVE ||
                                         dismissType == DISMISS_EVENT_MANUAL) {
-                                    Log.d(TAG, "deleteLocalMediaButton: File DELETED: dismissType=" + dismissType);
+                                    //Log.d(TAG, "deleteLocalMediaButton: File DELETED: dismissType=" + dismissType);
                                     deleteLocalShownCapture(lastVpSelectedByUser, view);
                                     showVpCaptures(lastVpSelectedByUser);
                                 } else {
-                                    Log.d(TAG, "deleteLocalMediaButton: File NOT DELETED");
+                                    //Log.d(TAG, "deleteLocalMediaButton: File NOT DELETED");
                                     Snackbar.make(view, getText(R.string.keepinglocal), Snackbar.LENGTH_LONG).show();
                                 }
                             }
@@ -1260,7 +1367,7 @@ public class ImageCapActivity extends Activity implements
         shareMediaButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "shareMediaButton:");
+                //Log.d(TAG, "shareMediaButton:");
                 String fileSha256Hash = "";
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 if (showingMediaType.equalsIgnoreCase("p")) {
@@ -1294,7 +1401,7 @@ public class ImageCapActivity extends Activity implements
         shareMediaButton2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "shareMediaButton2:");
+                //Log.d(TAG, "shareMediaButton2:");
                 String fileSha256Hash = "";
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 if (showingMediaType.equalsIgnoreCase("p")) {
@@ -1351,7 +1458,7 @@ public class ImageCapActivity extends Activity implements
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "User has put device in airplane mode");
+                //Log.d(TAG, "User has put device in airplane mode");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1373,12 +1480,24 @@ public class ImageCapActivity extends Activity implements
 
     public void showCallMyMensorSite() {
         final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
-        alert.setTitle(getText(R.string.findhelp));
+        alert.setIcon(R.drawable.logo_mymensor);
+        alert.setTitle(getText(R.string.welcometomymensor));
         alert.setMessage(R.string.helpmessage);
 
         alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://mymensor.com"));
                 startActivity(browserIntent);
             }
@@ -1387,6 +1506,17 @@ public class ImageCapActivity extends Activity implements
         alert.setNegativeButton(R.string.notnow, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
                 dialog.dismiss();
             }
         });
@@ -1394,6 +1524,17 @@ public class ImageCapActivity extends Activity implements
         alert.setNeutralButton(R.string.tips, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
                 startAppTour();
             }
         });
@@ -1407,7 +1548,7 @@ public class ImageCapActivity extends Activity implements
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected void onPreExecute() {
-                Log.d(TAG, "checkConnectionToServer: onPreExecute");
+                //Log.d(TAG, "checkConnectionToServer: onPreExecute");
             }
 
             @Override
@@ -1418,7 +1559,7 @@ public class ImageCapActivity extends Activity implements
 
             @Override
             protected void onPostExecute(final Boolean result) {
-                Log.d(TAG, "checkConnectionToServer: onPostExecute: result=" + result);
+                //Log.d(TAG, "checkConnectionToServer: onPostExecute: result=" + result);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1440,7 +1581,7 @@ public class ImageCapActivity extends Activity implements
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected void onPreExecute() {
-                Log.d(TAG, "loadingArConfig: onPreExecute");
+                //Log.d(TAG, "loadingArConfig: onPreExecute");
                 isArConfigLoading = true;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -1449,7 +1590,7 @@ public class ImageCapActivity extends Activity implements
                         (findViewById(R.id.ar_load_progressbar)).setVisibility(View.VISIBLE);
                     }
                 });
-                Log.d(TAG, "loadingArConfig: isArConfigLoading=" + isArConfigLoading);
+                //Log.d(TAG, "loadingArConfig: isArConfigLoading=" + isArConfigLoading);
                 if (previousActivity.equalsIgnoreCase("config")) {
                     comingFromConfigActivity = true;
                 } else {
@@ -1479,7 +1620,7 @@ public class ImageCapActivity extends Activity implements
                 String vpsRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/";
 
                 if (!comingFromConfigActivity) {
-                    Log.d(TAG, "loadingArConfig: checking if files exist in Remote Storage");
+                    //Log.d(TAG, "loadingArConfig: checking if files exist in Remote Storage");
 
                     int retries = 4;
                     try {
@@ -1488,14 +1629,14 @@ public class ImageCapActivity extends Activity implements
                             if (responseFromRemoteStorage) {
                                 configFromRemoteStorageExistsAndAccessible = true;
                             } else {
-                                Log.d(TAG, "loadingArConfig: ERROR configFromRemoteStorageExistsAndAccessible=" + configFromRemoteStorageExistsAndAccessible);
+                                //Log.d(TAG, "loadingArConfig: ERROR configFromRemoteStorageExistsAndAccessible=" + configFromRemoteStorageExistsAndAccessible);
                             }
                         } while (retries-- > 0);
                     } catch (Exception es3) {
                         Log.e(TAG, "loadingArConfig: checking if files exist in Remote Storage error:" + es3.toString());
                     }
 
-                    Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible=" + configFromRemoteStorageExistsAndAccessible);
+                    //Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible=" + configFromRemoteStorageExistsAndAccessible);
                 }
 
             /*
@@ -1504,10 +1645,10 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
              */
                 if (!comingFromConfigActivity) {
-                    Log.d(TAG, "loadingArConfig: Starting LOGIC to determine following steps");
-                    Log.d(TAG, "loadingArConfig: Approved by Cognito? : (1=true; 2=False)" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
-                    Log.d(TAG, "loadingArConfig: Local files exist? : " + localFilesExist);
-                    Log.d(TAG, "loadingArConfig: Remote files exist and are accessible? : " + configFromRemoteStorageExistsAndAccessible);
+                    //Log.d(TAG, "loadingArConfig: Starting LOGIC to determine following steps");
+                    //Log.d(TAG, "loadingArConfig: Approved by Cognito? : (1=true; 2=False)" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
+                    //Log.d(TAG, "loadingArConfig: Local files exist? : " + localFilesExist);
+                    //Log.d(TAG, "loadingArConfig: Remote files exist and are accessible? : " + configFromRemoteStorageExistsAndAccessible);
 
                     if ((!configFromRemoteStorageExistsAndAccessible) && (!localFilesExist)) {
                         configFromRemoteStorageExistsAndAccessible = false;
@@ -1515,7 +1656,7 @@ public class ImageCapActivity extends Activity implements
                         return false;
                     }
                 } else {
-                    Log.d(TAG, "loadingArConfig: comingFromConfigActivity=" + comingFromConfigActivity);
+                    //Log.d(TAG, "loadingArConfig: comingFromConfigActivity=" + comingFromConfigActivity);
                 }
 
             /*
@@ -1524,7 +1665,7 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
              */
                 if (!comingFromConfigActivity) {
-                    Log.d(TAG, "loadingArConfig: Loading Definitions from Remote Storage and writing to local storage");
+                    //Log.d(TAG, "loadingArConfig: Loading Definitions from Remote Storage and writing to local storage");
                     try {
                         File vpsFile = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
                         if (MymUtils.isNewFileAvailable(s3Client,
@@ -1532,22 +1673,21 @@ public class ImageCapActivity extends Activity implements
                                 (vpsRemotePath + Constants.vpsConfigFileName),
                                 Constants.BUCKET_NAME,
                                 getApplicationContext())) {
-                            Log.d(TAG, "loadingArConfig: vpsFile isNewFileAvailable= TRUE");
+                            //Log.d(TAG, "loadingArConfig: vpsFile isNewFileAvailable= TRUE");
                             TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (vpsRemotePath + Constants.vpsConfigFileName), Constants.BUCKET_NAME, vpsFile);
                             observer.setTransferListener(new TransferListener() {
                                 @Override
                                 public void onStateChanged(int id, TransferState state) {
-                                    Log.d(TAG, "loadingArConfig: Observer: vpsFile onStateChanged: " + id + ", " + state);
+                                    //Log.d(TAG, "loadingArConfig: Observer: vpsFile onStateChanged: " + id + ", " + state);
                                     if (state.equals(TransferState.COMPLETED)) {
-                                        Log.d(TAG, "loadingArConfig: Observer: vpsFile TransferListener=" + state.toString());
+                                        //Log.d(TAG, "loadingArConfig: Observer: vpsFile TransferListener=" + state.toString());
                                         isVpsConfigFileDownloaded = true;
                                     }
                                 }
 
                                 @Override
                                 public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                                    Log.d(TAG, String.format("loadingArConfig: Observer: vpsFile onProgressChanged: %d, total: %d, current: %d",
-                                            id, bytesTotal, bytesCurrent));
+                                    //Log.d(TAG, String.format("loadingArConfig: Observer: vpsFile onProgressChanged: %d, total: %d, current: %d",id, bytesTotal, bytesCurrent));
                                 }
 
                                 @Override
@@ -1557,7 +1697,7 @@ public class ImageCapActivity extends Activity implements
                                 }
                             });
                         } else {
-                            Log.d(TAG, "loadingArConfig: vpsFile isNewFileAvailable= FALSE");
+                            //Log.d(TAG, "loadingArConfig: vpsFile isNewFileAvailable= FALSE");
                             isVpsConfigFileDownloaded = true;
                         }
                     } catch (Exception e) {
@@ -1572,22 +1712,21 @@ public class ImageCapActivity extends Activity implements
                                 (vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName),
                                 Constants.BUCKET_NAME,
                                 getApplicationContext())) {
-                            Log.d(TAG, "loadingArConfig: vpsCheckedFile isNewFileAvailable= TRUE");
+                            //Log.d(TAG, "loadingArConfig: vpsCheckedFile isNewFileAvailable= TRUE");
                             TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName), Constants.BUCKET_NAME, vpsCheckedFile);
                             observer.setTransferListener(new TransferListener() {
                                 @Override
                                 public void onStateChanged(int id, TransferState state) {
-                                    Log.d(TAG, "loadingArConfig: Observer: vpsCheckedFile onStateChanged: " + id + ", " + state);
+                                    //Log.d(TAG, "loadingArConfig: Observer: vpsCheckedFile onStateChanged: " + id + ", " + state);
                                     if (state.equals(TransferState.COMPLETED)) {
-                                        Log.d(TAG, "loadingArConfig: Observer: vpsCheckedFile TransferListener=" + state.toString());
+                                        //Log.d(TAG, "loadingArConfig: Observer: vpsCheckedFile TransferListener=" + state.toString());
                                         isVpsCheckedFileDownloaded = true;
                                     }
                                 }
 
                                 @Override
                                 public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                                    Log.d(TAG, String.format("loadingArConfig: Observer: vpsCheckedFile onProgressChanged: %d, total: %d, current: %d",
-                                            id, bytesTotal, bytesCurrent));
+                                    //Log.d(TAG, String.format("loadingArConfig: Observer: vpsCheckedFile onProgressChanged: %d, total: %d, current: %d",id, bytesTotal, bytesCurrent));
                                 }
 
                                 @Override
@@ -1597,7 +1736,7 @@ public class ImageCapActivity extends Activity implements
                                 }
                             });
                         } else {
-                            Log.d(TAG, "loadingArConfig: vpsCheckedFile isNewFileAvailable= FALSE");
+                            //Log.d(TAG, "loadingArConfig: vpsCheckedFile isNewFileAvailable= FALSE");
                             isVpsCheckedFileDownloaded = true;
                         }
                     } catch (Exception e) {
@@ -1622,7 +1761,7 @@ public class ImageCapActivity extends Activity implements
                         if (errorWhileArConfigLoading) return false;
                     } while (!configFilesOK);
 
-                    Log.d(TAG, "loadingArConfig: vps and vpschecked: configFilesOK=" + configFilesOK);
+                    //Log.d(TAG, "loadingArConfig: vps and vpschecked: configFilesOK=" + configFilesOK);
 
             /*
             *********************************************************************************************************************
@@ -1637,7 +1776,7 @@ public class ImageCapActivity extends Activity implements
                     short vpListOrder = -1;
 
                     try {
-                        Log.d(TAG, "loadingArConfig: Loading VpDescFileSize[] VpMarkerFileSize[] vpArIsConfigured[] FromVpsFile: File=" + Constants.vpsConfigFileName);
+                        //Log.d(TAG, "loadingArConfig: Loading VpDescFileSize[] VpMarkerFileSize[] vpArIsConfigured[] FromVpsFile: File=" + Constants.vpsConfigFileName);
                         InputStream fis = MymUtils.getLocalFile(Constants.vpsConfigFileName, getApplicationContext());
                         XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
                         XmlPullParser myparser = xmlFactoryObject.newPullParser();
@@ -1666,7 +1805,7 @@ public class ImageCapActivity extends Activity implements
                             }
                             eventType = myparser.next();
                         }
-                        Log.d(TAG, "loadingArConfig: Loading VpDescFileSize[] VpMarkerFileSize[] vpArIsConfigured[] FromVpsFile: FINALIZED");
+                        //Log.d(TAG, "loadingArConfig: Loading VpDescFileSize[] VpMarkerFileSize[] vpArIsConfigured[] FromVpsFile: FINALIZED");
                         fis.close();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1692,14 +1831,14 @@ public class ImageCapActivity extends Activity implements
                                         (descvpRemotePath + "descvp" + (j) + ".png"),
                                         Constants.BUCKET_NAME,
                                         getApplicationContext())) {
-                                    Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: isNewFileAvailable = TRUE");
+                                    //Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: isNewFileAvailable = TRUE");
                                     loadingDescvpFile = true;
                                     final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (descvpRemotePath + "descvp" + j + ".png"), Constants.BUCKET_NAME, descvpFile);
                                     observer.setTransferListener(new TransferListener() {
 
                                         @Override
                                         public void onStateChanged(int id, TransferState state) {
-                                            Log.d(TAG, "loadingArConfig: Observer: descvp: vp[" + j_inner + "]: id=" + id + " State=" + state);
+                                            //Log.d(TAG, "loadingArConfig: Observer: descvp: vp[" + j_inner + "]: id=" + id + " State=" + state);
                                             if (state.equals(TransferState.COMPLETED)) {
                                                 descvpFileCHK[j_inner] = true;
                                             }
@@ -1722,7 +1861,7 @@ public class ImageCapActivity extends Activity implements
                                     });
                                 } else {
                                     descvpFileCHK[j] = true;
-                                    Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: isNewFileAvailable = FALSE thus using local");
+                                    //Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: isNewFileAvailable = FALSE thus using local");
                                 }
                             } else {
                                 File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + j + ".png");
@@ -1732,7 +1871,7 @@ public class ImageCapActivity extends Activity implements
                                             "descvp" + j + ".png");
                                 }
                                 descvpFileCHK[j] = true;
-                                Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: vpArIsConfigured = FALSE thus creating local.");
+                                //Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: vpArIsConfigured = FALSE thus creating local.");
                             }
 
                         }
@@ -1762,14 +1901,14 @@ public class ImageCapActivity extends Activity implements
                                         (markervpRemotePath + "markervp" + (j) + ".png"),
                                         Constants.BUCKET_NAME,
                                         getApplicationContext())) {
-                                    Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: isNewFileAvailable = TRUE");
+                                    //Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: isNewFileAvailable = TRUE");
                                     loadingMarkervpFile = true;
                                     final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (markervpRemotePath + "markervp" + j + ".png"), Constants.BUCKET_NAME, markervpFile);
                                     observer.setTransferListener(new TransferListener() {
 
                                         @Override
                                         public void onStateChanged(int id, TransferState state) {
-                                            Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + j_inner + "]: id=" + id + " State=" + state);
+                                            //Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + j_inner + "]: id=" + id + " State=" + state);
                                             if (state.equals(TransferState.COMPLETED)) {
                                                 markervpFileCHK[j_inner] = true;
                                             }
@@ -1792,7 +1931,7 @@ public class ImageCapActivity extends Activity implements
                                     });
                                 } else {
                                     markervpFileCHK[j] = true;
-                                    Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: isNewFileAvailable = FALSE thus using local");
+                                    //Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: isNewFileAvailable = FALSE thus using local");
                                 }
                             } else {
                                 File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
@@ -1802,7 +1941,7 @@ public class ImageCapActivity extends Activity implements
                                             "markervp" + (j) + ".png");
                                 }
                                 markervpFileCHK[j] = true;
-                                Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: vpArIsConfigured = FALSE thus creating local.");
+                                //Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: vpArIsConfigured = FALSE thus creating local.");
                             }
                         }
                     } catch (Exception e) {
@@ -1818,17 +1957,17 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
             */
 
-                    Log.d(TAG, "loadingArConfig: Checking if all images are already in the local storage, as network operations take place in background.");
+                    //Log.d(TAG, "loadingArConfig: Checking if all images are already in the local storage, as network operations take place in background.");
 
                     int prod = 0;
 
                     if (configFromRemoteStorageExistsAndAccessible && ((loadingDescvpFile) || (loadingMarkervpFile))) {
-                        Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible: Starting the wait....");
+                        //Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible: Starting the wait....");
                         long startChk2 = System.currentTimeMillis();
                         if ((loadingDescvpFile) || (loadingMarkervpFile)) {
                             do {
                                 for (int k = 0; k < (qtyVps); k++) {
-                                    //Log.d(TAG,"descvpFileCHK["+k+"]="+descvpFileCHK[k]+"- markervpFileCHK["+k+"]="+markervpFileCHK[k]);
+                                    ////Log.d(TAG,"descvpFileCHK["+k+"]="+descvpFileCHK[k]+"- markervpFileCHK["+k+"]="+markervpFileCHK[k]);
                                     if (descvpFileCHK[k] && markervpFileCHK[k]) {
                                         if (k == 0) {
                                             prod = Math.abs(1);
@@ -1847,7 +1986,7 @@ public class ImageCapActivity extends Activity implements
                             }
                             while ((prod == 0) && ((System.currentTimeMillis() - startChk2) < 120000));
                         }
-                        Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible: All files in local storage, now checking if they are OK.");
+                        //Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible: All files in local storage, now checking if they are OK.");
                     }
 
                     for (int k = 0; k < (qtyVps); k++) {
@@ -1858,7 +1997,7 @@ public class ImageCapActivity extends Activity implements
                             File descvpFileCHK = new File(getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
                             File markervpFileCHK = new File(getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
                             if (!descvpFileCHK.exists() || !(descvpFileCHK.length() == vpDescFileSize[k])) {
-                                Log.d(TAG, "Reloading descvp" + (k) + ".png");
+                                //Log.d(TAG, "Reloading descvp" + (k) + ".png");
                                 File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
                                 reloadEnded = false;
                                 final int k_inner = k;
@@ -1867,7 +2006,7 @@ public class ImageCapActivity extends Activity implements
 
                                     @Override
                                     public void onStateChanged(int id, TransferState state) {
-                                        Log.d(TAG, "loadingArConfig: Observer: RELOADING descvp: vp[" + k_inner + "]: id=" + id + " State=" + state);
+                                        //Log.d(TAG, "loadingArConfig: Observer: RELOADING descvp: vp[" + k_inner + "]: id=" + id + " State=" + state);
                                         if (state.equals(TransferState.COMPLETED)) {
                                             reloadEnded = true;
                                         }
@@ -1895,7 +2034,7 @@ public class ImageCapActivity extends Activity implements
                             }
                             while (!reloadEnded && ((System.currentTimeMillis() - startChk4) < 60000));
                             if (!markervpFileCHK.exists() || !(markervpFileCHK.length() == vpMarkerFileSize[k])) {
-                                Log.d(TAG, "Reloading descvp" + (k) + ".png");
+                                //Log.d(TAG, "Reloading descvp" + (k) + ".png");
                                 File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
                                 reloadEnded = false;
                                 final int k_inner = k;
@@ -1904,7 +2043,7 @@ public class ImageCapActivity extends Activity implements
 
                                     @Override
                                     public void onStateChanged(int id, TransferState state) {
-                                        Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + k_inner + "]: id=" + id + " State=" + state);
+                                        //Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + k_inner + "]: id=" + id + " State=" + state);
                                         if (state.equals(TransferState.COMPLETED)) {
                                             reloadEnded = true;
                                         }
@@ -1948,7 +2087,7 @@ public class ImageCapActivity extends Activity implements
 
             @Override
             protected void onPostExecute(final Boolean result) {
-                Log.d(TAG, "loadingArConfig: onPostExecute: result=" + result);
+                //Log.d(TAG, "loadingArConfig: onPostExecute: result=" + result);
                 if (!comingFromConfigActivity) {
                     boolean loadConfigurationFileIsSuccessful = loadConfigurationFile();
                     boolean loadVpsCheckedIsSuccessful = loadVpsChecked();
@@ -1982,7 +2121,7 @@ public class ImageCapActivity extends Activity implements
                             (findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
                         }
                     });
-                    Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
+                    //Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
                 } else {
                     boolean loadConfigurationFileIsSuccessful = loadConfigurationFile();
                     boolean loadVpsCheckedIsSuccessful = loadVpsChecked();
@@ -2016,7 +2155,7 @@ public class ImageCapActivity extends Activity implements
                             (findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
                         }
                     });
-                    Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
+                    //Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
                 }
 
             }
@@ -2153,9 +2292,17 @@ public class ImageCapActivity extends Activity implements
     protected void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        } else {
+            Log.d(TAG, "startLocationUpdates: No permission to access fine location, finishing the app");
+            Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_nopermissiontouselocation), Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+            toast.show();
+            finish();
+            return;
         }
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
     }
 
     protected void stopLocationUpdates() {
@@ -2229,7 +2376,7 @@ public class ImageCapActivity extends Activity implements
                 locationString[5] = mLastUpdateTime.toString();
                 locationString[6] = location.getProvider();
                 locationString[7] = Double.toString(location.getAltitude());
-                Log.d(TAG, "getLocationToExifStrings: LAT:" + gps[0] + " " + (gps[0] % 1) + " " + locationString[0] + locationString[1] + " LON:" + gps[1] + " " + locationString[2] + locationString[3]);
+                //Log.d(TAG, "getLocationToExifStrings: LAT:" + gps[0] + " " + (gps[0] % 1) + " " + locationString[0] + locationString[1] + " LON:" + gps[1] + " " + locationString[2] + locationString[3]);
             } else {
                 locationString[0] = "" + 0 + "/1," + 0 + "/1," + 0 + "/1000";
                 locationString[1] = "N";
@@ -2244,11 +2391,11 @@ public class ImageCapActivity extends Activity implements
             }
             for (int index = 0; index < locationString.length; index++) {
                 if (locationString[index] == null) locationString[index] = " ";
-                Log.d(TAG, "getLocationToExifStrings: locationString[index]=" + locationString[index]);
+                //Log.d(TAG, "getLocationToExifStrings: locationString[index]=" + locationString[index]);
             }
 
         } catch (Exception e) {
-            Log.d(TAG, "getLocationToExifStrings: failed:" + e.toString());
+            //Log.d(TAG, "getLocationToExifStrings: failed:" + e.toString());
         }
         return locationString;
     }
@@ -2271,50 +2418,47 @@ public class ImageCapActivity extends Activity implements
     protected void onStart() {
         mGoogleApiClient.connect();
         super.onStart();
-        Log.d(TAG, "onStart() ********************");
-        /*
-        * CHANGE THIS ACCORDING TO THE CASE
-         */
+        //Log.d(TAG, "onStart() ********************");
         if (appStartState.equalsIgnoreCase("firstthisversion") || appStartState.equalsIgnoreCase("firstever")) {
-            startAppTour();
+            showCallMyMensorSite();
         }
     }
 
 
     public void startAppTour() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                DisplayMetrics metrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
-
-                final Window window = getWindow();
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                    Log.d(TAG, "startAppTour - Calling FULLSCREEN");
-                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-                }
-            }
-        });
         final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
         alert.setIcon(R.drawable.logo_mymensor);
-        alert.setTitle(getText(R.string.welcometomymensor));
-        alert.setMessage(R.string.walkthrough);
+        alert.setTitle(getText(R.string.walkthroughStartTitle));
+        alert.setMessage(R.string.walkthroughStart);
 
         alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (isArSwitchOn) {
-                    showWalktroughStep3();
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    final Window window = getWindow();
+                    if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    }
+                    showWalktroughStep3a();
                 } else {
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    final Window window = getWindow();
+                    if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    }
                     showWalktroughStep1();
                 }
 
@@ -2324,6 +2468,17 @@ public class ImageCapActivity extends Activity implements
         alert.setNegativeButton(R.string.notnow, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
                 dialog.dismiss();
             }
         });
@@ -2339,7 +2494,7 @@ public class ImageCapActivity extends Activity implements
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.cameraShutterButton))
                 .setPrimaryText("")
-                .setSecondaryText(getText(R.string.takeaphotosecond))
+                .setSecondaryText(getText(R.string.walkthroughtakeaphotosecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2362,7 +2517,7 @@ public class ImageCapActivity extends Activity implements
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.videoCameraShutterButton))
                 .setPrimaryText("")
-                .setSecondaryText(getText(R.string.makevideosecond))
+                .setSecondaryText(getText(R.string.walkthroughmakevideosecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2379,7 +2534,23 @@ public class ImageCapActivity extends Activity implements
     public void showWalktroughStep3() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.vp_list))
-                .setPrimaryText(getText(R.string.selectvpsecond))
+                .setPrimaryText(getText(R.string.walkthroughselectvpsecond))
+                .setSecondaryText("")
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_FOCAL_PRESSED || state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showWalktroughStep4();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showWalktroughStep3a() {
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.vp_list))
+                .setPrimaryText(getText(R.string.walkthrougharautoarchive))
                 .setSecondaryText("")
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
@@ -2395,13 +2566,13 @@ public class ImageCapActivity extends Activity implements
     public void showWalktroughStep4() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.certificationlayot))
-                .setPrimaryText(getText(R.string.certificationstatus))
-                .setSecondaryText(getText(R.string.certificationstatussecond))
+                .setPrimaryText(getText(R.string.walkthroughcertificationstatus))
+                .setSecondaryText(getText(R.string.walkthroughcertificationstatussecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
                         if (state == MaterialTapTargetPrompt.STATE_FOCAL_PRESSED || state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
-                            if (isArSwitchOn){
+                            if (isArSwitchOn) {
                                 showWalktroughStep5a();
                             } else {
                                 showWalktroughStep5();
@@ -2412,13 +2583,11 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    // .setPrimaryText(getText(R.string.showvpcap))
-
     public void showWalktroughStep5() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.buttonShowVpCapturesMainScreen))
                 .setPrimaryText("")
-                .setSecondaryText(getText(R.string.showvpcapsecond))
+                .setSecondaryText(getText(R.string.walkthroughshowvpcapsecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2434,7 +2603,7 @@ public class ImageCapActivity extends Activity implements
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.buttonCallWebAppMainScreen))
                 .setPrimaryText("")
-                .setSecondaryText(getText(R.string.callwebappsecond))
+                .setSecondaryText(getText(R.string.walkthroughcallwebappsecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2449,8 +2618,8 @@ public class ImageCapActivity extends Activity implements
     public void showWalktroughStep6() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.arSwitchLinearLayout))
-                .setPrimaryText(getText(R.string.aronoff))
-                .setSecondaryText(getText(R.string.aronoffsecond))
+                .setPrimaryText(getText(R.string.walkthrougharonoff))
+                .setSecondaryText(getText(R.string.walkthrougharonoffsecond))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2465,12 +2634,10 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    //.setPrimaryText(getText(R.string.radarscan))
-
     public void showWalktroughStep7() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.imageViewRadarScan))
-                .setPrimaryText(getText(R.string.radarscansecond))
+                .setPrimaryText(getText(R.string.walkthroughradarscansecond))
                 .setSecondaryText("")
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
@@ -2486,8 +2653,8 @@ public class ImageCapActivity extends Activity implements
     public void showWalktroughStepLast() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.buttonShowHelpMainScreen))
-                .setPrimaryText(getText(R.string.laststep))
-                .setSecondaryText(getText(R.string.checkagainifneeded))
+                .setPrimaryText(getText(R.string.walkthroughLastStep))
+                .setSecondaryText(getText(R.string.walkthroughcheckagainifneeded))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2507,13 +2674,13 @@ public class ImageCapActivity extends Activity implements
                 DisplayMetrics metrics = new DisplayMetrics();
                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+                //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
                 final Window window = getWindow();
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                    Log.d(TAG, "returnToInitialScreen - Calling FULLSCREEN");
+                    //Log.d(TAG, "returnToInitialScreen - Calling FULLSCREEN");
                     window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -2538,10 +2705,12 @@ public class ImageCapActivity extends Activity implements
                 isShowingVpPhoto = false;
                 vpLocationDesTextView.setVisibility(View.GONE);
                 vpIdNumber.setVisibility(View.GONE);
-                callConfigButton.setVisibility(View.GONE);
-                alphaToggleButton.setVisibility(View.GONE);
+                buttonCallConfig.setVisibility(View.GONE);
+                buttonAlphaToggle.setVisibility(View.GONE);
                 showPreviousVpCaptureButton.setVisibility(View.GONE);
                 showNextVpCaptureButton.setVisibility(View.GONE);
+                buttonShowHelpShowVPCapScreen.setVisibility(View.GONE);
+                buttonShowHelpDescVPScreen.setVisibility(View.GONE);
                 if (buttonStartVideoInVpCaptures.isShown())
                     buttonStartVideoInVpCaptures.setVisibility(View.GONE);
                 showVpCapturesButton.setVisibility(View.GONE);
@@ -2639,25 +2808,25 @@ public class ImageCapActivity extends Activity implements
     @Override
     public void recreate() {
         super.recreate();
-        Log.d(TAG, "recreate() ********************");
+        //Log.d(TAG, "recreate() CALLED");
     }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume CALLED");
+        //Log.d(TAG, "onResume CALLED");
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-        Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+        //Log.d(TAG, "onResume SCRRES Display Width (Pixels):" + metrics.widthPixels);
+        //Log.d(TAG, "onResume SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
         final Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-            Log.d(TAG, "onResume - Calling FULLSCREEN");
+            //Log.d(TAG, "onResume - Calling FULLSCREEN");
             window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -2668,7 +2837,7 @@ public class ImageCapActivity extends Activity implements
 
         //OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
         if (!OpenCVLoader.initDebug()) {
-            Log.d("ERROR", "Unable to load OpenCV");
+            //Log.d("ERROR", "Unable to load OpenCV");
         } else {
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
@@ -2690,7 +2859,7 @@ public class ImageCapActivity extends Activity implements
             if (!TransferState.COMPLETED.equals(observer.getState())) {
                 observer.setTransferListener(listener);
                 pendingUploadTransfers++;
-                Log.d(TAG, "Observer ID:" + observer.getId() + " key:" + observer.getKey() + " state:" + observer.getState() + " %:" + observer.getBytesTransferred());
+                //Log.d(TAG, "Observer ID:" + observer.getId() + " key:" + observer.getKey() + " state:" + observer.getState() + " %:" + observer.getBytesTransferred());
                 transferUtility.resume(observer.getId());
             }
         }
@@ -2720,17 +2889,17 @@ public class ImageCapActivity extends Activity implements
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d(TAG, "onRestart CALLED");
+        //Log.d(TAG, "onRestart CALLED");
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-        Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+        //Log.d(TAG, "onRestart SCRRES Display Width (Pixels):" + metrics.widthPixels);
+        //Log.d(TAG, "onRestart SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
         final Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-            Log.d(TAG, "onRestart - Calling FULLSCREEN");
+            //Log.d(TAG, "onRestart - Calling FULLSCREEN");
             window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -2754,7 +2923,7 @@ public class ImageCapActivity extends Activity implements
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause CALLED");
+        //Log.d(TAG, "onPause CALLED");
         if (mCameraView != null) {
             mCameraView.disableView();
         }
@@ -2774,7 +2943,7 @@ public class ImageCapActivity extends Activity implements
     @Override
     public void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop CALLED");
+        //Log.d(TAG, "onStop CALLED");
         mGoogleApiClient.disconnect();
         saveVpsChecked(false);
         if (mMediaRecorder != null) {
@@ -2786,13 +2955,18 @@ public class ImageCapActivity extends Activity implements
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy CALLED");
+        //Log.d(TAG, "onDestroy CALLED");
         if (mCameraView != null) {
             mCameraView.disableView();
         }
         // Dispose of native resources.
         disposeFilters(mImageDetectionFilters);
-        this.unregisterReceiver(receiver);
+        try {
+            this.unregisterReceiver(receiver);
+        } catch (IllegalArgumentException iae) {
+            Log.e(TAG, "Error while unregistering receiver: " + iae);
+        }
+
         super.onDestroy();
     }
 
@@ -2811,7 +2985,7 @@ public class ImageCapActivity extends Activity implements
         public void onManagerConnected(final int status) {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
-                    Log.d(TAG, "OpenCV loaded successfully");
+                    //Log.d(TAG, "OpenCV loaded successfully");
                     mCameraMatrix = MymUtils.getCameraMatrix(cameraWidthInPixels, Constants.cameraHeigthInPixels);
                     mCameraView.enableView();
                     //mCameraView.enableFpsMeter();
@@ -2841,7 +3015,7 @@ public class ImageCapActivity extends Activity implements
             Log.e(TAG, "setSingleImageTrackingConfiguration(int vpIndex): markerImageFileContents failed:" + e.toString());
         }
         ARFilter trackFilter = null;
-        Log.d(TAG, "setSingleImageTrackingConfiguration: markerBufferSingle.toArray().length=" + markerBufferSingle.toArray().length);
+        //Log.d(TAG, "setSingleImageTrackingConfiguration: markerBufferSingle.toArray().length=" + markerBufferSingle.toArray().length);
         try {
             trackFilter = new ImageDetectionFilter(
                     ImageCapActivity.this,
@@ -2874,12 +3048,12 @@ public class ImageCapActivity extends Activity implements
                     @Override
                     public void run() {
                         waitingUntilMultipleImageTrackingIsSet = true;
-                        Log.d(TAG, "onPreExecute(): setMultipleImageTrackingConfiguration IN BACKGROUND - Lighting Waiting Circle");
-                        Log.d(TAG, "waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
-                        Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
-                        Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
-                        Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
-                        Log.d(TAG, "isHudOn=" + isHudOn);
+                        //Log.d(TAG, "onPreExecute(): setMultipleImageTrackingConfiguration IN BACKGROUND - Lighting Waiting Circle");
+                        //Log.d(TAG, "waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
+                        //Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
+                        //Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
+                        //Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
+                        //Log.d(TAG, "isHudOn=" + isHudOn);
                         mProgress.setVisibility(View.VISIBLE);
                         mProgress.startAnimation(rotationMProgress);
                     }
@@ -2901,7 +3075,7 @@ public class ImageCapActivity extends Activity implements
                     }
                 }
                 ARFilter trackFilter = null;
-                Log.d(TAG, "setMultipleImageTrackingConfiguration: markerBuffer.toArray().length=" + markerBuffer.toArray().length);
+                //Log.d(TAG, "setMultipleImageTrackingConfiguration: markerBuffer.toArray().length=" + markerBuffer.toArray().length);
                 try {
                     trackFilter = new ImageDetectionFilter(
                             ImageCapActivity.this,
@@ -2923,14 +3097,14 @@ public class ImageCapActivity extends Activity implements
 
             @Override
             protected void onPostExecute(Void result) {
-                Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND");
+                //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - Turning off Waiting Circle");
+                        //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - Turning off Waiting Circle");
                         mProgress.clearAnimation();
                         mProgress.setVisibility(View.GONE);
-                        Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - mProgress.isShown():" + mProgress.isShown());
+                        //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - mProgress.isShown():" + mProgress.isShown());
                         // TURNING ON RADAR SCAN
                         if ((!radarScanImageView.isShown()) && (isArSwitchOn) && (!isShowingVpPhoto)) {
                             radarScanImageView.setVisibility(View.VISIBLE);
@@ -2945,11 +3119,11 @@ public class ImageCapActivity extends Activity implements
 
                     }
                 });
-                Log.d(TAG, "onPostExecute: waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
-                Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
-                Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
-                Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
-                Log.d(TAG, "isHudOn=" + isHudOn);
+                //Log.d(TAG, "onPostExecute: waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
+                //Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
+                //Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
+                //Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
+                //Log.d(TAG, "isHudOn=" + isHudOn);
             }
         }.execute();
     }
@@ -3007,11 +3181,11 @@ public class ImageCapActivity extends Activity implements
             capturingManualVideo = true;
             videoRecorderPrepared = true;
         } catch (IllegalStateException e) {
-            Log.d(TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
+            //Log.d(TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
             return false;
         } catch (IOException e) {
-            Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
+            //Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
             return false;
         }
@@ -3022,13 +3196,13 @@ public class ImageCapActivity extends Activity implements
     @Override
     public void onCameraViewStarted(final int width,
                                     final int height) {
-        Log.d(TAG, "onCameraViewStarted CALLED width:" + width + " height:" + height);
+        //Log.d(TAG, "onCameraViewStarted CALLED width:" + width + " height:" + height);
     }
 
 
     @Override
     public void onCameraViewStopped() {
-        Log.d(TAG, "onCameraViewStopped CALLED");
+        //Log.d(TAG, "onCameraViewStopped CALLED");
     }
 
     @Override
@@ -3080,7 +3254,7 @@ public class ImageCapActivity extends Activity implements
         // Start of AR OFF Photo
 
         if ((!isArSwitchOn) && (askForManualPhoto)) {
-            Log.d(TAG, "Requesting manual photo");
+            //Log.d(TAG, "Requesting manual photo");
             takePhoto(rgba);
         }
 
@@ -3090,7 +3264,7 @@ public class ImageCapActivity extends Activity implements
 
         if ((!isArSwitchOn) && (askForManualVideo) || (!isArSwitchOn) && (capturingManualVideo)) {
             if (askForManualVideo) {
-                Log.d(TAG, "A manual video was requested");
+                //Log.d(TAG, "A manual video was requested");
                 askForManualVideo = false;
                 videoCaptureStartmillis = System.currentTimeMillis();
                 long momentoLong = MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference);
@@ -3104,7 +3278,7 @@ public class ImageCapActivity extends Activity implements
             }
             if (videoRecorderPrepared) {
                 if (((System.currentTimeMillis() - videoCaptureStartmillis) < Constants.shortVideoLength) && (!stopManualVideo)) {
-                    //Log.d(TAG, "Waiting for video recording to end:" + (System.currentTimeMillis() - videoCaptureStartmillis));
+                    ////Log.d(TAG, "Waiting for video recording to end:" + (System.currentTimeMillis() - videoCaptureStartmillis));
                 } else {
                     if (capturingManualVideo) {
                         stopManualVideo = false;
@@ -3115,7 +3289,7 @@ public class ImageCapActivity extends Activity implements
                         float volume = actualVolume / maxVolume;
                         if (videoRecordStopedSoundIDLoaded) {
                             soundPool.play(videoRecordStopedSoundID, volume, volume, 1, 0, 1f);
-                            Log.d(TAG, "Video STOP: Duartion limit exceeded Played sound");
+                            //Log.d(TAG, "Video STOP: Duartion limit exceeded Played sound");
                         }
                         runOnUiThread(new Runnable() {
                             @Override
@@ -3162,15 +3336,15 @@ public class ImageCapActivity extends Activity implements
                 if (idTrackingIsSet) {
                     int markerIdInPose = trackingValues.getVpNumberTrackedInPose();
                     validMarkerFound = false;
-                    //Log.d(TAG, "idTrackingIsSet: markerIdInPose=" + markerIdInPose);
+                    ////Log.d(TAG, "idTrackingIsSet: markerIdInPose=" + markerIdInPose);
                     for (int j = 0; j < Constants.validIdMarkersForMyMensor.length; j++) {
                         if (Constants.validIdMarkersForMyMensor[j] == markerIdInPose) {
                             for (int k = 1; k < (qtyVps); k++) {
-                                //Log.d(TAG, "idTrackingIsSet: vpSuperMarkerId[" + k + "]=" + vpSuperMarkerId[k]);
+                                ////Log.d(TAG, "idTrackingIsSet: vpSuperMarkerId[" + k + "]=" + vpSuperMarkerId[k]);
                                 if (vpSuperMarkerId[k] == markerIdInPose) {
                                     vpTrackedInPose = k;
                                     validMarkerFound = true;
-                                    Log.d(TAG, "idTrackingIsSet: vpTrackedInPose=" + vpTrackedInPose);
+                                    //Log.d(TAG, "idTrackingIsSet: vpTrackedInPose=" + vpTrackedInPose);
                                 }
                             }
                         }
@@ -3232,7 +3406,7 @@ public class ImageCapActivity extends Activity implements
                     // If it is a AMBIGUOUS VP DETECTED AND NOT SUPER then set Id tracking to disambiguate.
 
                     if (((vpIsAmbiguous[vpTrackedInPose]) && (!idTrackingIsSet) && (!waitingToCaptureVpAfterDisambiguationProcedureSuccessful)) || (doubleCheckingProcedureStarted)) {
-                        Log.d(TAG, "MULTIIMAGE: AMBIGUOUS VP DETECTED then set Id tracking to disambiguate");
+                        //Log.d(TAG, "MULTIIMAGE: AMBIGUOUS VP DETECTED then set Id tracking to disambiguate");
                         mImageDetectionFilterIndex = 1;
                         setIdTrackingConfiguration();
                         singleImageTrackingIsSet = false;
@@ -3245,12 +3419,12 @@ public class ImageCapActivity extends Activity implements
                     }
 
                     if (idTrackingIsSet) {
-                        Log.d(TAG, "idTrackingIsSet: validMarkerFound=" + validMarkerFound);
+                        //Log.d(TAG, "idTrackingIsSet: validMarkerFound=" + validMarkerFound);
                         if (validMarkerFound) {
                             if (!vpIsSuperSingle[vpTrackedInPose]) {
                                 vpIsDisambiguated = true;
                                 waitingToCaptureVpAfterDisambiguationProcedureSuccessful = true;
-                                Log.d(TAG, "Disambiguation SUCCESFULL: waiting for vp capture: vpTrackedInPose=" + vpTrackedInPose);
+                                //Log.d(TAG, "Disambiguation SUCCESFULL: waiting for vp capture: vpTrackedInPose=" + vpTrackedInPose);
                                 setSingleImageTrackingConfiguration(vpTrackedInPose);
                             } else {
                                 checkPositionToTarget(trackingValues, rgba);
@@ -3287,7 +3461,7 @@ public class ImageCapActivity extends Activity implements
                         }
                     });
                     if (isHudOn == 0) isHudOn = 1;
-                    //Log.d(TAG, "INVALID VP TRACKED IN POSE");
+                    ////Log.d(TAG, "INVALID VP TRACKED IN POSE");
                 }
 
             } else {
@@ -3311,7 +3485,7 @@ public class ImageCapActivity extends Activity implements
                     }
                 });
                 /*
-                Log.d(TAG,
+                //Log.d(TAG,
                         "Tracking LOST!!!! (singleImageTrackingIsSet="+singleImageTrackingIsSet+
                         ") (waitingToCaptureVpAfterDisambiguationProcedureSuccessful="+waitingToCaptureVpAfterDisambiguationProcedureSuccessful+")");
                         */
@@ -3377,7 +3551,7 @@ public class ImageCapActivity extends Activity implements
                     }
                     videoView.setVisibility(View.GONE);
                     Uri videoFileTMP = Uri.fromFile(new File(getApplicationContext().getFilesDir(), videoFileName));
-                    Log.d(TAG, "media PATH:" + videoFileTMP.getPath());
+                    //Log.d(TAG, "media PATH:" + videoFileTMP.getPath());
                     boolean fileNotFound = true;
                     do {
                         try {
@@ -3386,7 +3560,7 @@ public class ImageCapActivity extends Activity implements
                         } catch (Exception e) {
                             fileNotFound = true;
                         }
-                        Log.d(TAG, "Trying Media:" + fileNotFound);
+                        //Log.d(TAG, "Trying Media:" + fileNotFound);
                     } while (fileNotFound);
                     videoView.setZOrderOnTop(true);
                     videoView.setVisibility(View.VISIBLE);
@@ -3401,17 +3575,17 @@ public class ImageCapActivity extends Activity implements
                             rejectVpPhotoButton.setVisibility(View.VISIBLE);
                             buttonRemarkVpPhoto.setVisibility(View.VISIBLE);
                             buttonReplayVpVideo.setVisibility(View.VISIBLE);
-                            Log.d(TAG, "Turned on VIDEO Decision Buttons!!!! captureVideo 1:vpphta:" + vpPhotoAccepted + "vpphtr:" + vpPhotoRejected);
+                            //Log.d(TAG, "Turned on VIDEO Decision Buttons!!!! captureVideo 1:vpphta:" + vpPhotoAccepted + "vpphtr:" + vpPhotoRejected);
                             DisplayMetrics metrics = new DisplayMetrics();
                             getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-                            Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                            Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+                            //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                            //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
                             final Window window = getWindow();
                             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                             if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                                Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
+                                //Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
                                 window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -3444,17 +3618,17 @@ public class ImageCapActivity extends Activity implements
                                 rejectVpPhotoButton.setVisibility(View.VISIBLE);
                                 buttonRemarkVpPhoto.setVisibility(View.VISIBLE);
                                 buttonReplayVpVideo.setVisibility(View.VISIBLE);
-                                Log.d(TAG, "Turned on VIDEO Decision Buttons!!!! captureVideo 2");
+                                //Log.d(TAG, "Turned on VIDEO Decision Buttons!!!! captureVideo 2");
                                 DisplayMetrics metrics = new DisplayMetrics();
                                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-                                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+                                //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                                //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
                                 final Window window = getWindow();
                                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                                 if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                                    Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
+                                    //Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
                                     window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -3488,13 +3662,13 @@ public class ImageCapActivity extends Activity implements
                                 DisplayMetrics metrics = new DisplayMetrics();
                                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-                                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+                                //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                                //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
                                 final Window window = getWindow();
                                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                                 if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                                    Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
+                                    //Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
                                     window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -3510,13 +3684,13 @@ public class ImageCapActivity extends Activity implements
                                 DisplayMetrics metrics = new DisplayMetrics();
                                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-                                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+                                //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                                //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
 
                                 final Window window = getWindow();
                                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                                 if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                                    Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
+                                    //Log.d(TAG, "captureVideo Acceptance - Calling FULLSCREEN");
                                     window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -3535,10 +3709,10 @@ public class ImageCapActivity extends Activity implements
         } while ((!vpPhotoAccepted) && (!vpPhotoRejected));
         vpVideoTobeReplayed = false;
         vpPhotoTobeRemarked = false;
-        Log.d(TAG, "takePhoto: LOOP ENDED: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
+        //Log.d(TAG, "takePhoto: LOOP ENDED: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
 
         if (vpPhotoAccepted) {
-            Log.d(TAG, "AROFF Video: vpPhotoAccepted!!!!");
+            //Log.d(TAG, "AROFF Video: vpPhotoAccepted!!!!");
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -3617,8 +3791,8 @@ public class ImageCapActivity extends Activity implements
                             Log.e(TAG, "videoThumbnailHdBitmap saving to videoThumbnailFileNameLong from descvp0 failed:" + e.toString());
                         }
                     }
-                    Log.d(TAG, "pictureFile.getName()=" + pictureVideoThumbnailFile.getName());
-                    Log.d(TAG, "pictureVideoThumbnailFile.getPath()=" + pictureVideoThumbnailFile.getPath());
+                    //Log.d(TAG, "pictureFile.getName()=" + pictureVideoThumbnailFile.getName());
+                    //Log.d(TAG, "pictureVideoThumbnailFile.getPath()=" + pictureVideoThumbnailFile.getPath());
                     ObjectMetadata thumbnailMetadata = new ObjectMetadata();
                     Map<String, String> userThumbMetadata = new HashMap<String, String>();
                     userThumbMetadata.put("vp", "" + (vpTrackedInPose));
@@ -3636,8 +3810,8 @@ public class ImageCapActivity extends Activity implements
                     pendingUploadTransfers++;
                     updatePendingUpload();
 
-                    Log.d(TAG, "videoFile.getName()=" + videoFile.getName());
-                    Log.d(TAG, "videoFile.getPath()=" + videoFile.getPath());
+                    //Log.d(TAG, "videoFile.getName()=" + videoFile.getName());
+                    //Log.d(TAG, "videoFile.getPath()=" + videoFile.getPath());
                     String fileSha256Hash = MymUtils.getFileHash(videoFile);
                     locPhotoToExif = getLocationToExifStrings(mCurrentLocation, Long.toString(photoTakenTimeMillis[vpTrackedInPose]));
                     ObjectMetadata myObjectMetadata = new ObjectMetadata();
@@ -3673,18 +3847,21 @@ public class ImageCapActivity extends Activity implements
                             Constants.BUCKET_NAME,
                             videoFile,
                             myObjectMetadata);
-
-                    observer.setTransferListener(new UploadListener());
+                    try {
+                        observer.setTransferListener(new UploadListener());
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception while setting Transfer Listener: " + e);
+                    }
                     pendingUploadTransfers++;
                     updatePendingUpload();
                     vpPhotoAccepted = false;
                     if (observer != null) {
-                        Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getState().toString());
-                        Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getAbsoluteFilePath());
-                        Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getBucket());
-                        Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getKey());
+                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getState().toString());
+                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getAbsoluteFilePath());
+                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getBucket());
+                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getKey());
                     } else {
-                        Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
+                        //Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
                         vpChecked[vpTrackedInPose] = false;
                         if (isArSwitchOn) {
                             setVpsChecked();
@@ -3692,7 +3869,7 @@ public class ImageCapActivity extends Activity implements
                         }
                     }
                 } else {
-                    Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
+                    //Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
                     vpChecked[vpTrackedInPose] = false;
                     if (isArSwitchOn) {
                         setVpsChecked();
@@ -3725,11 +3902,11 @@ public class ImageCapActivity extends Activity implements
         }
 
         if (vpPhotoRejected) {
-            Log.d(TAG, "AROFF Video: vpPhotoRejected!!!!");
+            //Log.d(TAG, "AROFF Video: vpPhotoRejected!!!!");
             File videoFile = new File(getApplicationContext().getFilesDir(), videoFileName);
             try {
                 if (!videoFile.delete()) {
-                    Log.d(TAG, "Rejected video could not be deleted!!!!!!!");
+                    //Log.d(TAG, "Rejected video could not be deleted!!!!!!!");
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Exception while deletion rejected video:" + e.toString());
@@ -3777,8 +3954,8 @@ public class ImageCapActivity extends Activity implements
             lastVpPhotoRejected = true;
             vpPhotoRejected = false;
             vpPhotoRequestInProgress = false;
-            Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> calling setMarkerlessTrackingConfiguration");
-            Log.d(TAG, "takePhoto: vpPhotoRejected: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
+            //Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> calling setMarkerlessTrackingConfiguration");
+            //Log.d(TAG, "takePhoto: vpPhotoRejected: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
             if ((!waitingUntilMultipleImageTrackingIsSet) && (isArSwitchOn)) {
                 setMultipleImageTrackingConfiguration();
             }
@@ -3805,16 +3982,16 @@ public class ImageCapActivity extends Activity implements
                     (Math.abs(trackingValues.getEAZ() - vpZCameraRotation[vpTrackedInPose]) <= (Constants.toleranceRotationSuper)));
         }
 
-        Log.d(TAG, "TST inPos=" + inPosition + " inRot=" + inRotation + " wtUtlMultpl=" + waitingUntilMultipleImageTrackingIsSet + " vpPhReq=" + vpPhotoRequestInProgress + " Score=" + inPosRotScore);
+        //Log.d(TAG, "TST inPos=" + inPosition + " inRot=" + inRotation + " wtUtlMultpl=" + waitingUntilMultipleImageTrackingIsSet + " vpPhReq=" + vpPhotoRequestInProgress + " Score=" + inPosRotScore);
         if ((inPosition) && (inRotation) && (!waitingUntilMultipleImageTrackingIsSet) && (!vpPhotoRequestInProgress)) {
             inPosRotScore++;
             if (vpIsSuperSingle[vpTrackedInPose]) {
-                Log.d(TAG, "TST IN delta POS=" + Math.abs(trackingValues.getXid() - vpXCameraDistance[vpTrackedInPose])
-                        + " deltaY=" + Math.abs(trackingValues.getYid() - vpYCameraDistance[vpTrackedInPose])
-                        + " deltaZ=" + Math.abs(trackingValues.getZ() - vpZCameraDistance[vpTrackedInPose]));
-                Log.d(TAG, "TST IN delta ROT=" + Math.abs(trackingValues.getEAX() - vpXCameraRotation[vpTrackedInPose])
-                        + " deltaRY=" + Math.abs(trackingValues.getEAY() - vpYCameraRotation[vpTrackedInPose])
-                        + " deltaRZ=" + Math.abs(trackingValues.getEAZ() - vpZCameraRotation[vpTrackedInPose]));
+                //Log.d(TAG, "TST IN delta POS=" + Math.abs(trackingValues.getXid() - vpXCameraDistance[vpTrackedInPose])
+                //        + " deltaY=" + Math.abs(trackingValues.getYid() - vpYCameraDistance[vpTrackedInPose])
+                //        + " deltaZ=" + Math.abs(trackingValues.getZ() - vpZCameraDistance[vpTrackedInPose]));
+                //Log.d(TAG, "TST IN delta ROT=" + Math.abs(trackingValues.getEAX() - vpXCameraRotation[vpTrackedInPose])
+                //        + " deltaRY=" + Math.abs(trackingValues.getEAY() - vpYCameraRotation[vpTrackedInPose])
+                //        + " deltaRZ=" + Math.abs(trackingValues.getEAZ() - vpZCameraRotation[vpTrackedInPose]));
             }
             if ((vpIsAmbiguous[vpTrackedInPose]) && (!doubleCheckingProcedureStarted) && (!doubleCheckingProcedureFinalized)) {
                 mImageDetectionFilterIndex = 1;
@@ -3830,7 +4007,7 @@ public class ImageCapActivity extends Activity implements
                             isHudOn = 0;
                         }
                     } else {
-                        Log.d(TAG, "Calling takePhoto: doubleCheckingProcedureFinalized=" + doubleCheckingProcedureFinalized);
+                        //Log.d(TAG, "Calling takePhoto: doubleCheckingProcedureFinalized=" + doubleCheckingProcedureFinalized);
                         inPosRotScore = 0;
                         if (!vpChecked[vpTrackedInPose]) takePhoto(rgba);
                     }
@@ -3852,8 +4029,8 @@ public class ImageCapActivity extends Activity implements
         pictureFileName = vpNumber[vpTrackedInPose] + "_p_" + momento + ".jpg";
         File pictureFile = new File(getApplicationContext().getFilesDir(), pictureFileName);
 
-        Log.d(TAG, "takePhoto: a new camera frame image is delivered " + momento);
-        Log.d(TAG, "takePhoto: pictureFileName including account: " + pictureFileName);
+        //Log.d(TAG, "takePhoto: a new camera frame image is delivered " + momento);
+        //Log.d(TAG, "takePhoto: pictureFileName including account: " + pictureFileName);
         if (isArSwitchOn) {
             if ((vpIsAmbiguous[vpTrackedInPose]) && (vpIsDisambiguated))
                 waitingToCaptureVpAfterDisambiguationProcedureSuccessful = false;
@@ -3867,7 +4044,7 @@ public class ImageCapActivity extends Activity implements
             Utils.matToBitmap(rgba, bitmapImage);
             final int width = bitmapImage.getWidth();
             final int height = bitmapImage.getHeight();
-            Log.d(TAG, "takePhoto: Camera frame width: " + width + " height: " + height);
+            //Log.d(TAG, "takePhoto: Camera frame width: " + width + " height: " + height);
         }
         if (bitmapImage != null) {
             // Turning tracking OFF
@@ -3880,7 +4057,7 @@ public class ImageCapActivity extends Activity implements
             // Is the sound loaded already?
             if (camShutterSoundIDLoaded) {
                 soundPool.play(camShutterSoundID, volume, volume, 1, 0, 1f);
-                Log.d(TAG, "takePhoto: Camera Shutter Played sound");
+                //Log.d(TAG, "takePhoto: Camera Shutter Played sound");
             }
             // Preparing UI for user decision upon capture acceptance
             if ((!vpPhotoAccepted) && (!vpPhotoRejected)) {
@@ -3952,10 +4129,10 @@ public class ImageCapActivity extends Activity implements
                 }
             } while ((!vpPhotoAccepted) && (!vpPhotoRejected));
 
-            Log.d(TAG, "takePhoto: LOOP ENDED: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
+            //Log.d(TAG, "takePhoto: LOOP ENDED: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
 
             if (vpPhotoAccepted) {
-                Log.d(TAG, "takePhoto: vpPhotoAccepted!!!!");
+                //Log.d(TAG, "takePhoto: vpPhotoAccepted!!!!");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -4056,7 +4233,7 @@ public class ImageCapActivity extends Activity implements
                     updatePendingUpload();
 
                     if ((singleImageTrackingIsSet) && (isArSwitchOn)) {
-                        Log.d(TAG, "takePhoto: vpPhotoAccepted >>>>> calling setMarkerlessTrackingConfiguration");
+                        //Log.d(TAG, "takePhoto: vpPhotoAccepted >>>>> calling setMarkerlessTrackingConfiguration");
                         if (!waitingUntilMultipleImageTrackingIsSet) {
                             setMultipleImageTrackingConfiguration();
                         }
@@ -4086,7 +4263,7 @@ public class ImageCapActivity extends Activity implements
                 }
                 vpPhotoAccepted = false;
                 vpPhotoRequestInProgress = false;
-                Log.d(TAG, "takePhoto: vpPhotoAccepted: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
+                //Log.d(TAG, "takePhoto: vpPhotoAccepted: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
                 if (isArSwitchOn) isHudOn = 1;
                 if ((!waitingUntilMultipleImageTrackingIsSet) && (isArSwitchOn)) {
                     setMultipleImageTrackingConfiguration();
@@ -4094,10 +4271,10 @@ public class ImageCapActivity extends Activity implements
             }
 
             if (vpPhotoRejected) {
-                Log.d(TAG, "takePhoto: vpPhotoRejected!!!!");
+                //Log.d(TAG, "takePhoto: vpPhotoRejected!!!!");
                 try {
                     if (pictureFile.delete()) {
-                        Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> " + pictureFile.getName() + " deleted successfully");
+                        //Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> " + pictureFile.getName() + " deleted successfully");
                     }
                     ;
 
@@ -4152,8 +4329,8 @@ public class ImageCapActivity extends Activity implements
                 lastVpPhotoRejected = true;
                 vpPhotoRejected = false;
                 vpPhotoRequestInProgress = false;
-                Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> calling setMarkerlessTrackingConfiguration");
-                Log.d(TAG, "takePhoto: vpPhotoRejected: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
+                //Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> calling setMarkerlessTrackingConfiguration");
+                //Log.d(TAG, "takePhoto: vpPhotoRejected: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
                 if ((!waitingUntilMultipleImageTrackingIsSet) && (isArSwitchOn)) {
                     setMultipleImageTrackingConfiguration();
                 }
@@ -4263,6 +4440,137 @@ public class ImageCapActivity extends Activity implements
         }
     }
 
+    public void startShowDescVPScreenTour() {
+        final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
+        alert.setIcon(R.drawable.logo_mymensor);
+        alert.setTitle(getText(R.string.showdescvpscreentour));
+        alert.setMessage(R.string.showdescvpscreentourdescription);
+
+        alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                showDescVpScreenTourStep1();
+            }
+        });
+
+        alert.setNegativeButton(R.string.notnow, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                dialog.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
+    public void showDescVpScreenTourStep1() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.textView1))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showdescvptourpagetitle))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showDescVpScreenTourStep2();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showDescVpScreenTourStep2() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonCallConfig))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showdescvptourbtncallcfg))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showDescVpScreenTourStep3();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showDescVpScreenTourStep3() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonAlphaToggle))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showdescvptourbtnalphatgl))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showDescVpScreenTourStep4();
+                        }
+                    }
+                })
+                .show();
+    }
+
+
+    public void showDescVpScreenTourStep4() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonShowVpCaptures))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showdescvptourbtnshowvpcaptures))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showDescVpScreenTourStep5();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showDescVpScreenTourStep5() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutVpArStatus))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showdescvptourarstatus))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            // nada!!!!
+                        }
+                    }
+                })
+                .show();
+    }
+
 
     @Override
     public void onItemClick(AdapterView<?> adapter, View view, final int position, long id) {
@@ -4295,14 +4603,14 @@ public class ImageCapActivity extends Activity implements
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "Showing vpLocationDescImageFile for VP=" + position + "(vpLocationDescImageFileContents==null)" + (vpLocationDescImageFileContents == null));
+                    //Log.d(TAG, "Showing vpLocationDescImageFile for VP=" + position + "(vpLocationDescImageFileContents==null)" + (vpLocationDescImageFileContents == null));
                     // VP Location Picture ImageView
                     if (!(vpLocationDescImageFileContents == null)) {
                         imageView.setImageBitmap(vpLocationDescImageFileContents);
                         imageView.setVisibility(View.VISIBLE);
                     }
                     isShowingVpPhoto = true;
-                    Log.d(TAG, "imageView.isShown()=" + imageView.isShown());
+                    //Log.d(TAG, "imageView.isShown()=" + imageView.isShown());
                     uploadPendingLinearLayout.setVisibility(View.INVISIBLE);
                     arSwitchLinearLayout.setVisibility(View.INVISIBLE);
                     arSwitch.setVisibility(View.INVISIBLE);
@@ -4348,13 +4656,15 @@ public class ImageCapActivity extends Activity implements
                     vpId = getString(R.string.vp_name) + vpId;
                     vpIdNumber.setText(vpId);
                     vpIdNumber.setVisibility(View.VISIBLE);
+                    //Help
+                    buttonShowHelpDescVPScreen.setVisibility(View.VISIBLE);
                     // Activate Location Description Buttons
-                    callConfigButton.setVisibility(View.VISIBLE);
-                    alphaToggleButton.setVisibility(View.VISIBLE);
+                    buttonCallConfig.setVisibility(View.VISIBLE);
+                    buttonAlphaToggle.setVisibility(View.VISIBLE);
                     if (imageView.getImageAlpha() == 128)
-                        alphaToggleButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                        buttonAlphaToggle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
                     if (imageView.getImageAlpha() == 255)
-                        alphaToggleButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
+                        buttonAlphaToggle.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.darker_gray)));
                     showVpCapturesButton.setVisibility(View.VISIBLE);
                     // Layout showing VP configuration state
 
@@ -4393,19 +4703,19 @@ public class ImageCapActivity extends Activity implements
     public void onButtonClick(View v) {
         if (v.getId() == R.id.buttonAcceptVpPhoto) {
             vpPhotoAccepted = true;
-            Log.d(TAG, "vpPhotoAccepted BUTTON PRESSED: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
+            //Log.d(TAG, "onButtonClick: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
         }
         if (v.getId() == R.id.buttonRejectVpPhoto) {
             vpPhotoRejected = true;
-            Log.d(TAG, "vpPhotoRejected BUTTON PRESSED: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
+            //Log.d(TAG, "onButtonClick: vpPhotoAccepted:" + vpPhotoAccepted + " vpPhotoRejected:" + vpPhotoRejected);
         }
         if (v.getId() == R.id.buttonRemarkVpPhoto) {
             vpPhotoTobeRemarked = true;
-            Log.d(TAG, "buttonRemarkVpPhoto BUTTON PRESSED");
+            //Log.d(TAG, "onButtonClick: buttonRemarkVpPhoto");
         }
         if (v.getId() == R.id.buttonReplayVpVideo) {
             vpVideoTobeReplayed = true;
-            Log.d(TAG, "buttonReplayVpVideo BUTTON PRESSED");
+            //Log.d(TAG, "onButtonClick: buttonReplayVpVideo");
         }
         if (v.getId() == R.id.buttonShowPreviousVpCapture) {
             mediaSelected++;
@@ -4416,11 +4726,55 @@ public class ImageCapActivity extends Activity implements
             showVpCaptures(lastVpSelectedByUser);
         }
 
+        if (v.getId() == R.id.buttonPositionCertified) {
+            //Log.d(TAG, "onButtonClick: buttonPositionCertified");
+            if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonGreen) {
+                Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposcert), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+            if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonRed) {
+                Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposnotcert), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+            if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonGray) {
+                Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposcertunk), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+        }
+
+        if (v.getId() == R.id.buttonTimeCertified) {
+            //Log.d(TAG, "onButtonClick: buttonTimeCertified");
+            if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonGreen) {
+                Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimecert), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+            if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonRed) {
+                Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimenotcert), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+            if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonGray) {
+                Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimecertunk), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
+            }
+        }
+
     }
 
 
     private void deleteLocalShownCapture(int vpSelected, final View view) {
-        Log.d(TAG, "deleteLocalShownCapture: vpSelected=" + vpSelected + " lastVpSelectedByUser=" + lastVpSelectedByUser);
+        //Log.d(TAG, "deleteLocalShownCapture: vpSelected=" + vpSelected + " lastVpSelectedByUser=" + lastVpSelectedByUser);
         final int vpToList = vpSelected;
         final String vpMediaFileName;
         final String path = getApplicationContext().getFilesDir().getPath();
@@ -4435,10 +4789,10 @@ public class ImageCapActivity extends Activity implements
         try {
             if (!(capsInDirectory == null)) {
                 vpMediaFileName = capsInDirectory[mediaSelected];
-                Log.d(TAG, "deleteLocalShownCapture: vpMediaFileName=" + path + "/" + vpMediaFileName);
+                //Log.d(TAG, "deleteLocalShownCapture: vpMediaFileName=" + path + "/" + vpMediaFileName);
                 File fileToBeDeleted = new File(path + "/" + vpMediaFileName);
                 if (fileToBeDeleted.delete()) {
-                    Log.d(TAG, "deleteLocalShownCapture: vpMediaFileName=" + path + "/" + vpMediaFileName + " succesfully deleted from local storage.");
+                    //Log.d(TAG, "deleteLocalShownCapture: vpMediaFileName=" + path + "/" + vpMediaFileName + " succesfully deleted from local storage.");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -4464,7 +4818,7 @@ public class ImageCapActivity extends Activity implements
         new AsyncTask<Void, Void, ObjectMetadata>() {
             @Override
             protected void onPreExecute() {
-                Log.d(TAG, "getRemoteFileMetadata: onPreExecute");
+                //Log.d(TAG, "getRemoteFileMetadata: onPreExecute");
             }
 
             @Override
@@ -4480,20 +4834,20 @@ public class ImageCapActivity extends Activity implements
                             nthtry = false;
                         }
                         if (nthtry) {
-                            Log.d(TAG, "Request to s3Amazon.getObjectMetadata succeeded");
+                            //Log.d(TAG, "Request to s3Amazon.getObjectMetadata succeeded");
                             return objMetadata;
                         } else {
-                            Log.d(TAG, "Request to s3Amazon.getObjectMetadata failed or object does not exist");
+                            //Log.d(TAG, "Request to s3Amazon.getObjectMetadata failed or object does not exist");
                         }
                     } while (retries-- > 0);
                 } catch (AmazonServiceException ase) {
-                    Log.d(TAG, "AmazonServiceException=" + ase.toString());
+                    //Log.d(TAG, "AmazonServiceException=" + ase.toString());
                     return null;
                 } catch (AmazonClientException ace) {
-                    Log.d(TAG, "AmazonClientException=" + ace.toString());
+                    //Log.d(TAG, "AmazonClientException=" + ace.toString());
                     return null;
                 } catch (Exception e) {
-                    Log.d(TAG, "Exception=" + e.toString());
+                    //Log.d(TAG, "Exception=" + e.toString());
                     return null;
                 }
                 return null;
@@ -4501,36 +4855,36 @@ public class ImageCapActivity extends Activity implements
 
             @Override
             protected void onPostExecute(final ObjectMetadata objectMetadata) {
-                Log.d(TAG, "getRemoteFileMetadata: onPostExecute");
+                //Log.d(TAG, "getRemoteFileMetadata: onPostExecute");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (objectMetadata != null) {
                             Map<String, String> userMetadata = new HashMap<String, String>();
                             userMetadata = objectMetadata.getUserMetadata();
-                            Log.d(TAG, "userMetadata=" + userMetadata.toString());
-                            Log.d(TAG, "Location=LocCertified=" + userMetadata.get("loccertified") + " Time=TimeCertified=" + userMetadata.get("timecertified"));
+                            //Log.d(TAG, "userMetadata=" + userMetadata.toString());
+                            //Log.d(TAG, "Location=LocCertified=" + userMetadata.get("loccertified") + " Time=TimeCertified=" + userMetadata.get("timecertified"));
                             if (userMetadata.get("loccertified").equalsIgnoreCase("1")) {
                                 //IsPositionCertified
-                                positionCertifiedImageview.setVisibility(View.VISIBLE);
-                                positionCertifiedImageview.setBackground(circularButtonGreen);
+                                buttonPositionCertified.setVisibility(View.VISIBLE);
+                                buttonPositionCertified.setBackground(circularButtonGreen);
                             } else {
-                                positionCertifiedImageview.setVisibility(View.VISIBLE);
-                                positionCertifiedImageview.setBackground(circularButtonRed);
+                                buttonPositionCertified.setVisibility(View.VISIBLE);
+                                buttonPositionCertified.setBackground(circularButtonRed);
                             }
                             if (userMetadata.get("timecertified").equalsIgnoreCase("1")) {
                                 //IsTimeCertified
-                                timeCertifiedImageview.setVisibility(View.VISIBLE);
-                                timeCertifiedImageview.setBackground(circularButtonGreen);
+                                buttonTimeCertified.setVisibility(View.VISIBLE);
+                                buttonTimeCertified.setBackground(circularButtonGreen);
                             } else {
-                                timeCertifiedImageview.setVisibility(View.VISIBLE);
-                                timeCertifiedImageview.setBackground(circularButtonRed);
+                                buttonTimeCertified.setVisibility(View.VISIBLE);
+                                buttonTimeCertified.setBackground(circularButtonRed);
                             }
                         } else {
-                            positionCertifiedImageview.setVisibility(View.VISIBLE);
-                            positionCertifiedImageview.setBackground(circularButtonGray);
-                            timeCertifiedImageview.setVisibility(View.VISIBLE);
-                            timeCertifiedImageview.setBackground(circularButtonGray);
+                            buttonPositionCertified.setVisibility(View.VISIBLE);
+                            buttonPositionCertified.setBackground(circularButtonGray);
+                            buttonTimeCertified.setVisibility(View.VISIBLE);
+                            buttonTimeCertified.setBackground(circularButtonGray);
                         }
                     }
                 });
@@ -4539,10 +4893,215 @@ public class ImageCapActivity extends Activity implements
     }
 
 
+    public void startShowVpCapturesTour() {
+        final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
+        alert.setIcon(R.drawable.logo_mymensor);
+        alert.setTitle(getText(R.string.showvpcapturestour));
+        alert.setMessage(R.string.showvpcapturestourdescription);
+
+        alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                showVpCapturesTourStep1();
+            }
+        });
+
+        alert.setNegativeButton(R.string.notnow, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                dialog.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
+    public void showVpCapturesTourStep1() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.textView1))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourpagetitle))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep2();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep2() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonShowNextVpCapture))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourfwdbutton))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep3();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep3() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.deleteLocalMediaButton))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourdeletebutton))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep4();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep4() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutshareMediaButton2))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptoursharecontentbutton))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep5();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep5() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutshareMediaButton))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptoursharelinkbutton))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep6();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep6() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonDownloadPDFOnShowVpCaptures))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourpdfbutton))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep7();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep7() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonPositionCertified))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourposcert))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            showVpCapturesTourStep8();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep8() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonTimeCertified))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourtimecert))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            if (!mymIsRunningOnKitKat) {
+                                if (linearLayoutConfigCaptureVpsHRZ.isShown()) {
+                                    showVpCapturesTourStep9();
+                                }
+                            } else {
+                                // nada!!!!
+                            }
+
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void showVpCapturesTourStep9() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutConfigCaptureVpsHRZ))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showvpcaptourarsetup))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            // nada!!!!
+                        }
+                    }
+                })
+                .show();
+    }
+
     private void showVpCaptures(int vpSelected) {
         final Bitmap showVpPhotoImageFileContents;
         final Bitmap showVpVideoThumbImageFileContents;
-        Log.d(TAG, "vpSelected=" + vpSelected + " lastVpSelectedByUser=" + lastVpSelectedByUser);
+        //Log.d(TAG, "showVpCaptures: vpSelected=" + vpSelected + " lastVpSelectedByUser=" + lastVpSelectedByUser);
         final int position = vpSelected;
         final int vpToList = vpSelected;
         final String vpMediaFileName;
@@ -4561,11 +5120,11 @@ public class ImageCapActivity extends Activity implements
                 if (mediaSelected == -1) mediaSelected = numOfEntries - 1;
                 if (mediaSelected < 0) mediaSelected = 0;
                 if (mediaSelected > (numOfEntries - 1)) mediaSelected = 0;
-                Log.d(TAG, "SHOWVPCAPTURES: vpSelected=" + vpSelected + " lastVpSelectedByUser=" + lastVpSelectedByUser + " mediaSelected=" + mediaSelected);
+                //Log.d(TAG, "SHOWVPCAPTURES: vpSelected=" + vpSelected + " lastVpSelectedByUser=" + lastVpSelectedByUser + " mediaSelected=" + mediaSelected);
                 vpMediaFileName = capsInDirectory[mediaSelected];
-                Log.d(TAG, "SHOWVPCAPTURES: vpMediaFileName=" + vpMediaFileName);
+                //Log.d(TAG, "SHOWVPCAPTURES: vpMediaFileName=" + vpMediaFileName);
                 showingMediaFileName = vpMediaFileName;
-                Log.d(TAG, "showVpCaptures: vpMediaFileName=" + vpMediaFileName);
+                //Log.d(TAG, "showVpCaptures: vpMediaFileName=" + vpMediaFileName);
                 StringBuilder sb = new StringBuilder(vpMediaFileName);
                 final String millisMoment = sb.substring(vpMediaFileName.length() - 17, vpMediaFileName.length() - 4);
                 final String mediaType = sb.substring(vpMediaFileName.length() - 19, vpMediaFileName.length() - 18);
@@ -4574,7 +5133,12 @@ public class ImageCapActivity extends Activity implements
                     // When the item is a photo
                     final InputStream fiscaps = MymUtils.getLocalFile(vpMediaFileName, getApplicationContext());
                     showVpPhotoImageFileContents = BitmapFactory.decodeStream(fiscaps);
-                    fiscaps.close();
+                    try {
+                        fiscaps.close();
+                    } catch (Exception fiscapse) {
+                        Log.e(TAG, "showVpCaptures exception when closing file: " + fiscapse);
+                    }
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -4583,22 +5147,22 @@ public class ImageCapActivity extends Activity implements
                                 linearLayoutImageViewsOnShowVpCaptures.setVisibility(View.VISIBLE);
                                 try {
                                     ExifInterface tags = new ExifInterface(path + "/" + vpMediaFileName);
-                                    Log.d(TAG, "Location=Make=" + tags.getAttribute("Make") + " Time=GPSAltitudeRef=" + tags.getAttribute("GPSAltitudeRef"));
+                                    //Log.d(TAG, "Location=Make=" + tags.getAttribute("Make") + " Time=GPSAltitudeRef=" + tags.getAttribute("GPSAltitudeRef"));
                                     if (tags.getAttribute("Make").equalsIgnoreCase("1")) {
                                         //IsPositionCertified
-                                        positionCertifiedImageview.setVisibility(View.VISIBLE);
-                                        positionCertifiedImageview.setBackground(circularButtonGreen);
+                                        buttonPositionCertified.setVisibility(View.VISIBLE);
+                                        buttonPositionCertified.setBackground(circularButtonGreen);
                                     } else {
-                                        positionCertifiedImageview.setVisibility(View.VISIBLE);
-                                        positionCertifiedImageview.setBackground(circularButtonRed);
+                                        buttonPositionCertified.setVisibility(View.VISIBLE);
+                                        buttonPositionCertified.setBackground(circularButtonRed);
                                     }
                                     if (tags.getAttribute("GPSAltitudeRef").equalsIgnoreCase("1")) {
                                         //IsTimeCertified
-                                        timeCertifiedImageview.setVisibility(View.VISIBLE);
-                                        timeCertifiedImageview.setBackground(circularButtonGreen);
+                                        buttonTimeCertified.setVisibility(View.VISIBLE);
+                                        buttonTimeCertified.setBackground(circularButtonGreen);
                                     } else {
-                                        timeCertifiedImageview.setVisibility(View.VISIBLE);
-                                        timeCertifiedImageview.setBackground(circularButtonRed);
+                                        buttonTimeCertified.setVisibility(View.VISIBLE);
+                                        buttonTimeCertified.setBackground(circularButtonRed);
                                     }
                                 } catch (Exception e) {
                                     Log.e(TAG, "Problem with Exif tags or drawable setting:" + e.toString());
@@ -4617,8 +5181,50 @@ public class ImageCapActivity extends Activity implements
                                 sdf.setTimeZone(TimeZone.getDefault());
                                 String formattedLastDate = sdf.format(lastDate);
                                 lastTimeAcquired = getString(R.string.date_vp_capture_shown) + ": " + formattedLastDate;
-                                vpLocationDesTextView.setText(vpLocationDesText[lastVpSelectedByUser] + "\n" + lastTimeAcquired);
+                                if (isArConfigLoaded) {
+                                    String vpId = Integer.toString(vpNumber[position]);
+                                    vpId = getString(R.string.vp_name) + vpId;
+                                    vpIdNumber.setText(vpId);
+                                    vpLocationDesTextView.setText(vpLocationDesText[lastVpSelectedByUser] + "\n" + lastTimeAcquired);
+                                } else {
+                                    String vpId = Integer.toString(lastVpSelectedByUser);
+                                    vpId = getString(R.string.vp_name) + vpId;
+                                    vpIdNumber.setText(vpId);
+                                    vpLocationDesTextView.setText("VP#" + lastVpSelectedByUser + "\n" + lastTimeAcquired);
+                                }
+                                vpIdNumber.setVisibility(View.VISIBLE);
                                 vpLocationDesTextView.setVisibility(View.VISIBLE);
+                                // Layout showing VP configuration state
+                                if (isArConfigLoaded) {
+                                    if (!mymIsRunningOnKitKat) {
+                                        linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
+                                        linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
+                                        if (vpArIsConfigured[position]) {
+                                            vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
+                                        } else {
+                                            vpAcquiredStatusHRZ.setText(R.string.off);
+                                        }
+                                        if (vpIsAmbiguous[position]) {
+                                            linearLayoutMarkerIdHRZ.setVisibility(View.VISIBLE);
+                                            idMarkerNumberTextViewHRZ.setText(Integer.toString(vpSuperMarkerId[position]));
+                                            buttonAmbiguousVpToggleHRZ.setVisibility(View.VISIBLE);
+                                            buttonAmbiguousVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                            if (vpIsSuperSingle[position]) {
+                                                buttonSuperSingleVpToggleHRZ.setVisibility(View.VISIBLE);
+                                                buttonSuperSingleVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                            }
+                                        } else {
+                                            linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
+                                            buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                            buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                        }
+                                    }
+                                } else {
+                                    linearLayoutConfigCaptureVpsHRZ.setVisibility(View.GONE);
+                                }
+                                if (appStartState.equalsIgnoreCase("firstthisversion") || appStartState.equalsIgnoreCase("firstever")) {
+                                    startShowVpCapturesTour();
+                                }
                             }
                         }
                     });
@@ -4636,11 +5242,21 @@ public class ImageCapActivity extends Activity implements
                         sdf.setTimeZone(TimeZone.getDefault());
                         String formattedLastDate = sdf.format(lastDate);
                         lastTimeAcquired = getString(R.string.date_vp_capture_shown) + ": " + formattedLastDate;
-                        final String desTextView = vpLocationDesText[lastVpSelectedByUser] + "\n" + lastTimeAcquired;
+                        String tempTextView = "";
+                        if (isArConfigLoaded) {
+                            tempTextView = vpLocationDesText[lastVpSelectedByUser] + "\n" + lastTimeAcquired;
+                        } else {
+                            tempTextView = "VP#" + lastVpSelectedByUser + "\n" + lastTimeAcquired;
+                        }
+                        final String desTextView = tempTextView;
                         final Uri videoFileTMP = Uri.fromFile(new File(getApplicationContext().getFilesDir(), vpMediaFileName));
                         final InputStream fisthumbs = MymUtils.getLocalFile(vpSelected + "_t_" + millisMoment + ".jpg", getApplicationContext());
                         showVpVideoThumbImageFileContents = BitmapFactory.decodeStream(fisthumbs);
-                        fisthumbs.close();
+                        try {
+                            fisthumbs.close();
+                        } catch (Exception fisthumbse) {
+                            Log.e(TAG, "showVpCaptures exception when closing file: " + fisthumbse);
+                        }
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -4653,15 +5269,42 @@ public class ImageCapActivity extends Activity implements
                                 buttonStartVideoInVpCaptures.setVisibility(View.VISIBLE);
                                 linearLayoutButtonsOnShowVpCaptures.setVisibility(View.VISIBLE);
                                 linearLayoutImageViewsOnShowVpCaptures.setVisibility(View.VISIBLE);
-                                positionCertifiedImageview.setVisibility(View.GONE);
-                                timeCertifiedImageview.setVisibility(View.GONE);
+                                buttonPositionCertified.setVisibility(View.GONE);
+                                buttonTimeCertified.setVisibility(View.GONE);
                                 if (radarScanImageView.isShown()) {
                                     radarScanImageView.clearAnimation();
                                     radarScanImageView.setVisibility(View.GONE);
                                 }
                                 vpLocationDesTextView.setText(desTextView);
                                 vpLocationDesTextView.setVisibility(View.VISIBLE);
-
+                                // Layout showing VP configuration state
+                                if (isArConfigLoaded) {
+                                    if (!mymIsRunningOnKitKat) {
+                                        linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
+                                        linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
+                                        if (vpArIsConfigured[position]) {
+                                            vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
+                                        } else {
+                                            vpAcquiredStatusHRZ.setText(R.string.off);
+                                        }
+                                        if (vpIsAmbiguous[position]) {
+                                            linearLayoutMarkerIdHRZ.setVisibility(View.VISIBLE);
+                                            idMarkerNumberTextViewHRZ.setText(Integer.toString(vpSuperMarkerId[position]));
+                                            buttonAmbiguousVpToggleHRZ.setVisibility(View.VISIBLE);
+                                            buttonAmbiguousVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                            if (vpIsSuperSingle[position]) {
+                                                buttonSuperSingleVpToggleHRZ.setVisibility(View.VISIBLE);
+                                                buttonSuperSingleVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                            }
+                                        } else {
+                                            linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
+                                            buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                            buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                        }
+                                    }
+                                } else {
+                                    linearLayoutConfigCaptureVpsHRZ.setVisibility(View.GONE);
+                                }
                                 buttonStartVideoInVpCaptures.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -4688,16 +5331,16 @@ public class ImageCapActivity extends Activity implements
                                             public void onCompletion(MediaPlayer mp) {
                                                 videoView.setZOrderOnTop(false);
                                                 videoView.setVisibility(View.GONE);
-                                                Log.d(TAG, "onCompletion Listener VIDEO showVpCaptures");
+                                                //Log.d(TAG, "onCompletion Listener VIDEO showVpCaptures");
                                                 buttonStartVideoInVpCaptures.setVisibility(View.VISIBLE);
                                                 DisplayMetrics metrics = new DisplayMetrics();
                                                 getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                                                Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
-                                                Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
+                                                //Log.d(TAG, "SCRRES Display Width (Pixels):" + metrics.widthPixels);
+                                                //Log.d(TAG, "SCRRES Display Heigth (Pixels):" + metrics.heightPixels);
                                                 final Window window = getWindow();
                                                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                                                 if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
-                                                    Log.d(TAG, "showVpCaptures - Calling FULLSCREEN");
+                                                    //Log.d(TAG, "showVpCaptures - Calling FULLSCREEN");
                                                     window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -4709,6 +5352,9 @@ public class ImageCapActivity extends Activity implements
                                         });
                                     }
                                 });
+                                if (appStartState.equalsIgnoreCase("firstthisversion") || appStartState.equalsIgnoreCase("firstever")) {
+                                    startShowVpCapturesTour();
+                                }
                             }
                         });
                     }
@@ -4738,7 +5384,7 @@ public class ImageCapActivity extends Activity implements
         short[] vpMarkerlessMarkerWidth = new short[qtyVps];
         short[] vpMarkerlessMarkerHeigth = new short[qtyVps];
 
-        Log.d(TAG, "loadConfigurationFile(): started");
+        //Log.d(TAG, "loadConfigurationFile(): started");
 
         for (int i = 0; i < (qtyVps); i++) {
             vpFrequencyUnit[i] = "";
@@ -4750,7 +5396,7 @@ public class ImageCapActivity extends Activity implements
 
         try {
             // Getting a file path for vps configuration XML file
-            Log.d(TAG, "Vps Config Local name = " + Constants.vpsConfigFileName);
+            //Log.d(TAG, "Vps Config Local name = " + Constants.vpsConfigFileName);
             File vpsFile = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
             InputStream fis = MymUtils.getLocalFile(Constants.vpsConfigFileName, getApplicationContext());
             try {
@@ -4847,9 +5493,13 @@ public class ImageCapActivity extends Activity implements
                     }
                     eventType = myparser.next();
                 }
-                fis.close();
+                try {
+                    fis.close();
+                } catch (Exception fise) {
+                    Log.e(TAG, "showVpCaptures exception when closing file: " + fise);
+                }
             } finally {
-                Log.d(TAG, "Vps Config Local file = " + vpsFile);
+                //Log.d(TAG, "Vps Config Local file = " + vpsFile);
             }
         } catch (Exception e) {
             Log.e(TAG, "Vps data loading failed:" + e.toString());
@@ -4858,7 +5508,7 @@ public class ImageCapActivity extends Activity implements
 
 
         for (int i = 0; i < (qtyVps); i++) {
-            //Log.d(TAG, "vpNumber[" + i + "]=" + vpNumber[i]);
+            ////Log.d(TAG, "vpNumber[" + i + "]=" + vpNumber[i]);
             vpChecked[i] = false;
             if (frequencyUnit == null) frequencyUnit = "millis";
             if (!(vpFrequencyUnit[i] == null)) {
@@ -4881,7 +5531,7 @@ public class ImageCapActivity extends Activity implements
             }
         }
 
-        Log.d(TAG, "loadConfigurationFile(): ended");
+        //Log.d(TAG, "loadConfigurationFile(): ended");
         return true;
     }
 
@@ -4967,7 +5617,7 @@ public class ImageCapActivity extends Activity implements
     }
 
     private boolean loadVpsChecked() {
-        Log.d(TAG, "loadVpsChecked(): started ");
+        //Log.d(TAG, "loadVpsChecked(): started ");
         int vpListOrder = -1;
         try {
             InputStream fis = MymUtils.getLocalFile(Constants.vpsCheckedConfigFileName, getApplicationContext());
@@ -4985,15 +5635,15 @@ public class ImageCapActivity extends Activity implements
                     } else if (myparser.getName().equalsIgnoreCase("VpNumber")) {
                         eventType = myparser.next();
                         vpNumber[vpListOrder] = Short.parseShort(myparser.getText());
-                        //Log.d(TAG, "vpNumber[" + vpListOrder + "]=" + vpNumber[vpListOrder]);
+                        ////Log.d(TAG, "vpNumber[" + vpListOrder + "]=" + vpNumber[vpListOrder]);
                     } else if (myparser.getName().equalsIgnoreCase("Checked")) {
                         eventType = myparser.next();
                         vpChecked[vpListOrder] = Boolean.parseBoolean(myparser.getText());
-                        //Log.d(TAG, "vpChecked[" + vpListOrder + "]=" + vpChecked[vpListOrder]);
+                        ////Log.d(TAG, "vpChecked[" + vpListOrder + "]=" + vpChecked[vpListOrder]);
                     } else if (myparser.getName().equalsIgnoreCase("PhotoTakenTimeMillis")) {
                         eventType = myparser.next();
                         photoTakenTimeMillis[vpListOrder] = Long.parseLong(myparser.getText());
-                        //Log.d(TAG, "photoTakenTimeMillis[" + vpListOrder + "]=" + photoTakenTimeMillis[vpListOrder]);
+                        ////Log.d(TAG, "photoTakenTimeMillis[" + vpListOrder + "]=" + photoTakenTimeMillis[vpListOrder]);
                     }
 
                 } else if (eventType == XmlPullParser.END_TAG) {
@@ -5003,11 +5653,17 @@ public class ImageCapActivity extends Activity implements
                 }
                 eventType = myparser.next();
             }
-            fis.close();
-            Log.d(TAG, "loadVpsChecked(): ended ");
+            try {
+                fis.close();
+            } catch (Exception fise) {
+                Log.e(TAG, "showVpCaptures exception when closing file: " + fise);
+            }
+
+
+            //Log.d(TAG, "loadVpsChecked(): ended ");
         } catch (Exception e) {
             Log.e(TAG, "Checked Vps data loading failed:" + e.getMessage());
-            Log.d(TAG, "Creating a new file.");
+            //Log.d(TAG, "Creating a new file.");
             for (short i = 0; i < (qtyVps); i++) {
                 vpNumber[i] = i;
                 vpChecked[i] = false;
@@ -5033,7 +5689,7 @@ public class ImageCapActivity extends Activity implements
                 isTimeCertified = false;
                 long now = 0;
                 Long loopStart = System.currentTimeMillis();
-                Log.d(TAG, "callTimeServerInBackground: Calling SNTP");
+                //Log.d(TAG, "callTimeServerInBackground: Calling SNTP");
                 SntpClient sntpClient = new SntpClient();
                 do {
                     if (isCancelled()) {
@@ -5048,11 +5704,11 @@ public class ImageCapActivity extends Activity implements
                         Log.i("SNTP", "System Present Time =" + System.currentTimeMillis());
                         isTimeCertified = true;
                     }
-                    if (now != 0)
-                        Log.d(TAG, "callTimeServerInBackground: ntp:now=" + now);
+                    //if (now != 0)
+                    //Log.d(TAG, "callTimeServerInBackground: ntp:now=" + now);
 
                 } while ((now == 0) && ((System.currentTimeMillis() - loopStart) < 10000));
-                Log.d(TAG, "callTimeServerInBackground: ending the loop querying pool.ntp.org for 10 seconds max:" + (System.currentTimeMillis() - loopStart) + " millis:" + now);
+                //Log.d(TAG, "callTimeServerInBackground: ending the loop querying pool.ntp.org for 10 seconds max:" + (System.currentTimeMillis() - loopStart) + " millis:" + now);
 
                 return null;
             }
@@ -5060,8 +5716,8 @@ public class ImageCapActivity extends Activity implements
             @Override
             protected void onPostExecute(Void result) {
                 if (isTimeCertified) {
-                    Log.d(TAG, "callTimeServerInBackground: System.currentTimeMillis() before setTime=" + System.currentTimeMillis());
-                    Log.d(TAG, "callTimeServerInBackground: System.currentTimeMillis() AFTER setTime=" + MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference));
+                    //Log.d(TAG, "callTimeServerInBackground: System.currentTimeMillis() before setTime=" + System.currentTimeMillis());
+                    //Log.d(TAG, "callTimeServerInBackground: System.currentTimeMillis() AFTER setTime=" + MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference));
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -5101,14 +5757,13 @@ public class ImageCapActivity extends Activity implements
 
         @Override
         public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-            Log.d(TAG, String.format("Observer: onProgressChanged: %d, total: %d, current: %d",
-                    id, bytesTotal, bytesCurrent));
+            //Log.d(TAG, String.format("Observer: onProgressChanged: %d, total: %d, current: %d",id, bytesTotal, bytesCurrent));
             updatePendingUpload();
         }
 
         @Override
         public void onStateChanged(int id, TransferState newState) {
-            Log.d(TAG, "Observer: onStateChanged: " + id + ", " + newState);
+            //Log.d(TAG, "Observer: onStateChanged: " + id + ", " + newState);
             if (newState.equals(TransferState.COMPLETED)) {
                 pendingUploadTransfers--;
                 if (pendingUploadTransfers < 0) pendingUploadTransfers = 0;

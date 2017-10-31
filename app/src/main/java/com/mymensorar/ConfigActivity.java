@@ -1,10 +1,12 @@
 package com.mymensorar;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,8 +29,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -79,6 +79,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
+
 import static com.mymensorar.R.drawable.border_marker_id_blue;
 import static com.mymensorar.R.drawable.border_marker_id_red;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -95,11 +97,13 @@ public class ConfigActivity extends Activity implements
     private String markervpRemotePath;
     private String vpsRemotePath;
 
+    private String previousActivity;
     private String appStartState;
+    private String serverConnection;
 
     private short qtyVps = 0;
     private short vpIndex;
-    private short lastVpSelectedByUser;
+    private int lastVpSelectedByUser;
 
 
     private String mymensorAccount;
@@ -148,18 +152,17 @@ public class ConfigActivity extends Activity implements
     private int frequencyValue;
 
     ListView vpsListView;
-    ImageView mProgress;
     TouchImageView imageView;
 
     FloatingActionButton cameraShutterButton;
+    FloatingActionButton buttonShowHelpMainScreen;
+    FloatingActionButton buttonShowHelpConfigCapScreen
 
     TextView vpLocationDesEditTextView;
     TextView vpIdNumber;
     TextView vpAcquiredStatus;
     TextView vpIdMarkerUsedTextView;
     TextView idMarkerNumberTextView;
-
-    Animation rotationMProgress;
 
     Button acceptVpPhotoButton;
     Button rejectVpPhotoButton;
@@ -312,16 +315,21 @@ public class ConfigActivity extends Activity implements
 
         transferUtility = AwsUtil.getTransferUtility(s3Client, getApplicationContext());
 
-        mymensorAccount = getIntent().getExtras().get("mymensoraccount").toString();
-        dciNumber = Integer.parseInt(getIntent().getExtras().get("dcinumber").toString());
-        qtyVps = Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
-        sntpTime = Long.parseLong(getIntent().getExtras().get("sntpTime").toString());
-        sntpTimeReference = Long.parseLong(getIntent().getExtras().get("sntpReference").toString());
-        isTimeCertified = Boolean.parseBoolean(getIntent().getExtras().get("isTimeCertified").toString());
-        lastVpSelectedByUser = Short.parseShort(getIntent().getExtras().get("lastVpSelectedByUser").toString());
-        origMymAcc = getIntent().getExtras().get("origmymacc").toString();
-        deviceId = getIntent().getExtras().get("deviceid").toString();
-        appStartState = getIntent().getExtras().get("appStartState").toString();
+        // Retrieve configuration info
+        Bundle configBundle = getIntent().getExtras();
+
+        if (configBundle.getString("mymensoraccount") != null) mymensorAccount=configBundle.getString("mymensoraccount");
+        dciNumber = configBundle.getInt("dcinumber",1);
+        qtyVps = Constants.maxQtyVps;  //Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
+        sntpTime = configBundle.getLong("sntpTime");
+        sntpTimeReference = configBundle.getLong("sntpReference");
+        isTimeCertified = configBundle.getBoolean("isTimeCertified",false);
+        lastVpSelectedByUser = configBundle.getInt("lastVpSelectedByUser",1);
+        if (configBundle.getString("origmymacc") != null) origMymAcc=configBundle.getString("origmymacc");
+        if (configBundle.getString("deviceid") != null) deviceId=configBundle.getString("deviceid");
+        if (configBundle.getString("previousactivity") != null) previousActivity=configBundle.getString("previousactivity");
+        if (configBundle.getString("appStartState") != null) appStartState=configBundle.getString("appStartState");
+        if (configBundle.getString("serverConnection") != null) serverConnection=configBundle.getString("serverConnection");
 
         descvpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "dsc" + "/";
         markervpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "mrk" + "/";
@@ -368,13 +376,24 @@ public class ConfigActivity extends Activity implements
 
 
         final Camera camera;
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(mCameraIndex, cameraInfo);
-        mIsCameraFrontFacing =
-                (cameraInfo.facing ==
-                        Camera.CameraInfo.CAMERA_FACING_FRONT);
-        mNumCameras = Camera.getNumberOfCameras();
-        camera = Camera.open(mCameraIndex);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+            Camera.getCameraInfo(mCameraIndex, cameraInfo);
+            mIsCameraFrontFacing =
+                    (cameraInfo.facing ==
+                            Camera.CameraInfo.CAMERA_FACING_FRONT);
+            mNumCameras = Camera.getNumberOfCameras();
+            camera = Camera.open(mCameraIndex);
+        } else {
+            Log.d(TAG, "OnCreate: No permission to use Camera, finishing the app");
+            Toast toast = Toast.makeText(getApplicationContext(), getText(R.string.error_nopermissiontousecamera), Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+            toast.show();
+            finish();
+            return;
+        }
+
 
         final Camera.Parameters parameters = camera.getParameters();
         camera.release();
@@ -405,9 +424,7 @@ public class ConfigActivity extends Activity implements
         String[] newVpsList = new String[qtyVps];
 
         for (int i = 0; i < (qtyVps); i++) {
-            if (i == 0) {
-                newVpsList[0] = getString(R.string.vp_00);
-            } else {
+            {
                 newVpsList[i] = getString(R.string.vp_name) + vpNumber[i];
             }
 
@@ -431,6 +448,10 @@ public class ConfigActivity extends Activity implements
 
         cameraShutterButton = (FloatingActionButton) findViewById(R.id.cameraShutterButton);
 
+        buttonShowHelpMainScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpMainScreen);
+
+        buttonShowHelpConfigCapScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpConfigCapScreen);
+
         requestPhotoButton = (FloatingActionButton) findViewById(R.id.buttonRequestPhoto);
 
         //increaseQtyVps = (FloatingActionButton) findViewById(R.id.buttonIncreaseQtyVps);
@@ -441,11 +462,6 @@ public class ConfigActivity extends Activity implements
 
         acceptVpPhotoButton = (Button) this.findViewById(R.id.buttonAcceptVpPhoto);
         rejectVpPhotoButton = (Button) this.findViewById(R.id.buttonRejectVpPhoto);
-
-        mProgress = (ImageView) this.findViewById(R.id.waitingTrkLoading);
-        rotationMProgress = AnimationUtils.loadAnimation(this, R.anim.clockwise_rotation);
-        mProgress.setVisibility(View.GONE);
-        mProgress.startAnimation(rotationMProgress);
 
         imageView = (TouchImageView) this.findViewById(R.id.imageView1);
 
@@ -481,7 +497,7 @@ public class ConfigActivity extends Activity implements
                 TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
-                Log.d(TAG,"Calling callImageCapActivity()");
+                Log.d(TAG, "Calling callImageCapActivity()");
                 callImageCapActivity();
 
             }
@@ -504,6 +520,20 @@ public class ConfigActivity extends Activity implements
             }
         });
 
+        buttonShowHelpMainScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMainConfigScreenTour();
+            }
+        });
+
+        buttonShowHelpConfigCapScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startConfigCaptureScreenTour();
+            }
+        });
+
         requestPhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -514,6 +544,7 @@ public class ConfigActivity extends Activity implements
                 requestPhotoButton.setVisibility(View.INVISIBLE);
                 qtyVpsLinearLayout.setVisibility(View.INVISIBLE);
                 buttonCallImagecap.setVisibility(View.INVISIBLE);
+                buttonShowHelpMainScreen.setVisibility(View.INVISIBLE);
                 linearLayoutCaptureNewVp.setVisibility(View.INVISIBLE);
                 linearLayoutConfigCaptureVps.setVisibility(View.INVISIBLE);
                 linearLayoutAmbiguousVp.setVisibility(View.INVISIBLE);
@@ -653,20 +684,20 @@ public class ConfigActivity extends Activity implements
 
         //if (mGoogleApiClient.isConnected()) startLocationUpdates();
         setVpsChecked();
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                {
-                    mProgress.clearAnimation();
-                    mProgress.setVisibility(View.GONE);
-                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.configready), Snackbar.LENGTH_LONG);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
-                    mainTextView.setTextColor(Color.WHITE);
-                    mSnackBar.show();
-                }
+        if (!(lastVpSelectedByUser > 0)) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    {
+                        Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.configready), Snackbar.LENGTH_LONG);
+                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        mainTextView.setTextColor(Color.WHITE);
+                        mSnackBar.show();
+                    }
 
-            }
-        });
+                }
+            });
+        }
     }
 
     // The OpenCV loader callback.
@@ -1440,6 +1471,7 @@ public class ConfigActivity extends Activity implements
                     requestPhotoButton.setVisibility(View.INVISIBLE);
                     qtyVpsLinearLayout.setVisibility(View.INVISIBLE);
                     buttonCallImagecap.setVisibility(View.INVISIBLE);
+                    buttonShowHelpMainScreen.setVisibility(View.INVISIBLE);
                     linearLayoutConfigCaptureVps.setVisibility(View.VISIBLE);
                     linearLayoutCaptureNewVp.setVisibility(View.INVISIBLE);
                     linearLayoutAmbiguousVp.setVisibility(View.VISIBLE);
@@ -1478,6 +1510,10 @@ public class ConfigActivity extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.configready), Snackbar.LENGTH_LONG);
+                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                mainTextView.setTextColor(Color.WHITE);
+                mSnackBar.show();
                 isShowingVpPhoto = false;
                 vpWasConfigured = false;
                 drawTargetFrame = false;
@@ -1490,6 +1526,7 @@ public class ConfigActivity extends Activity implements
                 requestPhotoButton.setVisibility(View.INVISIBLE);
                 qtyVpsLinearLayout.setVisibility(View.VISIBLE);
                 buttonCallImagecap.setVisibility(View.VISIBLE);
+                buttonShowHelpMainScreen.setVisibility(View.VISIBLE);
                 linearLayoutCaptureNewVp.setVisibility(View.INVISIBLE);
                 linearLayoutConfigCaptureVps.setVisibility(View.INVISIBLE);
                 linearLayoutAmbiguousVp.setVisibility(View.INVISIBLE);
@@ -1544,16 +1581,6 @@ public class ConfigActivity extends Activity implements
         super.onRestart();
         Log.d(TAG, "onRestart CALLED");
         setVpsChecked();
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                {
-                    mProgress.clearAnimation();
-                    mProgress.setVisibility(View.GONE);
-                }
-
-            }
-        });
     }
 
     @Override
@@ -1884,11 +1911,248 @@ public class ConfigActivity extends Activity implements
     }
 
 
+    public void startConfigCaptureScreenTour() {
+        final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
+        alert.setIcon(R.drawable.logo_mymensor);
+        alert.setTitle(getText(R.string.showconfigcapscreentour));
+        alert.setMessage(R.string.showconfigcapscreentourdescription);
+
+        alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                if (cameraShutterButton.isShown()) {
+                    startConfigCaptureScreenTourStep5();
+                } else {
+                    startConfigCaptureScreenTourStep1();
+                }
+
+            }
+        });
+
+        alert.setNegativeButton(R.string.notnow, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                dialog.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
+
+        public void startConfigCaptureScreenTourStep1() {
+
+            new MaterialTapTargetPrompt.Builder(this)
+                    .setTarget(findViewById(R.id.linearLayoutVpArStatusInCfgCap))
+                    .setPrimaryText("")
+                    .setSecondaryText(getText(R.string.showcfgcapscrtourarstatus))
+                    .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                        @Override
+                        public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                            if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                                startConfigCaptureScreenTourStep2();
+                            }
+                        }
+                    })
+                    .show();
+        }
+
+    public void startConfigCaptureScreenTourStep2() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutAmbiguousVp))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showcfgcapscrtourambtgl))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            startConfigCaptureScreenTourStep3();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void startConfigCaptureScreenTourStep3() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutSuperSingleVp))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showcfgcapscrtoursuptgl))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            startConfigCaptureScreenTourStep4();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void startConfigCaptureScreenTourStep4() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonRequestPhoto))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showcfgcapscrtourrequestphoto))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            // nada!!!!
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void startConfigCaptureScreenTourStep5() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.cameraShutterButton))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showcfgcapscrtourcamerashutter))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            // nada!!!!
+                        }
+                    }
+                })
+                .show();
+    }
+
+
+
+
+
+
+
+
+
+    public void startMainConfigScreenTour() {
+        final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
+        alert.setIcon(R.drawable.logo_mymensor);
+        alert.setTitle(getText(R.string.showmainconfigscreentour));
+        alert.setMessage(R.string.showmainconfigscreentourdescription);
+
+        alert.setPositiveButton(R.string.go, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                startMainConfigScreenTourStep1();
+            }
+        });
+
+        alert.setNegativeButton(R.string.notnow, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                final Window window = getWindow();
+                if (((metrics.widthPixels) * (metrics.heightPixels)) <= 921600) {
+                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+                dialog.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
+    public void startMainConfigScreenTourStep1() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.vp_list))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showmaincfgscrtourvps))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            startMainConfigScreenTourStep2();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void startMainConfigScreenTourStep2() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.buttonCallImagecap))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showmaincfgscrtourbtncallimgcap))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            // nada!!!!
+                        }
+                    }
+                })
+                .show();
+    }
+
+
     @Override
     public void onItemClick(AdapterView<?> adapter, View view, final int position, long id) {
         vpLocationDescImageFileContents = null;
         vpIndex = (short) (position);
-        // Local file path of VP Location Picture Image
+        if (vpIndex == 0) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    vpsListView.setItemChecked(position, false);
+                    String message = getString(R.string.vp_name) + vpIndex + " " + getString(R.string.vp_notconfigurable);
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), message, Snackbar.LENGTH_LONG);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
+                }
+            });
+            return;
+        }
         try {
             InputStream fis = MymUtils.getLocalFile("descvp" + (position) + ".png", getApplicationContext());
             if (!(fis == null)) {
@@ -1899,6 +2163,10 @@ public class ConfigActivity extends Activity implements
                 @Override
                 public void run() {
                     Log.d(TAG, "Showing vpLocationDescImageFile for VP=" + vpIndex + "(vpLocationDescImageFileContents==null)" + (vpLocationDescImageFileContents == null));
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.startconfigofvp)+vpIndex, Snackbar.LENGTH_SHORT);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
                     // VP Location Picture ImageView
                     if (!(vpLocationDescImageFileContents == null)) {
                         imageView.setImageBitmap(vpLocationDescImageFileContents);
@@ -1933,6 +2201,7 @@ public class ConfigActivity extends Activity implements
                     requestPhotoButton.setVisibility(View.VISIBLE);
                     qtyVpsLinearLayout.setVisibility(View.INVISIBLE);
                     buttonCallImagecap.setVisibility(View.INVISIBLE);
+                    buttonShowHelpMainScreen.setVisibility(View.INVISIBLE);
                     linearLayoutConfigCaptureVps.setVisibility(View.VISIBLE);
                     linearLayoutCaptureNewVp.setVisibility(View.VISIBLE);
                     linearLayoutAmbiguousVp.setVisibility(View.VISIBLE);
@@ -1970,7 +2239,20 @@ public class ConfigActivity extends Activity implements
     public void startWithVpDefined(final int position) {
         vpLocationDescImageFileContents = null;
         vpIndex = (short) (position);
-        // Local file path of VP Location Picture Image
+        if (vpIndex == 0) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    vpsListView.setItemChecked(position, false);
+                    String message = getString(R.string.vp_name) + vpIndex + " " + getString(R.string.vp_notconfigurable);
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), message, Snackbar.LENGTH_LONG);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
+                }
+            });
+            return;
+        }
         try {
             InputStream fis = MymUtils.getLocalFile("descvp" + (position) + ".png", getApplicationContext());
             if (!(fis == null)) {
@@ -2015,6 +2297,7 @@ public class ConfigActivity extends Activity implements
                     requestPhotoButton.setVisibility(View.VISIBLE);
                     qtyVpsLinearLayout.setVisibility(View.INVISIBLE);
                     buttonCallImagecap.setVisibility(View.INVISIBLE);
+                    buttonShowHelpMainScreen.setVisibility(View.INVISIBLE);
                     linearLayoutConfigCaptureVps.setVisibility(View.VISIBLE);
                     linearLayoutCaptureNewVp.setVisibility(View.VISIBLE);
                     linearLayoutAmbiguousVp.setVisibility(View.VISIBLE);
@@ -2038,6 +2321,10 @@ public class ConfigActivity extends Activity implements
                         linearLayoutMarkerId.setVisibility(View.INVISIBLE);
                         idMarkerNumberTextView.setText("--");
                     }
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.startconfigofvp)+vpIndex, Snackbar.LENGTH_SHORT);
+                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    mainTextView.setTextColor(Color.WHITE);
+                    mSnackBar.show();
                 }
             });
         } catch (Exception e) {

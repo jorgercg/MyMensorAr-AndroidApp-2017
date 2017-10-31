@@ -13,7 +13,7 @@ public class Constants {
     public static final float tolerancePosition = 50;
     public static final float toleranceRotation = 10;
     public static final float tolerancePositionSuper = 3;
-    public static final float toleranceRotationSuper = 6;
+    public static final float toleranceRotationSuper = 8;
     public static final String capturesFolder = "cap";
     public static final String usersConfigFolder = "usrcfg";
     public static final String vpsConfigFileName = "vps.xml";
@@ -70,6 +70,15 @@ public class Constants {
     public static final String MYM_CLIENT_GUID = "mymar_client_guid";
     public static final String MYM_CLIENT_SALT = "mymar_client_salt";
     public static final String MYM_CLIENT_IV = "mymar_client_iv";
+    /**
+    * MyMensor App Start State
+    */
+    public static final String MYM_STSTATE_NORMAL = "normal";
+    public static final String MYM_STSTATE_FIRSTEVER = "firstever";
+    public static final String MYM_STSTATE_FIRSTTHISVERSION = "firstthisversion";
+    public static final String MYM_SERVERCONN_NORMAL = "normal";
+    public static final String MYM_SERVERCONN_TRIALEXPIRED = "trialexpired";
+    public static final String MYM_SERVERCONN_SUBEXPIRED = "subexpired";
 }
 
 

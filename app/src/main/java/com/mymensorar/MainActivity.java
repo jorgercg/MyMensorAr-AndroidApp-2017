@@ -55,10 +55,6 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("MyMensor");
     }
 
-    public native String getSecretKeyFromJNI();
-
-    public SecretKey aesKey;
-
     private static long back_pressed;
 
     private static final String STATE_DIALOG = "state_dialog";
@@ -72,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private static AppStart appStart = null;
     private String appStartState;
     public static String mymarClientGUID;
-    private String mymarClientGUIDStored;
 
     private AccountManager mAccountManager;
     private AlertDialog mAlertDialog;
@@ -114,12 +109,10 @@ public class MainActivity extends AppCompatActivity {
 
         mAccountManager = AccountManager.get(this);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED)
-            ;
-
         final Account availableAccounts[] = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = sharedPref.edit();
 
         Map<String, ?> keys = sharedPref.getAll();
 
@@ -131,45 +124,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Resolver porque ele chega aqui sem o LAST USER e o USER GROUP ?????????
-
         switch (checkAppStart(this, sharedPref)) {
             case NORMAL:
                 // We don't want to get on the user's nerves
-                appStartState = "normal";
+                appStartState = Constants.MYM_STSTATE_NORMAL;
                 break;
             case FIRST_TIME_VERSION:
                 // TODO show what's new
-                appStartState = "firstthisversion";
+                appStartState = Constants.MYM_STSTATE_FIRSTTHISVERSION;
                 break;
             case FIRST_TIME:
                 // TODO show a tutorial
-                appStartState = "firstever";
+                appStartState = Constants.MYM_STSTATE_FIRSTEVER;
                 break;
             default:
                 break;
         }
 
-        mymarClientGUIDStored = sharedPref.getString(Constants.MYM_CLIENT_GUID, "NOTSET");
-
-        aesKey = MymCrypt.getSecretKeySecurely(getSecretKeyFromJNI(), sharedPref);
-
-        if (mymarClientGUIDStored.equals("NOTSET")) {
-            final String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-            mymarClientGUID = androidId;
-            mymarClientGUIDStored = new String(MymCrypt.encryptData(mymarClientGUID.getBytes(Charset.forName("ISO-8859-1")),
-                    MymCrypt.retrieveIv(sharedPref),
-                    aesKey), Charset.forName("ISO-8859-1"));
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(Constants.MYM_CLIENT_GUID, mymarClientGUIDStored);
-            editor.commit();
-        } else {
-            mymarClientGUID = new String(MymCrypt.decryptData(mymarClientGUIDStored.getBytes(Charset.forName("ISO-8859-1")),
-                    MymCrypt.retrieveIv(sharedPref),
-                    aesKey), Charset.forName("ISO-8859-1"));
-        }
-
-
+        final String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        mymarClientGUID = androidId;
 
         /*
          * Initializes the sync client.
@@ -190,14 +163,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (availableAccounts.length == 0) {
             Log.d(TAG, "availableAccounts[] = " + "nada!!!!" + " Qty= 0");
-            SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString(Constants.MYM_LAST_USER, "");
             editor.commit();
             AmazonSharedPreferencesWrapper.registerUserGroup(sharedPref, "");
         } else {
             Log.d(TAG, "availableAccounts[] = " + availableAccounts[0] + " Qty=" + availableAccounts.length);
             if (!sharedPref.getString(Constants.MYM_LAST_USER, "").equals(availableAccounts[0].name)) {
-                SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putString(Constants.MYM_LAST_USER, "");
                 editor.commit();
                 AmazonSharedPreferencesWrapper.registerUserGroup(sharedPref, "");
@@ -524,23 +495,17 @@ public class MainActivity extends AppCompatActivity {
     public void permissionsRequest() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.LOCATION_HARDWARE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.CAPTURE_VIDEO_OUTPUT) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.CAMERA,
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.LOCATION_HARDWARE,
                     Manifest.permission.CAPTURE_VIDEO_OUTPUT,
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.GET_ACCOUNTS}, 111);
+                    Manifest.permission.RECORD_AUDIO}, 111);
         }
     }
 

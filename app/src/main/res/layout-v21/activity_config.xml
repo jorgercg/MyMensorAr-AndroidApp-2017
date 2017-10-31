@@ -30,6 +30,20 @@
         android:background="@android:color/transparent"
         android:padding="1dp" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/buttonShowHelpMainScreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_toEndOf="@id/vp_list"
+        android:clickable="true"
+        android:visibility="visible"
+        opencv:backgroundTint="@android:color/holo_blue_dark"
+        opencv:fabSize="mini"
+        opencv:srcCompat="@android:drawable/ic_menu_help" />
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
@@ -63,28 +77,47 @@
         android:layout_below="@id/descVPEditText"
         android:layout_margin="8dp"
         android:layout_toEndOf="@id/vp_list"
-        android:background="@drawable/border_marker_id_blue"
-        android:orientation="horizontal"
-        android:visibility="invisible">
+        android:orientation="vertical"
+        android:visibility="visible">
 
-        <TextView
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/buttonShowHelpConfigCapScreen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical|center"
-            android:padding="8dp"
-            android:text="@string/textview_vp_ar"
-            android:textAlignment="gravity"
-            android:textColor="@android:color/white" />
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            opencv:backgroundTint="@android:color/holo_blue_dark"
+            opencv:fabSize="mini"
+            opencv:srcCompat="@android:drawable/ic_menu_help" />
 
-        <TextView
-            android:id="@+id/vpAcquiredStatus"
+        <LinearLayout
+            android:id="@+id/linearLayoutVpArStatusInCfgCap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:gravity="center_vertical|center"
-            android:padding="8dp"
-            android:text="--"
-            android:textColor="@android:color/white" />
+            android:layout_margin="8dp"
+            android:background="@drawable/border_marker_id_blue"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|center"
+                android:padding="8dp"
+                android:text="@string/textview_vp_ar"
+                android:textAlignment="gravity"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/vpAcquiredStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="center_vertical|center"
+                android:padding="8dp"
+                android:text="--"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -124,41 +157,40 @@
 
     <LinearLayout
         android:id="@+id/uploadPendingLinearLayout"
-        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|center"
         android:layout_alignParentTop="true"
+        android:layout_margin="8dp"
         android:layout_toStartOf="@id/linearLayoutQtyVps"
         android:background="@drawable/border_ar_switch"
-        android:visibility="invisible"
-        android:layout_margin="8dp">
+        android:gravity="center_vertical|center"
+        android:orientation="horizontal"
+        android:visibility="invisible">
 
         <ImageView
             android:id="@+id/uploadPendingmageview"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:background="@android:color/transparent"
             android:layout_margin="4dp"
-            android:paddingStart="6dp"
             android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
             android:cropToPadding="true"
-            android:src="@drawable/ic_cloud_upload_white_18dp"
+            android:paddingStart="6dp"
             android:scaleType="fitCenter"
-            />
+            android:src="@drawable/ic_cloud_upload_white_18dp" />
 
         <TextView
             android:id="@+id/uploadPendingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="0dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
             android:gravity="center_vertical|center"
+            android:padding="0dp"
             android:text="@string/zero"
             android:textColor="@android:color/white"
-            android:background="@android:color/transparent"
-            android:visibility="visible"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp" />
+            android:visibility="visible" />
 
     </LinearLayout>
 

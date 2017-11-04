@@ -85,7 +85,10 @@ public class MymAccAuthenticatorActivity extends AccountAuthenticatorActivity {
 
         Bundle response = getIntent().getExtras();
 
-        Log.d(TAG, "accountName:" + accountName + " Response: " + response.toString());
+        if (response != null )
+        {
+            Log.d(TAG, "accountName:" + accountName + " Response: " + response.toString());
+        }
 
         mAuthTokenType = getIntent().getStringExtra(ARG_AUTH_TYPE);
 
@@ -93,9 +96,6 @@ public class MymAccAuthenticatorActivity extends AccountAuthenticatorActivity {
             mAuthTokenType = Constants.AUTHTOKEN_TYPE_FULL_ACCESS;
 
         Log.d(TAG, "mAuthTokenType:" + mAuthTokenType);
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED)
-            ;
 
         final Account availableAccounts[] = mAccountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
 
@@ -346,7 +346,9 @@ public class MymAccAuthenticatorActivity extends AccountAuthenticatorActivity {
 
         if (getIntent().getBooleanExtra(ARG_IS_ADDING_NEW_ACCOUNT, false)) {
             Log.d(TAG, "finishLogin > addAccountExplicitly");
-            Log.d(TAG, "Intent Extras:" + intent.getExtras().toString() + " mAuthTokenType: " + mAuthTokenType);
+            if (intent.getExtras() != null) {
+                Log.d(TAG, "Intent Extras:" + intent.getExtras().toString() + " mAuthTokenType: " + mAuthTokenType);
+            }
             String authtoken = intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
             String authtokenType = mAuthTokenType;
 
@@ -383,7 +385,9 @@ public class MymAccAuthenticatorActivity extends AccountAuthenticatorActivity {
             }
         });
 
-        alert.show();
+        if (!isFinishing()) {
+            alert.show();
+        }
     }
 
     public void showAlert() {
@@ -399,7 +403,9 @@ public class MymAccAuthenticatorActivity extends AccountAuthenticatorActivity {
             }
         });
 
-        alert.show();
+        if (!isFinishing()) {
+            alert.show();
+        }
     }
 
     public void showAlertOnlyOneUserPerDevice() {
@@ -416,7 +422,9 @@ public class MymAccAuthenticatorActivity extends AccountAuthenticatorActivity {
             }
         });
 
-        alert.show();
+        if (!isFinishing()) {
+            alert.show();
+        }
     }
 
 }

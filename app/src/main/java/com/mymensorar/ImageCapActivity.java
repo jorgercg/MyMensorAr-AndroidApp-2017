@@ -621,7 +621,7 @@ public class ImageCapActivity extends Activity implements
                 // Get the Item from ListView
                 View view = super.getView(position, convertView, parent);
                 // Initialize a TextView for ListView each Item
-                TextView tv = (TextView) view.findViewById(android.R.id.text1);
+                TextView tv =  view.findViewById(android.R.id.text1);
                 // Set the text color of TextView (ListView Item)
                 tv.setTextColor(Color.WHITE);
                 //Drawable icon = getResources().getDrawable(R.drawable.ic_check_white_18dp);
@@ -637,114 +637,114 @@ public class ImageCapActivity extends Activity implements
         vpsListView.setVisibility(View.VISIBLE);
 
 
-        vpLocationDesTextView = (TextView) this.findViewById(R.id.textView1);
-        vpIdNumber = (TextView) this.findViewById(R.id.textView2);
+        vpLocationDesTextView = this.findViewById(R.id.textView1);
+        vpIdNumber = this.findViewById(R.id.textView2);
 
-        recText = (TextView) this.findViewById(R.id.cronoText);
+        recText = this.findViewById(R.id.cronoText);
 
-        linearLayoutAcceptImgButtons = (LinearLayout) this.findViewById(R.id.linearLayoutAcceptImgButtons);
-        acceptVpPhotoButton = (ImageButton) this.findViewById(R.id.buttonAcceptVpPhoto);
-        rejectVpPhotoButton = (ImageButton) this.findViewById(R.id.buttonRejectVpPhoto);
-        buttonRemarkVpPhoto = (ImageButton) this.findViewById(R.id.buttonRemarkVpPhoto);
-        buttonReplayVpVideo = (ImageButton) this.findViewById(R.id.buttonReplayVpVideo);
+        linearLayoutAcceptImgButtons = this.findViewById(R.id.linearLayoutAcceptImgButtons);
+        acceptVpPhotoButton = this.findViewById(R.id.buttonAcceptVpPhoto);
+        rejectVpPhotoButton = this.findViewById(R.id.buttonRejectVpPhoto);
+        buttonRemarkVpPhoto = this.findViewById(R.id.buttonRemarkVpPhoto);
+        buttonReplayVpVideo = this.findViewById(R.id.buttonReplayVpVideo);
 
-        radarScanImageView = (ImageView) this.findViewById(R.id.imageViewRadarScan);
+        radarScanImageView = this.findViewById(R.id.imageViewRadarScan);
         rotationRadarScan = AnimationUtils.loadAnimation(this, R.anim.clockwise_rotation);
         radarScanImageView.setVisibility(View.VISIBLE);
         radarScanImageView.startAnimation(rotationRadarScan);
 
-        mProgress = (ImageView) this.findViewById(R.id.waitingTrkLoading);
+        mProgress = this.findViewById(R.id.waitingTrkLoading);
         rotationMProgress = AnimationUtils.loadAnimation(this, R.anim.clockwise_rotation);
         mProgress.setVisibility(View.GONE);
         mProgress.startAnimation(rotationMProgress);
 
         blinkingText = AnimationUtils.loadAnimation(this, R.anim.textblink);
 
-        imageView = (TouchImageView) this.findViewById(R.id.imageView1);
+        imageView = this.findViewById(R.id.imageView1);
 
-        videoView = (VideoView) this.findViewById(R.id.videoView1);
+        videoView = this.findViewById(R.id.videoView1);
 
-        vpCheckedView = (ImageView) this.findViewById(R.id.imageViewVpChecked);
+        vpCheckedView = this.findViewById(R.id.imageViewVpChecked);
         vpCheckedView.setVisibility(View.GONE);
 
-        uploadPendingLinearLayout = (LinearLayout) this.findViewById(R.id.uploadPendingLinearLayout);
+        uploadPendingLinearLayout = this.findViewById(R.id.uploadPendingLinearLayout);
 
-        arSwitchLinearLayout = (LinearLayout) this.findViewById(R.id.arSwitchLinearLayout);
+        arSwitchLinearLayout = this.findViewById(R.id.arSwitchLinearLayout);
 
-        videoRecorderTimeLayout = (LinearLayout) this.findViewById(R.id.videoRecorderTimeLayout);
+        videoRecorderTimeLayout = this.findViewById(R.id.videoRecorderTimeLayout);
 
-        linearLayoutButtonsOnShowVpCaptures = (LinearLayout) this.findViewById(R.id.linearLayoutButtonsOnShowVpCaptures);
+        linearLayoutButtonsOnShowVpCaptures = this.findViewById(R.id.linearLayoutButtonsOnShowVpCaptures);
 
-        linearLayoutImageViewsOnShowVpCaptures = (LinearLayout) this.findViewById(R.id.linearLayoutImageViewsOnShowVpCaptures);
+        linearLayoutImageViewsOnShowVpCaptures = this.findViewById(R.id.linearLayoutImageViewsOnShowVpCaptures);
 
-        linearLayoutConfigCaptureVps = (LinearLayout) this.findViewById(R.id.linearLayoutConfigCaptureVps);
+        linearLayoutConfigCaptureVps = this.findViewById(R.id.linearLayoutConfigCaptureVps);
 
-        linearLayoutConfigCaptureVpsHRZ = (LinearLayout) this.findViewById(R.id.linearLayoutConfigCaptureVpsHRZ);
+        linearLayoutConfigCaptureVpsHRZ = this.findViewById(R.id.linearLayoutConfigCaptureVpsHRZ);
 
-        linearLayoutAmbiguousVp = (LinearLayout) this.findViewById(R.id.linearLayoutAmbiguousVp);
+        linearLayoutAmbiguousVp = this.findViewById(R.id.linearLayoutAmbiguousVp);
 
-        linearLayoutSuperSingleVp = (LinearLayout) this.findViewById(R.id.linearLayoutSuperSingleVp);
+        linearLayoutSuperSingleVp = this.findViewById(R.id.linearLayoutSuperSingleVp);
 
-        linearLayoutVpArStatus = (LinearLayout) this.findViewById(R.id.linearLayoutVpArStatus);
+        linearLayoutVpArStatus = this.findViewById(R.id.linearLayoutVpArStatus);
 
-        linearLayoutVpArStatusHRZ = (LinearLayout) this.findViewById(R.id.linearLayoutVpArStatusHRZ);
+        linearLayoutVpArStatusHRZ = this.findViewById(R.id.linearLayoutVpArStatusHRZ);
 
-        linearLayoutMarkerId = (LinearLayout) this.findViewById(R.id.linearLayoutMarkerId);
+        linearLayoutMarkerId = this.findViewById(R.id.linearLayoutMarkerId);
 
-        linearLayoutMarkerIdHRZ = (LinearLayout) this.findViewById(R.id.linearLayoutMarkerIdHRZ);
+        linearLayoutMarkerIdHRZ = this.findViewById(R.id.linearLayoutMarkerIdHRZ);
 
-        linearLayoutCallWebAppMainScreen = (LinearLayout) this.findViewById(R.id.linearLayoutCallWebAppMainScreen);
+        linearLayoutCallWebAppMainScreen = this.findViewById(R.id.linearLayoutCallWebAppMainScreen);
 
-        uploadPendingmageview = (ImageView) this.findViewById(R.id.uploadPendingmageview);
+        uploadPendingmageview = this.findViewById(R.id.uploadPendingmageview);
 
-        uploadPendingText = (TextView) this.findViewById(R.id.uploadPendingText);
+        uploadPendingText = this.findViewById(R.id.uploadPendingText);
 
-        buttonPositionCertified = (ImageButton) this.findViewById(R.id.buttonPositionCertified);
+        buttonPositionCertified = this.findViewById(R.id.buttonPositionCertified);
 
-        buttonTimeCertified = (ImageButton) this.findViewById(R.id.buttonTimeCertified);
+        buttonTimeCertified = this.findViewById(R.id.buttonTimeCertified);
 
-        showPreviousVpCaptureButton = (ImageButton) this.findViewById(R.id.buttonShowPreviousVpCapture);
+        showPreviousVpCaptureButton = this.findViewById(R.id.buttonShowPreviousVpCapture);
 
-        showNextVpCaptureButton = (ImageButton) this.findViewById(R.id.buttonShowNextVpCapture);
+        showNextVpCaptureButton = this.findViewById(R.id.buttonShowNextVpCapture);
 
-        buttonStartVideoInVpCaptures = (ImageButton) this.findViewById(R.id.buttonStartVideoInVpCaptures);
+        buttonStartVideoInVpCaptures = this.findViewById(R.id.buttonStartVideoInVpCaptures);
 
-        videoRecorderChronometer = (Chronometer) this.findViewById(R.id.recordingChronometer);
+        videoRecorderChronometer = this.findViewById(R.id.recordingChronometer);
 
-        arSwitch = (Switch) findViewById(R.id.arSwitch);
+        arSwitch = findViewById(R.id.arSwitch);
 
-        idMarkerNumberTextView = (TextView) findViewById(R.id.idMarkerNumberTextView);
-        idMarkerNumberTextViewHRZ = (TextView) findViewById(R.id.idMarkerNumberTextViewHRZ);
-        vpAcquiredStatus = (TextView) this.findViewById(R.id.vpAcquiredStatus);
-        vpAcquiredStatusHRZ = (TextView) this.findViewById(R.id.vpAcquiredStatusHRZ);
+        idMarkerNumberTextView = findViewById(R.id.idMarkerNumberTextView);
+        idMarkerNumberTextViewHRZ = findViewById(R.id.idMarkerNumberTextViewHRZ);
+        vpAcquiredStatus = this.findViewById(R.id.vpAcquiredStatus);
+        vpAcquiredStatusHRZ = this.findViewById(R.id.vpAcquiredStatusHRZ);
 
-        buttonAmbiguousVpToggle = (FloatingActionButton) findViewById(R.id.buttonAmbiguousVpToggle);
-        buttonAmbiguousVpToggleHRZ = (FloatingActionButton) findViewById(R.id.buttonAmbiguousVpToggleHRZ);
-        buttonSuperSingleVpToggle = (FloatingActionButton) findViewById(R.id.buttonSuperSingleVpToggle);
-        buttonSuperSingleVpToggleHRZ = (FloatingActionButton) findViewById(R.id.buttonSuperSingleVpToggleHRZ);
+        buttonAmbiguousVpToggle = findViewById(R.id.buttonAmbiguousVpToggle);
+        buttonAmbiguousVpToggleHRZ = findViewById(R.id.buttonAmbiguousVpToggleHRZ);
+        buttonSuperSingleVpToggle = findViewById(R.id.buttonSuperSingleVpToggle);
+        buttonSuperSingleVpToggleHRZ = findViewById(R.id.buttonSuperSingleVpToggleHRZ);
 
-        cameraShutterButton = (FloatingActionButton) findViewById(R.id.cameraShutterButton);
-        videoCameraShutterButton = (FloatingActionButton) findViewById(R.id.videoCameraShutterButton);
-        videoCameraShutterStopButton = (FloatingActionButton) findViewById(R.id.videoCameraShutterStopButton);
+        cameraShutterButton = findViewById(R.id.cameraShutterButton);
+        videoCameraShutterButton = findViewById(R.id.videoCameraShutterButton);
+        videoCameraShutterStopButton = findViewById(R.id.videoCameraShutterStopButton);
 
-        positionCertifiedButton = (FloatingActionButton) findViewById(R.id.positionCertifiedButton);
-        timeCertifiedButton = (FloatingActionButton) findViewById(R.id.timeCertifiedButton);
-        connectedToServerButton = (FloatingActionButton) findViewById(R.id.connectedToServerButton);
+        positionCertifiedButton = findViewById(R.id.positionCertifiedButton);
+        timeCertifiedButton = findViewById(R.id.timeCertifiedButton);
+        connectedToServerButton = findViewById(R.id.connectedToServerButton);
 
-        buttonCallConfig = (FloatingActionButton) findViewById(R.id.buttonCallConfig);
-        buttonAlphaToggle = (FloatingActionButton) findViewById(R.id.buttonAlphaToggle);
-        showVpCapturesButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCaptures);
-        showVpCapturesMainScreenButton = (FloatingActionButton) findViewById(R.id.buttonShowVpCapturesMainScreen);
-        buttonShowHelpMainScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpMainScreen);
-        buttonShowHelpShowVPCapScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpShowVPCapScreen);
-        buttonShowHelpDescVPScreen = (FloatingActionButton) findViewById(R.id.buttonShowHelpDescVPScreen);
-        buttonDownloadPDFOnShowVpCaptures = (FloatingActionButton) findViewById(R.id.buttonDownloadPDFOnShowVpCaptures);
+        buttonCallConfig = findViewById(R.id.buttonCallConfig);
+        buttonAlphaToggle = findViewById(R.id.buttonAlphaToggle);
+        showVpCapturesButton = findViewById(R.id.buttonShowVpCaptures);
+        showVpCapturesMainScreenButton = findViewById(R.id.buttonShowVpCapturesMainScreen);
+        buttonShowHelpMainScreen = findViewById(R.id.buttonShowHelpMainScreen);
+        buttonShowHelpShowVPCapScreen = findViewById(R.id.buttonShowHelpShowVPCapScreen);
+        buttonShowHelpDescVPScreen = findViewById(R.id.buttonShowHelpDescVPScreen);
+        buttonDownloadPDFOnShowVpCaptures = findViewById(R.id.buttonDownloadPDFOnShowVpCaptures);
 
-        deleteLocalMediaButton = (FloatingActionButton) findViewById(R.id.deleteLocalMediaButton);
-        shareMediaButton = (FloatingActionButton) findViewById(R.id.shareMediaButton);
-        shareMediaButton2 = (FloatingActionButton) findViewById(R.id.shareMediaButton2);
+        deleteLocalMediaButton = findViewById(R.id.deleteLocalMediaButton);
+        shareMediaButton = findViewById(R.id.shareMediaButton);
+        shareMediaButton2 = findViewById(R.id.shareMediaButton2);
 
-        buttonCallWebAppMainScreen = (FloatingActionButton) findViewById(R.id.buttonCallWebAppMainScreen);
+        buttonCallWebAppMainScreen = findViewById(R.id.buttonCallWebAppMainScreen);
 
         arSwitch.setChecked(isArSwitchOn);
 
@@ -754,7 +754,7 @@ public class ImageCapActivity extends Activity implements
                 if (isOn) {
                     if (isArConfigLoaded) {
                         isArSwitchOn = true;
-                        ((TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#00e5ff"));
+                        ( (TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#00e5ff"));
                         cameraShutterButton.setVisibility(View.INVISIBLE);
                         if (!mymIsRunningOnKitKat) {
                             videoCameraShutterButton.setVisibility(View.INVISIBLE);
@@ -765,19 +765,19 @@ public class ImageCapActivity extends Activity implements
                         showVpCapturesMainScreenButton.setVisibility(View.GONE);
                         vpsListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
                         Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arswitchison), Snackbar.LENGTH_LONG);
-                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     } else {
                         arSwitch.setChecked(false);
                         if (isArConfigLoading) {
                             Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arconfigloading), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         } else {
                             Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arconfignotavailable), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
@@ -785,7 +785,7 @@ public class ImageCapActivity extends Activity implements
 
                 } else {
                     isArSwitchOn = false;
-                    ((TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#616161"));
+                    ( (TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#616161"));
                     cameraShutterButton.setVisibility(View.VISIBLE);
                     if (!mymIsRunningOnKitKat) {
                         videoCameraShutterButton.setVisibility(View.VISIBLE);
@@ -806,7 +806,7 @@ public class ImageCapActivity extends Activity implements
                     }
                     vpsListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
                     Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arswitchisoff), Snackbar.LENGTH_LONG);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -912,7 +912,7 @@ public class ImageCapActivity extends Activity implements
                 @Override
                 public void onClick(View v) {
                     Snackbar mSnackBar = Snackbar.make(v, getText(R.string.vpisambiguous), Snackbar.LENGTH_LONG);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -922,7 +922,7 @@ public class ImageCapActivity extends Activity implements
                 @Override
                 public void onClick(View v) {
                     Snackbar mSnackBar = Snackbar.make(v, getText(R.string.vpissupersingle), Snackbar.LENGTH_LONG);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -936,7 +936,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 stopLocationUpdates();
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_not_certified), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -950,7 +950,7 @@ public class ImageCapActivity extends Activity implements
                 String lastUpdatedOn = sdf.format(mLastUpdateTime);
                 lastUpdatedOn = " (" + lastUpdatedOn + ")";
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_is_certified) + lastUpdatedOn, Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -965,13 +965,13 @@ public class ImageCapActivity extends Activity implements
                     lastUpdatedOn = " (" + lastUpdatedOn + ")";
                     Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_is_certified) + lastUpdatedOn, Snackbar.LENGTH_LONG)
                             .setAction(getText(R.string.turn_off_location_updates), turnOffClickListenerPositionButton);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
                     Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_not_certified), Snackbar.LENGTH_LONG)
                             .setAction(getText(R.string.turn_on_location_updates), turnOnClickListenerPositionButton);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -992,7 +992,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 callTimeServerInBackground();
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.tryingtocertifytime), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1008,13 +1008,13 @@ public class ImageCapActivity extends Activity implements
                                 public void onClick(View v) {
                                 }
                             });
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
                     Snackbar mSnackBar = Snackbar.make(view, getText(R.string.usingcerttimeisfalse), Snackbar.LENGTH_LONG)
                             .setAction(getText(R.string.certify), actionOnClickListenerTimeButton);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -1035,7 +1035,7 @@ public class ImageCapActivity extends Activity implements
             @Override
             public void onClick(View view) {
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.tryingtoconnecttoserver), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
                 checkConnectionToServer();
@@ -1052,26 +1052,26 @@ public class ImageCapActivity extends Activity implements
                                 public void onClick(View v) {
                                 }
                             });
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
                     if (serverConnection.equals(Constants.MYM_SERVERCONN_TRIALEXPIRED)) {
                         Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoservertrialexpired), Snackbar.LENGTH_LONG);
-                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     }
                     if (serverConnection.equals(Constants.MYM_SERVERCONN_SUBEXPIRED)) {
                         Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserversubexpired), Snackbar.LENGTH_LONG);
-                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     }
                     if (serverConnection.equals(Constants.MYM_SERVERCONN_NORMAL)) {
                         Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserver), Snackbar.LENGTH_LONG)
                                 .setAction(getText(R.string.trytoconnect), undoOnClickListenerServerButton);
-                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     }
@@ -1087,7 +1087,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
 
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.callingconfigactivity), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
 
@@ -1120,14 +1120,14 @@ public class ImageCapActivity extends Activity implements
                 if (lastVpSelectedByUser == 0) {
                     String message = getString(R.string.vp_name) + lastVpSelectedByUser + " " + getString(R.string.vp_notconfigurable);
                     Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), message, Snackbar.LENGTH_LONG);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                     return;
                 }
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmconfigloading), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerCallConfigButton);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1224,7 +1224,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
 
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.callingwebapp), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
 
@@ -1248,7 +1248,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmcallingwebapp), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerCallWebAppMainScreenButton);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1262,7 +1262,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
 
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.downloadpdfcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
                 String fileSha256Hash = "";
@@ -1290,7 +1290,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmdownloadpdfcert), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerDownloadPDFOnShowVpCapturesButton);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1344,7 +1344,7 @@ public class ImageCapActivity extends Activity implements
                                 }
                             }
                         });
-                TextView mainTextView = (TextView) (snackbar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (snackbar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 snackbar.show();
             }
@@ -2038,13 +2038,11 @@ public class ImageCapActivity extends Activity implements
                                 //Log.d(TAG, "Reloading descvp" + (k) + ".png");
                                 File descvpFile = new File(mActivity.getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
                                 mActivity.reloadEnded = false;
-                                final int k_inner = k;
                                 final TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (descvpRemotePath + "descvp" + k + ".png"), Constants.BUCKET_NAME, descvpFile);
                                 observer.setTransferListener(new TransferListener() {
 
                                     @Override
                                     public void onStateChanged(int id, TransferState state) {
-                                        //Log.d(TAG, "loadingArConfig: Observer: RELOADING descvp: vp[" + k_inner + "]: id=" + id + " State=" + state);
                                         if (state.equals(TransferState.COMPLETED)) {
                                             mActivity.reloadEnded = true;
                                         }
@@ -2075,13 +2073,11 @@ public class ImageCapActivity extends Activity implements
                                 //Log.d(TAG, "Reloading descvp" + (k) + ".png");
                                 File markervpFile = new File(mActivity.getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
                                 mActivity.reloadEnded = false;
-                                final int k_inner = k;
                                 final TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (markervpRemotePath + "markervp" + k + ".png"), Constants.BUCKET_NAME, markervpFile);
                                 observer.setTransferListener(new TransferListener() {
 
                                     @Override
                                     public void onStateChanged(int id, TransferState state) {
-                                        //Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + k_inner + "]: id=" + id + " State=" + state);
                                         if (state.equals(TransferState.COMPLETED)) {
                                             mActivity.reloadEnded = true;
                                         }
@@ -2176,7 +2172,6 @@ public class ImageCapActivity extends Activity implements
                             (mActivity.findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
                         }
                     });
-                    //Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
                 } else {
                     boolean loadConfigurationFileIsSuccessful = mActivity.loadConfigurationFile();
                     boolean loadVpsCheckedIsSuccessful = mActivity.loadVpsChecked();
@@ -2862,7 +2857,7 @@ public class ImageCapActivity extends Activity implements
                         @Override
                         public void run() {
                             Snackbar mSnackBar = Snackbar.make(mCameraView, getString(R.string.double_bck_exit), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
@@ -2945,7 +2940,7 @@ public class ImageCapActivity extends Activity implements
                     mProgress.clearAnimation();
                     mProgress.setVisibility(View.GONE);
                     Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.imagecapready), Snackbar.LENGTH_LONG);
-                    TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -3943,12 +3938,11 @@ public class ImageCapActivity extends Activity implements
                     pendingUploadTransfers++;
                     updatePendingUpload();
                     vpPhotoAccepted = false;
-                    if (observer != null) {
+                    if (observer == null) {
                         //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getState().toString());
                         //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getAbsoluteFilePath());
                         //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getBucket());
                         //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getKey());
-                    } else {
                         //Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
                         vpChecked[vpTrackedInPose] = false;
                         if (isArSwitchOn) {
@@ -4368,8 +4362,6 @@ public class ImageCapActivity extends Activity implements
                     if (pictureFile.delete()) {
                         //Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> " + pictureFile.getName() + " deleted successfully");
                     }
-                    ;
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -4827,19 +4819,19 @@ public class ImageCapActivity extends Activity implements
             //Log.d(TAG, "onButtonClick: buttonPositionCertified");
             if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonGreen) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonRed) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposnotcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonGray) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposcertunk), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -4849,19 +4841,19 @@ public class ImageCapActivity extends Activity implements
             //Log.d(TAG, "onButtonClick: buttonTimeCertified");
             if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonGreen) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimecert), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonRed) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimenotcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonGray) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimecertunk), Snackbar.LENGTH_LONG);
-                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -4895,7 +4887,7 @@ public class ImageCapActivity extends Activity implements
                         public void run() {
                             String message = getString(R.string.local_file_deleted);
                             Snackbar mSnackBar = Snackbar.make(view, message, Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
@@ -5485,7 +5477,7 @@ public class ImageCapActivity extends Activity implements
                                             public boolean onError(MediaPlayer mp, int what, int extra) {
                                                 String message = getString(R.string.error_while_playing_video);
                                                 Snackbar mSnackBar = Snackbar.make(videoView, message, Snackbar.LENGTH_LONG);
-                                                TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                                                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                                                 mainTextView.setTextColor(Color.WHITE);
                                                 mSnackBar.show();
                                                 returnToInitialScreen();
@@ -5532,7 +5524,7 @@ public class ImageCapActivity extends Activity implements
                     public void run() {
                         String message = getString(R.string.no_photo_captured_in_this_vp);
                         Snackbar mSnackBar = Snackbar.make(imageView, message, Snackbar.LENGTH_LONG);
-                        TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                         returnToInitialScreen();
@@ -5900,7 +5892,7 @@ public class ImageCapActivity extends Activity implements
                         if (result) {
                             mActivity.timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_green_dark)));
                             Snackbar mSnackBar = Snackbar.make(mActivity.timeCertifiedButton.getRootView(), mActivity.getText(R.string.usingcerttimeistrue), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         } else {
@@ -5908,7 +5900,7 @@ public class ImageCapActivity extends Activity implements
                             sntpTimeReference = 0;
                             mActivity.timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_red_dark)));
                             Snackbar mSnackBar = Snackbar.make(mActivity.timeCertifiedButton.getRootView(), mActivity.getText(R.string.usingcerttimeisfalse), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }

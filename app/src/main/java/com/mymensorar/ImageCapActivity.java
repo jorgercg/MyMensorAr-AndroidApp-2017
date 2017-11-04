@@ -139,124 +139,96 @@ public class ImageCapActivity extends Activity implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    /**
+     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
+     */
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    /**
+     * The fastest rate for active location updates. Exact. Updates will never be more frequent
+     * than this value.
+     */
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    // Keys for storing activity state in the Bundle.
+    protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
+    protected final static String LOCATION_KEY = "location-key";
+    protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    private static final String TAG = "ImageCapActvty";
+    // Keys for storing the indices of the active filters.
+    private static final String STATE_IMAGE_DETECTION_FILTER_INDEX = "imageDetectionFilterIndex";
+    private static long backPressed;
+    private static Bitmap vpLocationDescImageFileContents;
+    private static float tolerancePosition;
+    private static float toleranceRotation;
+
     static {
         System.loadLibrary("MyMensor");
     }
 
-    private static final String TAG = "ImageCapActvty";
-
-    private static long backPressed;
-
-    private String mymensorAccount;
-    private String origMymAcc;
-    private String deviceId;
-    private String previousActivity;
-    private String appStartState;
-    private String serverConnection;
-    private int dciNumber;
-    private short qtyVps = 0;
-
-    private boolean localFilesExist = false;
-    private boolean responseFromRemoteStorage = false;
-    private Boolean descvpFileCHK[];
-    private Boolean markervpFileCHK[];
-    private Boolean reloadEnded;
-    private Boolean loadingDescvpFile = false;
-    private Boolean loadingMarkervpFile = false;
-    private Boolean configFromRemoteStorageExistsAndAccessible = false;
-    private Boolean comingFromConfigActivity = false;
-
-    private String vpsCheckedRemotePath;
-
-    private static Bitmap vpLocationDescImageFileContents;
-
-    private short[] vpNumber;
-    private boolean[] vpChecked;
-    private boolean[] vpFlashTorchIsOn;
-    private long[] photoTakenTimeMillis;
-    private long[] vpNextCaptureMillis;
-    private String[] vpLocationDesText;
-
-    private boolean[] vpIsAmbiguous;
-    private boolean[] vpIsSuperSingle;
-    private int[] vpSuperMarkerId;
-
-    private boolean inPosition = false;
-    private boolean inRotation = false;
-    private boolean isShowingVpPhoto = false;
-    private boolean firstFrameAfterArSwitchOff = false;
-    private int isHudOn = 1;
-    private int inPosRotScore = 0;
-
-    private boolean vpIsManuallySelected = false;
-
-    private TrackingValues trackingValues;
-    private int vpTrackedInPose;
+    private CallTimeServerInBackground mCallTimeServerInBackground;
+    private CheckConnectionToServerOnBackground mCheckConnectionToServerOnBackground;
+    private LoadingArConfig mLoadingArConfig;
+    private GetRemoteFileMetadata mGetRemoteFileMetadata;
+    private SetMultipleImageTrackingConfiguration mSetMultipleImageTrackingConfiguration;
 
     public boolean vpPhotoAccepted = false;
     public boolean vpPhotoRejected = false;
     public boolean vpPhotoTobeRemarked = false;
     public boolean vpVideoTobeReplayed = false;
     public boolean lastVpPhotoRejected = false;
-    private String vpPhotoRemark = null;
     public int lastVpSelectedByUser;
     public int mediaSelected = 0;
-
-    private short assetId;
-
-    private boolean[] vpArIsConfigured;
-    private boolean[] vpIsVideo;
-
-    private int[] vpXCameraDistance;
-    private int[] vpYCameraDistance;
-    private int[] vpZCameraDistance;
-    private int[] vpXCameraRotation;
-    private int[] vpYCameraRotation;
-    private int[] vpZCameraRotation;
-    private String[] vpFrequencyUnit;
-    private long[] vpFrequencyValue;
-
-    private static float tolerancePosition;
-    private static float toleranceRotation;
-
-    private boolean waitingToCaptureVpAfterDisambiguationProcedureSuccessful = false;
-    private boolean vpIsDisambiguated = true;
-    private boolean doubleCheckingProcedureFinalized = false;
-    private boolean doubleCheckingProcedureStarted = false;
-    private boolean resultSpecialTrk = false;
-    private boolean singleImageTrackingIsSet = false;
-    private boolean waitingUntilSingleImageTrackingIsSet = false;
-    private boolean multipleImageTrackingIsSet = false;
-    private boolean waitingUntilMultipleImageTrackingIsSet = false;
-    private boolean idTrackingIsSet = false;
-    private boolean validMarkerFound = false;
-
-    private long millisWhenSingleImageTrackingWasSet = 0;
-
-    private String frequencyUnit;
-    private int frequencyValue;
-
+    public static long sntpTime;
+    public static long sntpTimeReference;
+    public static boolean isTimeCertified;
+    public long videoCaptureStartmillis;
+    public boolean isPositionCertified = false;
+    public boolean isConnectedToServer = false;
+    public List<Mat> markerBuffer;
+    public List<Mat> markerBufferSingle;
+    protected MediaRecorder mMediaRecorder;
+    protected MediaController mMediaController;
+    protected GoogleApiClient mGoogleApiClient;
+    protected Location mLastLocation;
+    /**
+     * Stores parameters for requests to the FusedLocationProviderApi.
+     */
+    protected LocationRequest mLocationRequest;
+    /**
+     * Represents a geographical location.
+     */
+    protected Location mCurrentLocation;
+    /**
+     * Tracks the status of the location updates request. Value changes when the user presses the
+     * Start Updates and Stop Updates buttons.
+     */
+    protected Boolean mRequestingLocationUpdates;
+    protected Boolean mLocationUpdated;
+    /**
+     * Time when the location was updated represented as a Long.
+     */
+    protected Long mLastUpdateTime;
+    protected String[] locPhotoToExif;
+    protected String showingMediaFileName;
+    protected String showingMediaType;
+    protected Boolean mymIsRunningOnKitKat = false;
+    protected Boolean mymIsRunningOnFlippedDisplay = false;
     ListView vpsListView;
     ImageView radarScanImageView;
     ImageView mProgress;
     TouchImageView imageView;
     VideoView videoView;
     ImageView vpCheckedView;
-
     TextView vpAcquiredStatus;
     TextView vpAcquiredStatusHRZ;
     TextView idMarkerNumberTextView;
     TextView idMarkerNumberTextViewHRZ;
-
     TextView vpLocationDesTextView;
     TextView vpIdNumber;
-
     TextView recText;
-
     Animation rotationRadarScan;
     Animation rotationMProgress;
     Animation blinkingText;
-
     FloatingActionButton buttonCallConfig;
     FloatingActionButton buttonAlphaToggle;
     FloatingActionButton showVpCapturesButton;
@@ -266,12 +238,9 @@ public class ImageCapActivity extends Activity implements
     FloatingActionButton buttonShowHelpShowVPCapScreen;
     FloatingActionButton buttonShowHelpDescVPScreen;
     FloatingActionButton buttonDownloadPDFOnShowVpCaptures;
-
     FloatingActionButton deleteLocalMediaButton;
     FloatingActionButton shareMediaButton;
     FloatingActionButton shareMediaButton2;
-
-
     ImageButton showPreviousVpCaptureButton;
     ImageButton showNextVpCaptureButton;
     ImageButton acceptVpPhotoButton;
@@ -279,7 +248,6 @@ public class ImageCapActivity extends Activity implements
     ImageButton buttonRemarkVpPhoto;
     ImageButton buttonReplayVpVideo;
     ImageButton buttonStartVideoInVpCaptures;
-
     LinearLayout arSwitchLinearLayout;
     LinearLayout uploadPendingLinearLayout;
     LinearLayout videoRecorderTimeLayout;
@@ -295,109 +263,29 @@ public class ImageCapActivity extends Activity implements
     LinearLayout linearLayoutMarkerIdHRZ;
     LinearLayout linearLayoutAcceptImgButtons;
     LinearLayout linearLayoutCallWebAppMainScreen;
-
     FloatingActionButton buttonAmbiguousVpToggle;
     FloatingActionButton buttonAmbiguousVpToggleHRZ;
     FloatingActionButton buttonSuperSingleVpToggle;
     FloatingActionButton buttonSuperSingleVpToggleHRZ;
-
     ImageView uploadPendingmageview;
     TextView uploadPendingText;
-
     ImageButton buttonPositionCertified;
     ImageButton buttonTimeCertified;
-
     Chronometer videoRecorderChronometer;
-
     Switch arSwitch;
-
-    private boolean isArSwitchOn = false;
-    private boolean isArConfigLoaded = false;
-    private boolean isArConfigLoading = false;
-    private boolean errorWhileArConfigLoading = false;
-    private boolean isVpsCheckedInformationLost = false;
-    private boolean isVpsConfigFileDownloaded = false;
-    private boolean isVpsCheckedFileDownloaded = false;
-
     FloatingActionButton positionCertifiedButton;
     FloatingActionButton timeCertifiedButton;
     FloatingActionButton connectedToServerButton;
     FloatingActionButton cameraShutterButton;
     FloatingActionButton videoCameraShutterButton;
     FloatingActionButton videoCameraShutterStopButton;
-
     Drawable circularButtonGreen;
     Drawable circularButtonRed;
     Drawable circularButtonGray;
-
-
-    private AmazonS3Client s3Client;
-    private TransferUtility transferUtility;
-    private AmazonS3 s3Amazon;
-
-    // A List of all transfers
-    private List<TransferObserver> observers;
-
-    private int pendingUploadTransfers = 0;
-
     SharedPreferences sharedPref;
-
-    public long sntpTime;
-    public long sntpTimeReference;
-    public boolean isTimeCertified;
-    public long videoCaptureStartmillis;
-
-    private boolean askForManualPhoto = false;
-    private boolean askForManualVideo = false;
-    private boolean capturingManualVideo = false;
-    private boolean videoRecorderPrepared = false;
-    private boolean stopManualVideo = false;
-
-    protected MediaRecorder mMediaRecorder;
-
-    protected MediaController mMediaController;
-
-    private String videoFileName;
-    private String videoFileNameLong;
-    private String videoThumbnailFileName;
-    private String videoThumbnailFileNameLong;
-
-    public boolean isPositionCertified = false;
-    public boolean isConnectedToServer = false;
-
-    // The camera view.
-    private CameraBridgeViewBase mCameraView;
-
-    // A matrix that is used when saving photos.
-    private Mat mBgr;
-    public List<Mat> markerBuffer;
-    public List<Mat> markerBufferSingle;
-
-    // Whether the next camera frame should be saved as a photo.
-    private boolean vpPhotoRequestInProgress;
-
-    // The filters.
-    private ARFilter[] mImageDetectionFilters;
-
-    // The indices of the active filters.
-    private int mImageDetectionFilterIndex;
-
-    // Keys for storing the indices of the active filters.
-    private static final String STATE_IMAGE_DETECTION_FILTER_INDEX = "imageDetectionFilterIndex";
-
-    // Matrix to hold camera calibration
-    // initially with absolute compute values
-    private MatOfDouble mCameraMatrix;
-
-    private SoundPool.Builder soundPoolBuilder;
-    private SoundPool soundPool;
-    private int camShutterSoundID;
-    private int videoRecordStartedSoundID;
-    private int videoRecordStopedSoundID;
     boolean camShutterSoundIDLoaded = false;
     boolean videoRecordStartedSoundIDLoaded = false;
     boolean videoRecordStopedSoundIDLoaded = false;
-
     Point pt1;
     Point pt2;
     Point pt3;
@@ -405,55 +293,134 @@ public class ImageCapActivity extends Activity implements
     Point pt5;
     Point pt6;
     Scalar color;
-
-    protected GoogleApiClient mGoogleApiClient;
-    protected Location mLastLocation;
-    /**
-     * Stores parameters for requests to the FusedLocationProviderApi.
-     */
-    protected LocationRequest mLocationRequest;
-
-    /**
-     * Represents a geographical location.
-     */
-    protected Location mCurrentLocation;
-
-    /**
-     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-     */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    /**
-     * The fastest rate for active location updates. Exact. Updates will never be more frequent
-     * than this value.
-     */
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    // Keys for storing activity state in the Bundle.
-    protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
-    protected final static String LOCATION_KEY = "location-key";
-    protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
-    /**
-     * Tracks the status of the location updates request. Value changes when the user presses the
-     * Start Updates and Stop Updates buttons.
-     */
-    protected Boolean mRequestingLocationUpdates;
-    protected Boolean mLocationUpdated;
-
-    /**
-     * Time when the location was updated represented as a Long.
-     */
-    protected Long mLastUpdateTime;
-
-    protected String[] locPhotoToExif;
-
     BroadcastReceiver receiver;
+    private String mymensorAccount;
+    private String origMymAcc;
+    private String deviceId;
+    private String previousActivity;
+    private String appStartState;
+    private String serverConnection;
+    private int dciNumber;
+    private short qtyVps = 0;
+    private boolean localFilesExist = false;
+    private boolean responseFromRemoteStorage = false;
+    private Boolean descvpFileCHK[];
+    private Boolean markervpFileCHK[];
+    private Boolean reloadEnded;
+    private Boolean loadingDescvpFile = false;
+    private Boolean loadingMarkervpFile = false;
+    private Boolean configFromRemoteStorageExistsAndAccessible = false;
+    private Boolean comingFromConfigActivity = false;
+    private String vpsCheckedRemotePath;
+    private short[] vpNumber;
+    private boolean[] vpChecked;
+    private boolean[] vpFlashTorchIsOn;
+    private long[] photoTakenTimeMillis;
+    private long[] vpNextCaptureMillis;
+    private String[] vpLocationDesText;
+    private boolean[] vpIsAmbiguous;
+    private boolean[] vpIsSuperSingle;
+    private int[] vpSuperMarkerId;
+    private boolean inPosition = false;
+    private boolean inRotation = false;
+    private boolean isShowingVpPhoto = false;
+    private boolean firstFrameAfterArSwitchOff = false;
+    private int isHudOn = 1;
+    private int inPosRotScore = 0;
+    private boolean vpIsManuallySelected = false;
+    private TrackingValues trackingValues;
+    private int vpTrackedInPose;
+    private String vpPhotoRemark = null;
+    private short assetId;
+    private boolean[] vpArIsConfigured;
+    private boolean[] vpIsVideo;
+    private int[] vpXCameraDistance;
+    private int[] vpYCameraDistance;
+    private int[] vpZCameraDistance;
+    private int[] vpXCameraRotation;
+    private int[] vpYCameraRotation;
+    private int[] vpZCameraRotation;
+    private String[] vpFrequencyUnit;
+    private long[] vpFrequencyValue;
+    private boolean waitingToCaptureVpAfterDisambiguationProcedureSuccessful = false;
+    private boolean vpIsDisambiguated = true;
+    private boolean doubleCheckingProcedureFinalized = false;
+    private boolean doubleCheckingProcedureStarted = false;
+    private boolean resultSpecialTrk = false;
+    private boolean singleImageTrackingIsSet = false;
+    private boolean waitingUntilSingleImageTrackingIsSet = false;
+    private boolean multipleImageTrackingIsSet = false;
+    private boolean waitingUntilMultipleImageTrackingIsSet = false;
+    private boolean idTrackingIsSet = false;
+    private boolean validMarkerFound = false;
+    private boolean isVpPhotoCapturedWithAR = false;
+    private long millisWhenSingleImageTrackingWasSet = 0;
+    private String frequencyUnit;
+    private int frequencyValue;
+    private boolean isArSwitchOn = false;
+    private boolean isArConfigLoaded = false;
+    private boolean isArConfigLoading = false;
+    private boolean errorWhileArConfigLoading = false;
+    private boolean isVpsCheckedInformationLost = false;
+    private boolean isVpsConfigFileDownloaded = false;
+    private boolean isVpsCheckedFileDownloaded = false;
+    private AmazonS3Client s3Client;
+    private TransferUtility transferUtility;
+    private AmazonS3 s3Amazon;
+    // A List of all transfers
+    private List<TransferObserver> observers;
+    private int pendingUploadTransfers = 0;
+    private boolean askForManualPhoto = false;
+    private boolean askForManualVideo = false;
+    private boolean capturingManualVideo = false;
+    private boolean videoRecorderPrepared = false;
+    private boolean stopManualVideo = false;
+    private String videoFileName;
+    private String videoFileNameLong;
+    private String videoThumbnailFileName;
+    private String videoThumbnailFileNameLong;
+    // The camera view.
+    private CameraBridgeViewBase mCameraView;
+    // A matrix that is used when saving photos.
+    private Mat mBgr;
+    // Whether the next camera frame should be saved as a photo.
+    private boolean vpPhotoRequestInProgress;
+    // The filters.
+    private ARFilter[] mImageDetectionFilters;
+    // The indices of the active filters.
+    private int mImageDetectionFilterIndex;
+    // Matrix to hold camera calibration
+    // initially with absolute compute values
+    private MatOfDouble mCameraMatrix;
+    private SoundPool.Builder soundPoolBuilder;
+    private SoundPool soundPool;
+    private int camShutterSoundID;
+    private int videoRecordStartedSoundID;
+    private int videoRecordStopedSoundID;
 
-    protected String showingMediaFileName;
-    protected String showingMediaType;
+    // The OpenCV loader callback.
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(final int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                    //Log.d(TAG, "OpenCV loaded successfully");
+                    mCameraMatrix = MymUtils.getCameraMatrix(cameraWidthInPixels, Constants.cameraHeigthInPixels);
+                    mCameraView.enableView();
+                    //mCameraView.enableFpsMeter();
 
-    protected Boolean mymIsRunningOnKitKat = false;
-    protected Boolean mymIsRunningOnFlippedDisplay = false;
+                    if (!waitingUntilMultipleImageTrackingIsSet) {
+                        setMultipleImageTrackingConfiguration();
+                    }
 
+
+                    break;
+                default:
+                    super.onManagerConnected(status);
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -493,26 +460,33 @@ public class ImageCapActivity extends Activity implements
 
         setContentView(R.layout.activity_imagecap);
 
-        // Retrieve configuration info
-        Bundle configBundle = getIntent().getExtras();
-
-        if (configBundle.getString("mymensoraccount") != null)
-            mymensorAccount = configBundle.getString("mymensoraccount");
-        dciNumber = configBundle.getInt("dcinumber", 1);
-        qtyVps = Constants.maxQtyVps;  //Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
-        sntpTime = configBundle.getLong("sntpTime");
-        sntpTimeReference = configBundle.getLong("sntpReference");
-        isTimeCertified = configBundle.getBoolean("isTimeCertified", false);
-        if (configBundle.getString("origmymacc") != null)
-            origMymAcc = configBundle.getString("origmymacc");
-        if (configBundle.getString("deviceid") != null)
-            deviceId = configBundle.getString("deviceid");
-        if (configBundle.getString("previousactivity") != null)
-            previousActivity = configBundle.getString("previousactivity");
-        if (configBundle.getString("appStartState") != null)
-            appStartState = configBundle.getString("appStartState");
-        if (configBundle.getString("serverConnection") != null)
-            serverConnection = configBundle.getString("serverConnection");
+        try {
+            // Retrieve configuration info
+            Bundle configBundle = getIntent().getExtras();
+            if (configBundle.getString("mymensoraccount") != null)
+                mymensorAccount = configBundle.getString("mymensoraccount");
+            dciNumber = configBundle.getInt("dcinumber", 1);
+            qtyVps = Constants.maxQtyVps;  //Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
+            sntpTime = configBundle.getLong("sntpTime");
+            sntpTimeReference = configBundle.getLong("sntpReference");
+            isTimeCertified = configBundle.getBoolean("isTimeCertified", false);
+            if (configBundle.getString("origmymacc") != null)
+                origMymAcc = configBundle.getString("origmymacc");
+            if (configBundle.getString("deviceid") != null)
+                deviceId = configBundle.getString("deviceid");
+            if (configBundle.getString("previousactivity") != null)
+                previousActivity = configBundle.getString("previousactivity");
+            if (configBundle.getString("appStartState") != null)
+                appStartState = configBundle.getString("appStartState");
+            if (configBundle.getString("serverConnection") != null)
+                serverConnection = configBundle.getString("serverConnection");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast toast = Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL, 0, 30);
+            toast.show();
+            finish();
+        }
 
         //Log.d(TAG, "onCreate: Starting ImageCapActivity with qtyVps=" + qtyVps + " MyM Account=" + mymensorAccount + " Orig MyM Account=" + origMymAcc);
 
@@ -621,7 +595,6 @@ public class ImageCapActivity extends Activity implements
         mCameraView.setCameraIndex(0);
         mCameraView.setMaxFrameSize(cameraWidthInPixels, Constants.cameraHeigthInPixels);
         mCameraView.setCvCameraViewListener(this);
-
 
         circularButtonGreen = ContextCompat.getDrawable(getApplicationContext(), circular_button_green);
 
@@ -851,14 +824,18 @@ public class ImageCapActivity extends Activity implements
                 //Log.d(TAG, "vpTrackedInPose=" + vpTrackedInPose);
                 //Log.d(TAG, "vpNumber[vpTrackedInPose]=" + vpNumber[vpTrackedInPose]);
                 askForManualPhoto = true;
-                AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-                float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-                float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-                float volume = actualVolume / maxVolume;
-                // Is the sound loaded already?
-                if (camShutterSoundIDLoaded) {
-                    soundPool.play(camShutterSoundID, volume, volume, 1, 0, 1f);
-                    //Log.d(TAG, "cameraShutterButton.setOnClickListener: Played sound");
+                try {
+                    AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                    float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                    float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                    float volume = actualVolume / maxVolume;
+                    // Is the sound loaded already?
+                    if (camShutterSoundIDLoaded) {
+                        soundPool.play(camShutterSoundID, volume, volume, 1, 0, 1f);
+                        //Log.d(TAG, "cameraShutterButton.setOnClickListener: Played sound");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -880,13 +857,17 @@ public class ImageCapActivity extends Activity implements
                         videoRecorderChronometer.start();
                         videoRecorderTimeLayout.setVisibility(View.VISIBLE);
                         recText.startAnimation(blinkingText);
-                        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-                        float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-                        float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-                        float volume = actualVolume / maxVolume;
-                        if (videoRecordStartedSoundIDLoaded) {
-                            soundPool.play(videoRecordStartedSoundID, volume, volume, 1, 0, 1f);
-                            //Log.d(TAG, "videoCameraShutterButton.setOnClickListener START: Played sound");
+                        try {
+                            AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                            float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                            float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                            float volume = actualVolume / maxVolume;
+                            if (videoRecordStartedSoundIDLoaded) {
+                                soundPool.play(videoRecordStartedSoundID, volume, volume, 1, 0, 1f);
+                                //Log.d(TAG, "videoCameraShutterButton.setOnClickListener START: Played sound");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     } else {
                         Log.d(TAG, "OnCreate: No permission to Record Audio, impossible to record video");
@@ -910,13 +891,17 @@ public class ImageCapActivity extends Activity implements
                     videoCameraShutterStopButton.setVisibility(View.GONE);
                     videoRecorderChronometer.stop();
                     recText.clearAnimation();
-                    AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-                    float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-                    float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-                    float volume = actualVolume / maxVolume;
-                    if (videoRecordStopedSoundIDLoaded) {
-                        soundPool.play(videoRecordStopedSoundID, volume, volume, 1, 0, 1f);
-                        //Log.d(TAG, "videoCameraShutterButton.setOnClickListener STOP: Played sound");
+                    try {
+                        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                        float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                        float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                        float volume = actualVolume / maxVolume;
+                        if (videoRecordStopedSoundIDLoaded) {
+                            soundPool.play(videoRecordStopedSoundID, volume, volume, 1, 0, 1f);
+                            //Log.d(TAG, "videoCameraShutterButton.setOnClickListener STOP: Played sound");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     videoRecorderTimeLayout.setVisibility(View.GONE);
 
@@ -1178,6 +1163,7 @@ public class ImageCapActivity extends Activity implements
                 linearLayoutConfigCaptureVps.setVisibility(View.GONE);
                 showPreviousVpCaptureButton.setVisibility(View.VISIBLE);
                 showNextVpCaptureButton.setVisibility(View.VISIBLE);
+                buttonShowHelpDescVPScreen.setVisibility(View.GONE);
                 buttonShowHelpShowVPCapScreen.setVisibility(View.VISIBLE);
                 imageView.resetZoom();
                 if (imageView.getImageAlpha() == 128) {
@@ -1477,7 +1463,6 @@ public class ImageCapActivity extends Activity implements
 
     }
 
-
     public void showCallMyMensorSite() {
         final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
         alert.setIcon(R.drawable.logo_mymensor);
@@ -1542,92 +1527,124 @@ public class ImageCapActivity extends Activity implements
         alert.show();
     }
 
+    private static class CheckConnectionToServerOnBackground extends AsyncTask<Void, Void, Boolean> {
 
-    private void checkConnectionToServer() {
+        private ImageCapActivity mActivity;
 
-        new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            protected void onPreExecute() {
-                //Log.d(TAG, "checkConnectionToServer: onPreExecute");
-            }
+        public CheckConnectionToServerOnBackground(ImageCapActivity activity) {
+            mActivity = activity;
+        }
 
-            @Override
-            protected Boolean doInBackground(Void... params) {
-                boolean result = MymUtils.isS3Available(s3Amazon);
-                return result;
-            }
+        public void setActivity(ImageCapActivity activity) {
+            mActivity = activity;
+        }
 
-            @Override
-            protected void onPostExecute(final Boolean result) {
-                //Log.d(TAG, "checkConnectionToServer: onPostExecute: result=" + result);
-                runOnUiThread(new Runnable() {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //Log.d(TAG, "checkConnectionToServer: onPreExecute");
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return MymUtils.isS3Available(mActivity.s3Amazon);
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean result) {
+            super.onPostExecute(result);
+            if (mActivity != null) {
+                mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (result) {
-                            isConnectedToServer = true;
-                            connectedToServerButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_green_dark)));
+                            mActivity.isConnectedToServer = true;
+                            mActivity.connectedToServerButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_green_dark)));
                         } else {
-                            isConnectedToServer = false;
-                            connectedToServerButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_red_dark)));
+                            mActivity.isConnectedToServer = false;
+                            mActivity.connectedToServerButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_red_dark)));
                         }
                     }
                 });
             }
-        }.execute();
+        }
     }
 
 
-    private void loadingArConfig() {
-        new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            protected void onPreExecute() {
-                //Log.d(TAG, "loadingArConfig: onPreExecute");
-                isArConfigLoading = true;
-                runOnUiThread(new Runnable() {
+    private void checkConnectionToServer() {
+
+        mCheckConnectionToServerOnBackground = new CheckConnectionToServerOnBackground(this);
+        mCheckConnectionToServerOnBackground.execute();
+    }
+
+    private static class LoadingArConfig extends AsyncTask<Void, Void, Boolean> {
+
+        private ImageCapActivity mActivity;
+
+        public LoadingArConfig(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        public void setActivity(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //Log.d(TAG, "loadingArConfig: onPreExecute");
+            mActivity.isArConfigLoading = true;
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    (mActivity.findViewById(R.id.arSwitchText)).setVisibility(View.GONE);
+                    (mActivity.findViewById(R.id.ar_load_progressbar)).setVisibility(View.VISIBLE);
+                }
+            });
+            //Log.d(TAG, "loadingArConfig: isArConfigLoading=" + isArConfigLoading);
+            if (mActivity.previousActivity.equalsIgnoreCase("config")) {
+                mActivity.comingFromConfigActivity = true;
+            } else {
+                mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        (findViewById(R.id.arSwitchText)).setVisibility(View.GONE);
-                        (findViewById(R.id.ar_load_progressbar)).setVisibility(View.VISIBLE);
+                        MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.loadingarconfiginbackground));
                     }
                 });
-                //Log.d(TAG, "loadingArConfig: isArConfigLoading=" + isArConfigLoading);
-                if (previousActivity.equalsIgnoreCase("config")) {
-                    comingFromConfigActivity = true;
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            MymUtils.showToastMessage(getApplicationContext(), getString(R.string.loadingarconfiginbackground));
-                        }
-                    });
+            }
+            if (!mActivity.comingFromConfigActivity) {
+                File vpsFileCHK = new File(mActivity.getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
+                if (vpsFileCHK.exists()) {
+                    mActivity.localFilesExist = true;
                 }
-                if (!comingFromConfigActivity) {
-                    File vpsFileCHK = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-                    if (vpsFileCHK.exists()) {
-                        localFilesExist = true;
-                    }
-                } else {
-                    localFilesExist = true;
-                }
-
+            } else {
+                mActivity.localFilesExist = true;
             }
 
-            @Override
-            protected Boolean doInBackground(Void... params) {
+        }
 
-                String descvpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "dsc" + "/";
-                String markervpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "mrk" + "/";
-                String vpsRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/";
+        @Override
+        protected Boolean doInBackground(Void... params) {
 
-                if (!comingFromConfigActivity) {
+            String descvpRemotePath = null;
+            String markervpRemotePath = null;
+            String vpsRemotePath = null;
+            if (mActivity != null) {
+                descvpRemotePath = Constants.usersConfigFolder + "/" + mActivity.mymensorAccount + "/" + "cfg" + "/" + mActivity.dciNumber + "/" + "vps" + "/" + "dsc" + "/";
+                markervpRemotePath = Constants.usersConfigFolder + "/" + mActivity.mymensorAccount + "/" + "cfg" + "/" + mActivity.dciNumber + "/" + "vps" + "/" + "mrk" + "/";
+                vpsRemotePath = Constants.usersConfigFolder + "/" + mActivity.mymensorAccount + "/" + "cfg" + "/" + mActivity.dciNumber + "/" + "vps" + "/";
+            }
+
+            if (mActivity != null) {
+                if (!mActivity.comingFromConfigActivity) {
                     //Log.d(TAG, "loadingArConfig: checking if files exist in Remote Storage");
 
                     int retries = 4;
                     try {
                         do {
-                            responseFromRemoteStorage = s3Amazon.doesObjectExist(Constants.BUCKET_NAME, (vpsRemotePath + Constants.vpsConfigFileName));
-                            if (responseFromRemoteStorage) {
-                                configFromRemoteStorageExistsAndAccessible = true;
+                            mActivity.responseFromRemoteStorage = mActivity.s3Amazon.doesObjectExist(Constants.BUCKET_NAME, (vpsRemotePath + Constants.vpsConfigFileName));
+                            if (mActivity.responseFromRemoteStorage) {
+                                mActivity.configFromRemoteStorageExistsAndAccessible = true;
                             } else {
                                 //Log.d(TAG, "loadingArConfig: ERROR configFromRemoteStorageExistsAndAccessible=" + configFromRemoteStorageExistsAndAccessible);
                             }
@@ -1638,50 +1655,56 @@ public class ImageCapActivity extends Activity implements
 
                     //Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible=" + configFromRemoteStorageExistsAndAccessible);
                 }
+            }
 
             /*
             *********************************************************************************************************************
             Checking wheter there is a remote or at least local AR configuration, if none exists, AR cannot be used
             *********************************************************************************************************************
              */
-                if (!comingFromConfigActivity) {
+
+            if (mActivity != null) {
+                if (!mActivity.comingFromConfigActivity) {
                     //Log.d(TAG, "loadingArConfig: Starting LOGIC to determine following steps");
                     //Log.d(TAG, "loadingArConfig: Approved by Cognito? : (1=true; 2=False)" + CognitoSampleDeveloperAuthenticationService.isApprovedByCognitoState);
                     //Log.d(TAG, "loadingArConfig: Local files exist? : " + localFilesExist);
                     //Log.d(TAG, "loadingArConfig: Remote files exist and are accessible? : " + configFromRemoteStorageExistsAndAccessible);
 
-                    if ((!configFromRemoteStorageExistsAndAccessible) && (!localFilesExist)) {
-                        configFromRemoteStorageExistsAndAccessible = false;
-                        errorWhileArConfigLoading = true;
+                    if ((!mActivity.configFromRemoteStorageExistsAndAccessible) && (!mActivity.localFilesExist)) {
+                        mActivity.configFromRemoteStorageExistsAndAccessible = false;
+                        mActivity.errorWhileArConfigLoading = true;
                         return false;
                     }
                 } else {
                     //Log.d(TAG, "loadingArConfig: comingFromConfigActivity=" + comingFromConfigActivity);
                 }
+            }
 
             /*
             *********************************************************************************************************************
             Loading and Checking VPS.XML and VPSCHECKED.XML
             *********************************************************************************************************************
              */
-                if (!comingFromConfigActivity) {
-                    //Log.d(TAG, "loadingArConfig: Loading Definitions from Remote Storage and writing to local storage");
+            if (!mActivity.comingFromConfigActivity) {
+                //Log.d(TAG, "loadingArConfig: Loading Definitions from Remote Storage and writing to local storage");
+
+                if (mActivity != null) {
                     try {
-                        File vpsFile = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-                        if (MymUtils.isNewFileAvailable(s3Client,
+                        File vpsFile = new File(mActivity.getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
+                        if (MymUtils.isNewFileAvailable(mActivity.s3Client,
                                 Constants.vpsConfigFileName,
                                 (vpsRemotePath + Constants.vpsConfigFileName),
                                 Constants.BUCKET_NAME,
-                                getApplicationContext())) {
+                                mActivity.getApplicationContext())) {
                             //Log.d(TAG, "loadingArConfig: vpsFile isNewFileAvailable= TRUE");
-                            TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (vpsRemotePath + Constants.vpsConfigFileName), Constants.BUCKET_NAME, vpsFile);
+                            TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (vpsRemotePath + Constants.vpsConfigFileName), Constants.BUCKET_NAME, vpsFile);
                             observer.setTransferListener(new TransferListener() {
                                 @Override
                                 public void onStateChanged(int id, TransferState state) {
                                     //Log.d(TAG, "loadingArConfig: Observer: vpsFile onStateChanged: " + id + ", " + state);
                                     if (state.equals(TransferState.COMPLETED)) {
                                         //Log.d(TAG, "loadingArConfig: Observer: vpsFile TransferListener=" + state.toString());
-                                        isVpsConfigFileDownloaded = true;
+                                        mActivity.isVpsConfigFileDownloaded = true;
                                     }
                                 }
 
@@ -1693,34 +1716,36 @@ public class ImageCapActivity extends Activity implements
                                 @Override
                                 public void onError(int id, Exception ex) {
                                     Log.e(TAG, "loadingArConfig: Observer: vpsFile onError: loading failed:" + id, ex);
-                                    errorWhileArConfigLoading = true;
+                                    mActivity.errorWhileArConfigLoading = true;
                                 }
                             });
                         } else {
                             //Log.d(TAG, "loadingArConfig: vpsFile isNewFileAvailable= FALSE");
-                            isVpsConfigFileDownloaded = true;
+                            mActivity.isVpsConfigFileDownloaded = true;
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "loadingArConfig: vpsFile loading failed:" + e.toString());
                         return false;
                     }
+                }
 
+                if (mActivity != null) {
                     try {
-                        final File vpsCheckedFile = new File(getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
-                        if (MymUtils.isNewFileAvailable(s3Client,
+                        final File vpsCheckedFile = new File(mActivity.getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
+                        if (MymUtils.isNewFileAvailable(mActivity.s3Client,
                                 Constants.vpsCheckedConfigFileName,
-                                (vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName),
+                                (mActivity.vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName),
                                 Constants.BUCKET_NAME,
-                                getApplicationContext())) {
+                                mActivity.getApplicationContext())) {
                             //Log.d(TAG, "loadingArConfig: vpsCheckedFile isNewFileAvailable= TRUE");
-                            TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName), Constants.BUCKET_NAME, vpsCheckedFile);
+                            TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (mActivity.vpsCheckedRemotePath + Constants.vpsCheckedConfigFileName), Constants.BUCKET_NAME, vpsCheckedFile);
                             observer.setTransferListener(new TransferListener() {
                                 @Override
                                 public void onStateChanged(int id, TransferState state) {
                                     //Log.d(TAG, "loadingArConfig: Observer: vpsCheckedFile onStateChanged: " + id + ", " + state);
                                     if (state.equals(TransferState.COMPLETED)) {
                                         //Log.d(TAG, "loadingArConfig: Observer: vpsCheckedFile TransferListener=" + state.toString());
-                                        isVpsCheckedFileDownloaded = true;
+                                        mActivity.isVpsCheckedFileDownloaded = true;
                                     }
                                 }
 
@@ -1732,36 +1757,40 @@ public class ImageCapActivity extends Activity implements
                                 @Override
                                 public void onError(int id, Exception ex) {
                                     Log.e(TAG, "loadingArConfig: Observer: vpsCheckedFile onError: loading failed:" + id, ex);
-                                    errorWhileArConfigLoading = true;
+                                    mActivity.errorWhileArConfigLoading = true;
                                 }
                             });
                         } else {
                             //Log.d(TAG, "loadingArConfig: vpsCheckedFile isNewFileAvailable= FALSE");
-                            isVpsCheckedFileDownloaded = true;
+                            mActivity.isVpsCheckedFileDownloaded = true;
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "loadingArConfig: vpsCheckedFile loading failed:" + e.toString());
                         return false;
                     }
+                }
 
 
+                if (mActivity != null) {
                     long startChk1 = System.currentTimeMillis();
                     do {
                         //Log.d(TAG,"Waiting vps and vpschecked files to load...");
                     }
-                    while (((!isVpsConfigFileDownloaded) || (!isVpsCheckedFileDownloaded)) && ((System.currentTimeMillis() - startChk1) < 20000));
+                    while (((!mActivity.isVpsConfigFileDownloaded) || (!mActivity.isVpsCheckedFileDownloaded)) && ((System.currentTimeMillis() - startChk1) < 20000));
+                }
 
 
+                if (mActivity != null) {
                     Boolean configFilesOK = false;
-
                     do {
-                        File vpsFileCHK = new File(getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
-                        File vpsCheckedFileCHK = new File(getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
+                        File vpsFileCHK = new File(mActivity.getApplicationContext().getFilesDir(), Constants.vpsConfigFileName);
+                        File vpsCheckedFileCHK = new File(mActivity.getApplicationContext().getFilesDir(), Constants.vpsCheckedConfigFileName);
                         configFilesOK = ((vpsFileCHK.exists()) && (vpsCheckedFileCHK.exists()));
-                        if (errorWhileArConfigLoading) return false;
+                        if (mActivity.errorWhileArConfigLoading) return false;
                     } while (!configFilesOK);
+                }
 
-                    //Log.d(TAG, "loadingArConfig: vps and vpschecked: configFilesOK=" + configFilesOK);
+                //Log.d(TAG, "loadingArConfig: vps and vpschecked: configFilesOK=" + configFilesOK);
 
             /*
             *********************************************************************************************************************
@@ -1769,15 +1798,16 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
             */
 
-                    Long vpDescFileSize[] = new Long[Constants.maxQtyVps];
-                    Long vpMarkerFileSize[] = new Long[Constants.maxQtyVps];
-                    boolean vpArIsConfigured[] = new boolean[Constants.maxQtyVps];
+                Long vpDescFileSize[] = new Long[Constants.maxQtyVps];
+                Long vpMarkerFileSize[] = new Long[Constants.maxQtyVps];
+                boolean vpArIsConfigured[] = new boolean[Constants.maxQtyVps];
 
-                    short vpListOrder = -1;
+                short vpListOrder = -1;
 
+                if (mActivity != null) {
                     try {
                         //Log.d(TAG, "loadingArConfig: Loading VpDescFileSize[] VpMarkerFileSize[] vpArIsConfigured[] FromVpsFile: File=" + Constants.vpsConfigFileName);
-                        InputStream fis = MymUtils.getLocalFile(Constants.vpsConfigFileName, getApplicationContext());
+                        InputStream fis = MymUtils.getLocalFile(Constants.vpsConfigFileName, mActivity.getApplicationContext());
                         XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
                         XmlPullParser myparser = xmlFactoryObject.newPullParser();
                         myparser.setInput(fis, null);
@@ -1812,6 +1842,7 @@ public class ImageCapActivity extends Activity implements
                         Log.e(TAG, "loadingArConfig: load vpArIsConfigured FromVpsFile loading failed. vpListOrder=" + vpListOrder);
                         return false;
                     }
+                }
 
             /*
             *********************************************************************************************************************
@@ -1819,28 +1850,29 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
             */
 
-                    descvpFileCHK = new Boolean[Constants.maxQtyVps];
+                if (mActivity != null) {
+                    mActivity.descvpFileCHK = new Boolean[Constants.maxQtyVps];
                     try {
                         for (int j = 0; j < (Constants.maxQtyVps); j++) {
-                            descvpFileCHK[j] = false;
+                            mActivity.descvpFileCHK[j] = false;
                             final int j_inner = j;
                             if (vpArIsConfigured[j]) {
-                                File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
-                                if (MymUtils.isNewFileAvailable(s3Client,
+                                File descvpFile = new File(mActivity.getApplicationContext().getFilesDir(), "descvp" + (j) + ".png");
+                                if (MymUtils.isNewFileAvailable(mActivity.s3Client,
                                         ("descvp" + (j) + ".png"),
                                         (descvpRemotePath + "descvp" + (j) + ".png"),
                                         Constants.BUCKET_NAME,
-                                        getApplicationContext())) {
+                                        mActivity.getApplicationContext())) {
                                     //Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: isNewFileAvailable = TRUE");
-                                    loadingDescvpFile = true;
-                                    final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (descvpRemotePath + "descvp" + j + ".png"), Constants.BUCKET_NAME, descvpFile);
+                                    mActivity.loadingDescvpFile = true;
+                                    final TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (descvpRemotePath + "descvp" + j + ".png"), Constants.BUCKET_NAME, descvpFile);
                                     observer.setTransferListener(new TransferListener() {
 
                                         @Override
                                         public void onStateChanged(int id, TransferState state) {
                                             //Log.d(TAG, "loadingArConfig: Observer: descvp: vp[" + j_inner + "]: id=" + id + " State=" + state);
                                             if (state.equals(TransferState.COMPLETED)) {
-                                                descvpFileCHK[j_inner] = true;
+                                                mActivity.descvpFileCHK[j_inner] = true;
                                             }
                                         }
 
@@ -1852,25 +1884,25 @@ public class ImageCapActivity extends Activity implements
                                         @Override
                                         public void onError(int id, Exception ex) {
                                             Log.e(TAG, "loadingArConfig: Observer: descvp loading failed with Exception:" + ex);
-                                            File faileddescvpFile = new File(getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
+                                            File faileddescvpFile = new File(mActivity.getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
                                             boolean faileddescvpFileIsDeleted = faileddescvpFile.delete();
                                             Log.e(TAG, "loadingArConfig: Observer: faileddescvpFileIsDeleted =" + faileddescvpFileIsDeleted);
-                                            errorWhileArConfigLoading = true;
+                                            mActivity.errorWhileArConfigLoading = true;
                                         }
 
                                     });
                                 } else {
-                                    descvpFileCHK[j] = true;
+                                    mActivity.descvpFileCHK[j] = true;
                                     //Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: isNewFileAvailable = FALSE thus using local");
                                 }
                             } else {
-                                File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + j + ".png");
+                                File descvpFile = new File(mActivity.getApplicationContext().getFilesDir(), "descvp" + j + ".png");
                                 if (!descvpFile.exists()) {
-                                    ConfigFileCreator.createLocalDescvpFile(getApplicationContext(),
-                                            getApplicationContext().getFilesDir(),
+                                    ConfigFileCreator.createLocalDescvpFile(mActivity.getApplicationContext(),
+                                            mActivity.getApplicationContext().getFilesDir(),
                                             "descvp" + j + ".png");
                                 }
-                                descvpFileCHK[j] = true;
+                                mActivity.descvpFileCHK[j] = true;
                                 //Log.d(TAG, "loadingArConfig: descvp: vp[" + j + "]: vpArIsConfigured = FALSE thus creating local.");
                             }
 
@@ -1881,7 +1913,8 @@ public class ImageCapActivity extends Activity implements
                         return false;
                     }
 
-                    if (errorWhileArConfigLoading) return false;
+                    if (mActivity.errorWhileArConfigLoading) return false;
+                }
 
             /*
             *********************************************************************************************************************
@@ -1889,28 +1922,29 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
             */
 
-                    markervpFileCHK = new Boolean[Constants.maxQtyVps];
+                if (mActivity != null) {
+                    mActivity.markervpFileCHK = new Boolean[Constants.maxQtyVps];
                     try {
                         for (int j = 0; j < (Constants.maxQtyVps); j++) {
-                            markervpFileCHK[j] = false;
+                            mActivity.markervpFileCHK[j] = false;
                             final int j_inner = j;
                             if (vpArIsConfigured[j]) {
-                                final File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
-                                if (MymUtils.isNewFileAvailable(s3Client,
+                                final File markervpFile = new File(mActivity.getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
+                                if (MymUtils.isNewFileAvailable(mActivity.s3Client,
                                         ("markervp" + (j) + ".png"),
                                         (markervpRemotePath + "markervp" + (j) + ".png"),
                                         Constants.BUCKET_NAME,
-                                        getApplicationContext())) {
+                                        mActivity.getApplicationContext())) {
                                     //Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: isNewFileAvailable = TRUE");
-                                    loadingMarkervpFile = true;
-                                    final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (markervpRemotePath + "markervp" + j + ".png"), Constants.BUCKET_NAME, markervpFile);
+                                    mActivity.loadingMarkervpFile = true;
+                                    final TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (markervpRemotePath + "markervp" + j + ".png"), Constants.BUCKET_NAME, markervpFile);
                                     observer.setTransferListener(new TransferListener() {
 
                                         @Override
                                         public void onStateChanged(int id, TransferState state) {
                                             //Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + j_inner + "]: id=" + id + " State=" + state);
                                             if (state.equals(TransferState.COMPLETED)) {
-                                                markervpFileCHK[j_inner] = true;
+                                                mActivity.markervpFileCHK[j_inner] = true;
                                             }
                                         }
 
@@ -1922,25 +1956,25 @@ public class ImageCapActivity extends Activity implements
                                         @Override
                                         public void onError(int id, Exception ex) {
                                             Log.e(TAG, "loadingArConfig: Observer: markervp loading failed with Exception:" + ex);
-                                            File failedmarkervpFile = new File(getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
+                                            File failedmarkervpFile = new File(mActivity.getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
                                             boolean failedmarkervpFileIsDeleted = failedmarkervpFile.delete();
                                             Log.e(TAG, "loadingArConfig: Observer: failedmarkervpFileIsDeleted =" + failedmarkervpFileIsDeleted);
-                                            errorWhileArConfigLoading = true;
+                                            mActivity.errorWhileArConfigLoading = true;
                                         }
 
                                     });
                                 } else {
-                                    markervpFileCHK[j] = true;
+                                    mActivity.markervpFileCHK[j] = true;
                                     //Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: isNewFileAvailable = FALSE thus using local");
                                 }
                             } else {
-                                File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
+                                File markervpFile = new File(mActivity.getApplicationContext().getFilesDir(), "markervp" + (j) + ".png");
                                 if (!markervpFile.exists()) {
-                                    ConfigFileCreator.createLocalMarkervpFile(getApplicationContext(),
-                                            getApplicationContext().getFilesDir(),
+                                    ConfigFileCreator.createLocalMarkervpFile(mActivity.getApplicationContext(),
+                                            mActivity.getApplicationContext().getFilesDir(),
                                             "markervp" + (j) + ".png");
                                 }
-                                markervpFileCHK[j] = true;
+                                mActivity.markervpFileCHK[j] = true;
                                 //Log.d(TAG, "loadingArConfig: markervp: vp[" + j + "]: vpArIsConfigured = FALSE thus creating local.");
                             }
                         }
@@ -1949,7 +1983,8 @@ public class ImageCapActivity extends Activity implements
                         return false;
                     }
 
-                    if (errorWhileArConfigLoading) return false;
+                    if (mActivity.errorWhileArConfigLoading) return false;
+                }
 
             /*
             *********************************************************************************************************************
@@ -1957,18 +1992,19 @@ public class ImageCapActivity extends Activity implements
             *********************************************************************************************************************
             */
 
-                    //Log.d(TAG, "loadingArConfig: Checking if all images are already in the local storage, as network operations take place in background.");
+                //Log.d(TAG, "loadingArConfig: Checking if all images are already in the local storage, as network operations take place in background.");
 
-                    int prod = 0;
+                int prod = 0;
 
-                    if (configFromRemoteStorageExistsAndAccessible && ((loadingDescvpFile) || (loadingMarkervpFile))) {
+                if (mActivity != null) {
+                    if (mActivity.configFromRemoteStorageExistsAndAccessible && ((mActivity.loadingDescvpFile) || (mActivity.loadingMarkervpFile))) {
                         //Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible: Starting the wait....");
                         long startChk2 = System.currentTimeMillis();
-                        if ((loadingDescvpFile) || (loadingMarkervpFile)) {
+                        if ((mActivity.loadingDescvpFile) || (mActivity.loadingMarkervpFile)) {
                             do {
-                                for (int k = 0; k < (qtyVps); k++) {
+                                for (int k = 0; k < (mActivity.qtyVps); k++) {
                                     ////Log.d(TAG,"descvpFileCHK["+k+"]="+descvpFileCHK[k]+"- markervpFileCHK["+k+"]="+markervpFileCHK[k]);
-                                    if (descvpFileCHK[k] && markervpFileCHK[k]) {
+                                    if (mActivity.descvpFileCHK[k] && mActivity.markervpFileCHK[k]) {
                                         if (k == 0) {
                                             prod = Math.abs(1);
                                         } else {
@@ -1982,33 +2018,35 @@ public class ImageCapActivity extends Activity implements
                                         }
                                     }
                                 }
-                                if (errorWhileArConfigLoading) return false;
+                                if (mActivity.errorWhileArConfigLoading) return false;
                             }
                             while ((prod == 0) && ((System.currentTimeMillis() - startChk2) < 120000));
                         }
                         //Log.d(TAG, "loadingArConfig: configFromRemoteStorageExistsAndAccessible: All files in local storage, now checking if they are OK.");
                     }
+                }
 
-                    for (int k = 0; k < (qtyVps); k++) {
+                if (mActivity != null) {
+                    for (int k = 0; k < (mActivity.qtyVps); k++) {
                         if (vpDescFileSize[k] == null) return false;
                         if (vpMarkerFileSize[k] == null) return false;
                         try {
-                            reloadEnded = true;
-                            File descvpFileCHK = new File(getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
-                            File markervpFileCHK = new File(getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
+                            mActivity.reloadEnded = true;
+                            File descvpFileCHK = new File(mActivity.getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
+                            File markervpFileCHK = new File(mActivity.getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
                             if (!descvpFileCHK.exists() || !(descvpFileCHK.length() == vpDescFileSize[k])) {
                                 //Log.d(TAG, "Reloading descvp" + (k) + ".png");
-                                File descvpFile = new File(getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
-                                reloadEnded = false;
+                                File descvpFile = new File(mActivity.getApplicationContext().getFilesDir(), "descvp" + (k) + ".png");
+                                mActivity.reloadEnded = false;
                                 final int k_inner = k;
-                                final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (descvpRemotePath + "descvp" + k + ".png"), Constants.BUCKET_NAME, descvpFile);
+                                final TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (descvpRemotePath + "descvp" + k + ".png"), Constants.BUCKET_NAME, descvpFile);
                                 observer.setTransferListener(new TransferListener() {
 
                                     @Override
                                     public void onStateChanged(int id, TransferState state) {
                                         //Log.d(TAG, "loadingArConfig: Observer: RELOADING descvp: vp[" + k_inner + "]: id=" + id + " State=" + state);
                                         if (state.equals(TransferState.COMPLETED)) {
-                                            reloadEnded = true;
+                                            mActivity.reloadEnded = true;
                                         }
                                     }
 
@@ -2020,10 +2058,10 @@ public class ImageCapActivity extends Activity implements
                                     @Override
                                     public void onError(int id, Exception ex) {
                                         Log.e(TAG, "loadingArConfig: Observer: RELOADING descvp loading failed with Exception:" + ex);
-                                        File faileddescvpFile = new File(getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
+                                        File faileddescvpFile = new File(mActivity.getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
                                         boolean faileddescvpFileIsDeleted = faileddescvpFile.delete();
                                         Log.e(TAG, "loadingArConfig: Observer: RELOADING faileddescvpFileIsDeleted =" + faileddescvpFileIsDeleted);
-                                        errorWhileArConfigLoading = true;
+                                        mActivity.errorWhileArConfigLoading = true;
                                     }
 
                                 });
@@ -2032,20 +2070,20 @@ public class ImageCapActivity extends Activity implements
                             do {
                                 //waiting
                             }
-                            while (!reloadEnded && ((System.currentTimeMillis() - startChk4) < 60000));
+                            while (!mActivity.reloadEnded && ((System.currentTimeMillis() - startChk4) < 60000));
                             if (!markervpFileCHK.exists() || !(markervpFileCHK.length() == vpMarkerFileSize[k])) {
                                 //Log.d(TAG, "Reloading descvp" + (k) + ".png");
-                                File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
-                                reloadEnded = false;
+                                File markervpFile = new File(mActivity.getApplicationContext().getFilesDir(), "markervp" + (k) + ".png");
+                                mActivity.reloadEnded = false;
                                 final int k_inner = k;
-                                final TransferObserver observer = MymUtils.getRemoteFile(transferUtility, (markervpRemotePath + "markervp" + k + ".png"), Constants.BUCKET_NAME, markervpFile);
+                                final TransferObserver observer = MymUtils.getRemoteFile(mActivity.transferUtility, (markervpRemotePath + "markervp" + k + ".png"), Constants.BUCKET_NAME, markervpFile);
                                 observer.setTransferListener(new TransferListener() {
 
                                     @Override
                                     public void onStateChanged(int id, TransferState state) {
                                         //Log.d(TAG, "loadingArConfig: Observer: markervp: vp[" + k_inner + "]: id=" + id + " State=" + state);
                                         if (state.equals(TransferState.COMPLETED)) {
-                                            reloadEnded = true;
+                                            mActivity.reloadEnded = true;
                                         }
                                     }
 
@@ -2057,10 +2095,10 @@ public class ImageCapActivity extends Activity implements
                                     @Override
                                     public void onError(int id, Exception ex) {
                                         Log.e(TAG, "loadingArConfig: Observer: markervp loading failed with Exception:" + ex);
-                                        File failedmarkervpFile = new File(getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
+                                        File failedmarkervpFile = new File(mActivity.getApplicationContext().getFilesDir(), observer.getAbsoluteFilePath());
                                         boolean failedmarkervpFileIsDeleted = failedmarkervpFile.delete();
                                         Log.e(TAG, "loadingArConfig: Observer: failedmarkervpFileIsDeleted =" + failedmarkervpFileIsDeleted);
-                                        errorWhileArConfigLoading = true;
+                                        mActivity.errorWhileArConfigLoading = true;
                                     }
 
                                 });
@@ -2068,100 +2106,130 @@ public class ImageCapActivity extends Activity implements
                                 do {
                                     //waiting
                                 }
-                                while (!reloadEnded && ((System.currentTimeMillis() - startChk3) < 60000));
+                                while (!mActivity.reloadEnded && ((System.currentTimeMillis() - startChk3) < 60000));
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "loadingArConfig: Image Files Checking Failed:" + e.toString());
                         }
-                        if (errorWhileArConfigLoading) return false;
+                        if (mActivity.errorWhileArConfigLoading) return false;
                     }
+                }
 
-                    if (errorWhileArConfigLoading) {
+                if (mActivity != null) {
+                    if (mActivity.errorWhileArConfigLoading) {
                         return false;
                     } else {
                         return true;
                     }
                 }
-                return true;
             }
+            return true;
+        }
 
-            @Override
-            protected void onPostExecute(final Boolean result) {
-                //Log.d(TAG, "loadingArConfig: onPostExecute: result=" + result);
-                if (!comingFromConfigActivity) {
-                    boolean loadConfigurationFileIsSuccessful = loadConfigurationFile();
-                    boolean loadVpsCheckedIsSuccessful = loadVpsChecked();
+        @Override
+        protected void onPostExecute(final Boolean result) {
+            super.onPostExecute(result);
+            //Log.d(TAG, "loadingArConfig: onPostExecute: result=" + result);
+
+            if (mActivity != null) {
+                if (!mActivity.comingFromConfigActivity) {
+                    boolean loadConfigurationFileIsSuccessful = mActivity.loadConfigurationFile();
+                    boolean loadVpsCheckedIsSuccessful = mActivity.loadVpsChecked();
                     if (loadConfigurationFileIsSuccessful && loadVpsCheckedIsSuccessful) {
-                        verifyVpsChecked();
-                        runOnUiThread(new Runnable() {
+                        mActivity.verifyVpsChecked();
+                        if (result) {
+                            mActivity.isArConfigLoaded = true;
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mActivity.configFromRemoteStorageExistsAndAccessible) {
+                                        MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.start_with_server_connection));
+                                    } else {
+                                        MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.start_with_no_server_connection));
+                                    }
+                                }
+                            });
+                        } else {
+                            mActivity.isArConfigLoaded = false;
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.loadingarconfigfailed));
+                                }
+                            });
+                        }
+
+                    } else {
+                        mActivity.isArConfigLoaded = false;
+                        mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (result) {
-                                    isArConfigLoaded = true;
-                                    if (configFromRemoteStorageExistsAndAccessible) {
-                                        MymUtils.showToastMessage(getApplicationContext(), getString(R.string.start_with_server_connection));
-                                    } else {
-                                        MymUtils.showToastMessage(getApplicationContext(), getString(R.string.start_with_no_server_connection));
-                                    }
-                                } else {
-                                    isArConfigLoaded = false;
-                                    MymUtils.showToastMessage(getApplicationContext(), getString(R.string.loadingarconfigfailed));
-                                }
+                                MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.loadingarconfigfailed));
                             }
                         });
-                    } else {
-                        isArConfigLoaded = false;
-                        MymUtils.showToastMessage(getApplicationContext(), getString(R.string.loadingarconfigfailed));
                     }
-                    isArConfigLoading = false;
-                    runOnUiThread(new Runnable() {
+                    mActivity.isArConfigLoading = false;
+                    mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            (findViewById(R.id.arSwitchText)).setVisibility(View.VISIBLE);
-                            (findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
+                            (mActivity.findViewById(R.id.arSwitchText)).setVisibility(View.VISIBLE);
+                            (mActivity.findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
                         }
                     });
                     //Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
                 } else {
-                    boolean loadConfigurationFileIsSuccessful = loadConfigurationFile();
-                    boolean loadVpsCheckedIsSuccessful = loadVpsChecked();
+                    boolean loadConfigurationFileIsSuccessful = mActivity.loadConfigurationFile();
+                    boolean loadVpsCheckedIsSuccessful = mActivity.loadVpsChecked();
                     if (loadConfigurationFileIsSuccessful && loadVpsCheckedIsSuccessful) {
-                        verifyVpsChecked();
-                        runOnUiThread(new Runnable() {
+                        mActivity.verifyVpsChecked();
+                        if (result) {
+                            mActivity.isArConfigLoaded = true;
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mActivity.isVpsCheckedInformationLost) {
+                                        MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.new_config_loaded_vps_chk_lost));
+                                    } else {
+                                        MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.new_config_loaded));
+                                    }
+                                }
+                            });
+                        } else {
+                            mActivity.isArConfigLoaded = false;
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.loadingarconfigfailed));
+                                }
+                            });
+                        }
+                    } else {
+                        mActivity.isArConfigLoaded = false;
+                        mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (result) {
-                                    isArConfigLoaded = true;
-                                    if (isVpsCheckedInformationLost) {
-                                        MymUtils.showToastMessage(getApplicationContext(), getString(R.string.new_config_loaded_vps_chk_lost));
-                                    } else {
-                                        MymUtils.showToastMessage(getApplicationContext(), getString(R.string.new_config_loaded));
-                                    }
-                                } else {
-                                    isArConfigLoaded = false;
-                                    MymUtils.showToastMessage(getApplicationContext(), getString(R.string.loadingarconfigfailed));
-                                }
+                                MymUtils.showToastMessage(mActivity.getApplicationContext(), mActivity.getString(R.string.loadingarconfigfailed));
                             }
                         });
-                    } else {
-                        isArConfigLoaded = false;
-                        MymUtils.showToastMessage(getApplicationContext(), getString(R.string.loadingarconfigfailed));
                     }
-                    isArConfigLoading = false;
-                    runOnUiThread(new Runnable() {
+                    mActivity.isArConfigLoading = false;
+                    mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            (findViewById(R.id.arSwitchText)).setVisibility(View.VISIBLE);
-                            (findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
+                            (mActivity.findViewById(R.id.arSwitchText)).setVisibility(View.VISIBLE);
+                            (mActivity.findViewById(R.id.ar_load_progressbar)).setVisibility(View.GONE);
                         }
                     });
-                    //Log.d(TAG, "loadingArConfig: loading finalized with success: isArConfigLoading=" + isArConfigLoading);
                 }
-
             }
-        }.execute();
+
+        }
     }
 
+    private void loadingArConfig() {
+        mLoadingArConfig = new LoadingArConfig(this);
+        mLoadingArConfig.execute();
+    }
 
     /**
      * Updates fields based on data stored in the bundle.
@@ -2219,7 +2287,6 @@ public class ImageCapActivity extends Activity implements
         mLocationUpdated = false;
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
-
 
     @Override
     public void onConnectionSuspended(int cause) {
@@ -2288,7 +2355,6 @@ public class ImageCapActivity extends Activity implements
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-
     protected void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
@@ -2322,7 +2388,6 @@ public class ImageCapActivity extends Activity implements
         mLocationUpdated = false;
         isPositionCertified = false;
     }
-
 
     public String[] getLocationToExifStrings(Location location, String photoTakenMillis) {
         String[] locationString = new String[14];
@@ -2400,7 +2465,6 @@ public class ImageCapActivity extends Activity implements
         return locationString;
     }
 
-
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // Save the current filter indices.
@@ -2413,7 +2477,6 @@ public class ImageCapActivity extends Activity implements
         super.onSaveInstanceState(savedInstanceState);
     }
 
-
     @Override
     protected void onStart() {
         mGoogleApiClient.connect();
@@ -2424,6 +2487,7 @@ public class ImageCapActivity extends Activity implements
         }
     }
 
+    //                .setPrimaryText(getText(R.string.takeaphoto))
 
     public void startAppTour() {
         final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
@@ -2487,7 +2551,7 @@ public class ImageCapActivity extends Activity implements
 
     }
 
-    //                .setPrimaryText(getText(R.string.takeaphoto))
+    //.setPrimaryText(getText(R.string.makevideo))
 
     public void showWalktroughStep1() {
 
@@ -2495,6 +2559,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.cameraShutterButton))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.walkthroughtakeaphotosecond))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2511,13 +2576,14 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    //.setPrimaryText(getText(R.string.makevideo))
+    // .setPrimaryText(getText(R.string.selectvp))
 
     public void showWalktroughStep2() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.videoCameraShutterButton))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.walkthroughmakevideosecond))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2529,13 +2595,12 @@ public class ImageCapActivity extends Activity implements
                 .show();
     }
 
-    // .setPrimaryText(getText(R.string.selectvp))
-
     public void showWalktroughStep3() {
         new MaterialTapTargetPrompt.Builder(this)
                 .setTarget(findViewById(R.id.vp_list))
                 .setPrimaryText(getText(R.string.walkthroughselectvpsecond))
                 .setSecondaryText("")
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2552,6 +2617,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.vp_list))
                 .setPrimaryText(getText(R.string.walkthrougharautoarchive))
                 .setSecondaryText("")
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2568,6 +2634,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.certificationlayot))
                 .setPrimaryText(getText(R.string.walkthroughcertificationstatus))
                 .setSecondaryText(getText(R.string.walkthroughcertificationstatussecond))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2588,6 +2655,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonShowVpCapturesMainScreen))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.walkthroughshowvpcapsecond))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2604,6 +2672,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonCallWebAppMainScreen))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.walkthroughcallwebappsecond))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2620,6 +2689,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.arSwitchLinearLayout))
                 .setPrimaryText(getText(R.string.walkthrougharonoff))
                 .setSecondaryText(getText(R.string.walkthrougharonoffsecond))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2639,6 +2709,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.imageViewRadarScan))
                 .setPrimaryText(getText(R.string.walkthroughradarscansecond))
                 .setSecondaryText("")
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2655,6 +2726,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonShowHelpMainScreen))
                 .setPrimaryText(getText(R.string.walkthroughLastStep))
                 .setSecondaryText(getText(R.string.walkthroughcheckagainifneeded))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2665,6 +2737,8 @@ public class ImageCapActivity extends Activity implements
                 })
                 .show();
     }
+
+    ;
 
     protected void returnToInitialScreen() {
         runOnUiThread(new Runnable() {
@@ -2770,9 +2844,6 @@ public class ImageCapActivity extends Activity implements
         });
     }
 
-    ;
-
-
     @Override
     public void onBackPressed() {
         //Log.d(TAG, "Testando JNI:" + getSecretKeyFromJNI());
@@ -2804,13 +2875,11 @@ public class ImageCapActivity extends Activity implements
 
     }
 
-
     @Override
     public void recreate() {
         super.recreate();
         //Log.d(TAG, "recreate() CALLED");
     }
-
 
     @Override
     protected void onResume() {
@@ -2955,7 +3024,7 @@ public class ImageCapActivity extends Activity implements
 
     @Override
     protected void onDestroy() {
-        //Log.d(TAG, "onDestroy CALLED");
+        super.onDestroy();
         if (mCameraView != null) {
             mCameraView.disableView();
         }
@@ -2966,8 +3035,26 @@ public class ImageCapActivity extends Activity implements
         } catch (IllegalArgumentException iae) {
             Log.e(TAG, "Error while unregistering receiver: " + iae);
         }
-
-        super.onDestroy();
+        if (mCallTimeServerInBackground != null) {
+            mCallTimeServerInBackground.setActivity(null);
+            mCallTimeServerInBackground.cancel(true);
+        }
+        if (mCheckConnectionToServerOnBackground != null) {
+            mCheckConnectionToServerOnBackground.setActivity(null);
+            mCheckConnectionToServerOnBackground.cancel(true);
+        }
+        if (mLoadingArConfig != null) {
+            mLoadingArConfig.setActivity(null);
+            mLoadingArConfig.cancel(true);
+        }
+        if (mGetRemoteFileMetadata != null) {
+            mGetRemoteFileMetadata.setActivity(null);
+            mGetRemoteFileMetadata.cancel(true);
+        }
+        if (mSetMultipleImageTrackingConfiguration != null) {
+            mSetMultipleImageTrackingConfiguration.setActivity(null);
+            mSetMultipleImageTrackingConfiguration.cancel(true);
+        }
     }
 
     private void disposeFilters(Filter[] filters) {
@@ -2977,31 +3064,6 @@ public class ImageCapActivity extends Activity implements
             }
         }
     }
-
-
-    // The OpenCV loader callback.
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(final int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                    //Log.d(TAG, "OpenCV loaded successfully");
-                    mCameraMatrix = MymUtils.getCameraMatrix(cameraWidthInPixels, Constants.cameraHeigthInPixels);
-                    mCameraView.enableView();
-                    //mCameraView.enableFpsMeter();
-
-                    if (!waitingUntilMultipleImageTrackingIsSet) {
-                        setMultipleImageTrackingConfiguration();
-                    }
-
-
-                    break;
-                default:
-                    super.onManagerConnected(status);
-                    break;
-            }
-        }
-    };
 
     private void setSingleImageTrackingConfiguration(int vpIndex) {
         waitingUntilSingleImageTrackingIsSet = true;
@@ -3039,37 +3101,46 @@ public class ImageCapActivity extends Activity implements
     }
 
 
-    private void setMultipleImageTrackingConfiguration() {
+    private static class SetMultipleImageTrackingConfiguration extends AsyncTask<Void, Void, Void> {
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected void onPreExecute() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        waitingUntilMultipleImageTrackingIsSet = true;
-                        //Log.d(TAG, "onPreExecute(): setMultipleImageTrackingConfiguration IN BACKGROUND - Lighting Waiting Circle");
-                        //Log.d(TAG, "waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
-                        //Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
-                        //Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
-                        //Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
-                        //Log.d(TAG, "isHudOn=" + isHudOn);
-                        mProgress.setVisibility(View.VISIBLE);
-                        mProgress.startAnimation(rotationMProgress);
-                    }
-                });
+        private ImageCapActivity mActivity;
 
-            }
+        public SetMultipleImageTrackingConfiguration(ImageCapActivity activity) {
+            mActivity = activity;
+        }
 
-            @Override
-            protected Void doInBackground(Void... params) {
-                //mBgr = new Mat();
-                markerBuffer = new ArrayList<Mat>();
-                for (int i = 1; i < (qtyVps); i++) {
+        public void setActivity(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mActivity.waitingUntilMultipleImageTrackingIsSet = true;
+            //Log.d(TAG, "onPreExecute(): setMultipleImageTrackingConfiguration IN BACKGROUND - Lighting Waiting Circle");
+            //Log.d(TAG, "waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
+            //Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
+            //Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
+            //Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
+            //Log.d(TAG, "isHudOn=" + isHudOn);
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mActivity.mProgress.setVisibility(View.VISIBLE);
+                    mActivity.mProgress.startAnimation(mActivity.rotationMProgress);
+                }
+            });
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (mActivity != null) {
+                mActivity.markerBuffer = new ArrayList<Mat>();
+                for (int i = 1; i < (mActivity.qtyVps); i++) {
                     try {
-                        File markervpFile = new File(getApplicationContext().getFilesDir(), "markervp" + i + ".png");
+                        File markervpFile = new File(mActivity.getApplicationContext().getFilesDir(), "markervp" + i + ".png");
                         Mat tmpMarker = Imgcodecs.imread(markervpFile.getAbsolutePath(), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-                        markerBuffer.add(tmpMarker);
+                        mActivity.markerBuffer.add(tmpMarker);
                     } catch (Exception e) {
                         Log.e(TAG, "setMultipleImageTrackingConfiguration(): markerImageFileContents failed:" + e.toString());
                     }
@@ -3078,54 +3149,61 @@ public class ImageCapActivity extends Activity implements
                 //Log.d(TAG, "setMultipleImageTrackingConfiguration: markerBuffer.toArray().length=" + markerBuffer.toArray().length);
                 try {
                     trackFilter = new ImageDetectionFilter(
-                            ImageCapActivity.this,
-                            markerBuffer.toArray(),
-                            (qtyVps - 1),
-                            mCameraMatrix,
+                            mActivity,
+                            mActivity.markerBuffer.toArray(),
+                            (mActivity.qtyVps - 1),
+                            mActivity.mCameraMatrix,
                             Constants.standardMarkerlessMarkerWidth);
                 } catch (IOException e) {
                     Log.e(TAG, "Failed to load marker: " + e.toString());
                 }
                 if (trackFilter != null) {
-                    mImageDetectionFilters = new ARFilter[]{
+                    mActivity.mImageDetectionFilters = new ARFilter[]{
                             new NoneARFilter(),
                             trackFilter
                     };
                 }
-                return null;
             }
+            return null;
+        }
 
-            @Override
-            protected void onPostExecute(Void result) {
-                //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND");
-                runOnUiThread(new Runnable() {
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND");
+            //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - Turning off Waiting Circle");
+            if (mActivity != null) {
+                mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - Turning off Waiting Circle");
-                        mProgress.clearAnimation();
-                        mProgress.setVisibility(View.GONE);
+                        mActivity.mProgress.clearAnimation();
+                        mActivity.mProgress.setVisibility(View.GONE);
                         //Log.d(TAG, "FINISHING setMultipleImageTrackingConfiguration IN BACKGROUND - mProgress.isShown():" + mProgress.isShown());
                         // TURNING ON RADAR SCAN
-                        if ((!radarScanImageView.isShown()) && (isArSwitchOn) && (!isShowingVpPhoto)) {
-                            radarScanImageView.setVisibility(View.VISIBLE);
-                            radarScanImageView.startAnimation(rotationRadarScan);
+                        if ((!mActivity.radarScanImageView.isShown()) && (mActivity.isArSwitchOn) && (!mActivity.isShowingVpPhoto)) {
+                            mActivity.radarScanImageView.setVisibility(View.VISIBLE);
+                            mActivity.radarScanImageView.startAnimation(mActivity.rotationRadarScan);
                         }
-                        mImageDetectionFilterIndex = 1;
-                        waitingUntilMultipleImageTrackingIsSet = false;
-                        singleImageTrackingIsSet = false;
-                        idTrackingIsSet = false;
-                        multipleImageTrackingIsSet = true;
-                        isHudOn = 1;
-
                     }
                 });
-                //Log.d(TAG, "onPostExecute: waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
-                //Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
-                //Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
-                //Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
-                //Log.d(TAG, "isHudOn=" + isHudOn);
+                mActivity.mImageDetectionFilterIndex = 1;
+                mActivity.waitingUntilMultipleImageTrackingIsSet = false;
+                mActivity.singleImageTrackingIsSet = false;
+                mActivity.idTrackingIsSet = false;
+                mActivity.multipleImageTrackingIsSet = true;
+                mActivity.isHudOn = 1;
             }
-        }.execute();
+            //Log.d(TAG, "onPostExecute: waitingUntilMultipleImageTrackingIsSet=" + waitingUntilMultipleImageTrackingIsSet);
+            //Log.d(TAG, "multipleImageTrackingIsSet=" + multipleImageTrackingIsSet);
+            //Log.d(TAG, "waitingUntilSingleImageTrackingIsSet=" + waitingUntilSingleImageTrackingIsSet);
+            //Log.d(TAG, "singleImageTrackingIsSet=" + singleImageTrackingIsSet);
+            //Log.d(TAG, "isHudOn=" + isHudOn);
+        }
+    }
+
+    private void setMultipleImageTrackingConfiguration() {
+        mSetMultipleImageTrackingConfiguration = new SetMultipleImageTrackingConfiguration(this);
+        mSetMultipleImageTrackingConfiguration.execute();
     }
 
 
@@ -3274,7 +3352,12 @@ public class ImageCapActivity extends Activity implements
                 videoThumbnailFileName = vpNumber[vpTrackedInPose] + "_t_" + momento + ".jpg";
                 videoFileNameLong = getApplicationContext().getFilesDir() + "/" + videoFileName;
                 videoThumbnailFileNameLong = getApplicationContext().getFilesDir() + "/" + videoThumbnailFileName;
-                if (!capturingManualVideo) prepareVideoRecorder(videoFileNameLong);
+                if (!capturingManualVideo) {
+                    if (prepareVideoRecorder(videoFileNameLong)) {
+                        //Log.d(TAG, "Video recorder prepared!");
+                    }
+                    ;
+                }
             }
             if (videoRecorderPrepared) {
                 if (((System.currentTimeMillis() - videoCaptureStartmillis) < Constants.shortVideoLength) && (!stopManualVideo)) {
@@ -3283,10 +3366,15 @@ public class ImageCapActivity extends Activity implements
                     if (capturingManualVideo) {
                         stopManualVideo = false;
                         capturingManualVideo = false;
-                        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-                        float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-                        float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-                        float volume = actualVolume / maxVolume;
+                        float volume = 0;
+                        try {
+                            AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                            float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                            float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                            volume = actualVolume / maxVolume;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         if (videoRecordStopedSoundIDLoaded) {
                             soundPool.play(videoRecordStopedSoundID, volume, volume, 1, 0, 1f);
                             //Log.d(TAG, "Video STOP: Duartion limit exceeded Played sound");
@@ -4050,14 +4138,18 @@ public class ImageCapActivity extends Activity implements
             // Turning tracking OFF
             mImageDetectionFilterIndex = 0;
             // Playing photo capture sound
-            AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-            float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
-            float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
-            float volume = actualVolume / maxVolume;
-            // Is the sound loaded already?
-            if (camShutterSoundIDLoaded) {
-                soundPool.play(camShutterSoundID, volume, volume, 1, 0, 1f);
-                //Log.d(TAG, "takePhoto: Camera Shutter Played sound");
+            try {
+                AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                float volume = actualVolume / maxVolume;
+                // Is the sound loaded already?
+                if (camShutterSoundIDLoaded) {
+                    soundPool.play(camShutterSoundID, volume, volume, 1, 0, 1f);
+                    //Log.d(TAG, "takePhoto: Camera Shutter Played sound");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             // Preparing UI for user decision upon capture acceptance
             if ((!vpPhotoAccepted) && (!vpPhotoRejected)) {
@@ -4279,7 +4371,7 @@ public class ImageCapActivity extends Activity implements
                     ;
 
                 } catch (Exception e) {
-
+                    e.printStackTrace();
                 }
                 runOnUiThread(new Runnable() {
                     @Override
@@ -4491,6 +4583,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.textView1))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showdescvptourpagetitle))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4508,6 +4601,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonCallConfig))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showdescvptourbtncallcfg))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4525,6 +4619,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonAlphaToggle))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showdescvptourbtnalphatgl))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4543,6 +4638,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonShowVpCaptures))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showdescvptourbtnshowvpcaptures))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4560,6 +4656,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.linearLayoutVpArStatus))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showdescvptourarstatus))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4813,21 +4910,32 @@ public class ImageCapActivity extends Activity implements
     }
 
 
-    private void getRemoteFileMetadata(final String filename) {
+    private static class GetRemoteFileMetadata extends AsyncTask<String, Void, ObjectMetadata> {
 
-        new AsyncTask<Void, Void, ObjectMetadata>() {
-            @Override
-            protected void onPreExecute() {
-                //Log.d(TAG, "getRemoteFileMetadata: onPreExecute");
-            }
+        private ImageCapActivity mActivity;
 
-            @Override
-            protected ObjectMetadata doInBackground(Void... params) {
-                int retries = 4;
-                boolean nthtry = false;
+        public GetRemoteFileMetadata(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        public void setActivity(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //Log.d(TAG, "getRemoteFileMetadata: onPreExecute");
+        }
+
+        @Override
+        protected ObjectMetadata doInBackground(String... filename) {
+            int retries = 4;
+            boolean nthtry = false;
+            if (mActivity != null) {
                 try {
                     do {
-                        final ObjectMetadata objMetadata = s3Amazon.getObjectMetadata(Constants.BUCKET_NAME, filename);
+                        final ObjectMetadata objMetadata = mActivity.s3Amazon.getObjectMetadata(Constants.BUCKET_NAME, filename[0]);
                         try {
                             if (objMetadata.getContentLength() > 5) nthtry = true;
                         } catch (Exception ex) {
@@ -4850,13 +4958,16 @@ public class ImageCapActivity extends Activity implements
                     //Log.d(TAG, "Exception=" + e.toString());
                     return null;
                 }
-                return null;
             }
+            return null;
+        }
 
-            @Override
-            protected void onPostExecute(final ObjectMetadata objectMetadata) {
-                //Log.d(TAG, "getRemoteFileMetadata: onPostExecute");
-                runOnUiThread(new Runnable() {
+        @Override
+        protected void onPostExecute(final ObjectMetadata objectMetadata) {
+            super.onPostExecute(objectMetadata);
+            //Log.d(TAG, "getRemoteFileMetadata: onPostExecute");
+            if (mActivity != null) {
+                mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (objectMetadata != null) {
@@ -4866,30 +4977,35 @@ public class ImageCapActivity extends Activity implements
                             //Log.d(TAG, "Location=LocCertified=" + userMetadata.get("loccertified") + " Time=TimeCertified=" + userMetadata.get("timecertified"));
                             if (userMetadata.get("loccertified").equalsIgnoreCase("1")) {
                                 //IsPositionCertified
-                                buttonPositionCertified.setVisibility(View.VISIBLE);
-                                buttonPositionCertified.setBackground(circularButtonGreen);
+                                mActivity.buttonPositionCertified.setVisibility(View.VISIBLE);
+                                mActivity.buttonPositionCertified.setBackground(mActivity.circularButtonGreen);
                             } else {
-                                buttonPositionCertified.setVisibility(View.VISIBLE);
-                                buttonPositionCertified.setBackground(circularButtonRed);
+                                mActivity.buttonPositionCertified.setVisibility(View.VISIBLE);
+                                mActivity.buttonPositionCertified.setBackground(mActivity.circularButtonRed);
                             }
                             if (userMetadata.get("timecertified").equalsIgnoreCase("1")) {
                                 //IsTimeCertified
-                                buttonTimeCertified.setVisibility(View.VISIBLE);
-                                buttonTimeCertified.setBackground(circularButtonGreen);
+                                mActivity.buttonTimeCertified.setVisibility(View.VISIBLE);
+                                mActivity.buttonTimeCertified.setBackground(mActivity.circularButtonGreen);
                             } else {
-                                buttonTimeCertified.setVisibility(View.VISIBLE);
-                                buttonTimeCertified.setBackground(circularButtonRed);
+                                mActivity.buttonTimeCertified.setVisibility(View.VISIBLE);
+                                mActivity.buttonTimeCertified.setBackground(mActivity.circularButtonRed);
                             }
                         } else {
-                            buttonPositionCertified.setVisibility(View.VISIBLE);
-                            buttonPositionCertified.setBackground(circularButtonGray);
-                            buttonTimeCertified.setVisibility(View.VISIBLE);
-                            buttonTimeCertified.setBackground(circularButtonGray);
+                            mActivity.buttonPositionCertified.setVisibility(View.VISIBLE);
+                            mActivity.buttonPositionCertified.setBackground(mActivity.circularButtonGray);
+                            mActivity.buttonTimeCertified.setVisibility(View.VISIBLE);
+                            mActivity.buttonTimeCertified.setBackground(mActivity.circularButtonGray);
                         }
                     }
                 });
             }
-        }.execute();
+        }
+    }
+
+    private void getRemoteFileMetadata(final String filename) {
+        mGetRemoteFileMetadata = new GetRemoteFileMetadata(this);
+        mGetRemoteFileMetadata.execute(filename);
     }
 
 
@@ -4944,6 +5060,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.textView1))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourpagetitle))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4961,6 +5078,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonShowNextVpCapture))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourfwdbutton))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4978,6 +5096,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.deleteLocalMediaButton))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourdeletebutton))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -4995,6 +5114,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.linearLayoutshareMediaButton2))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptoursharecontentbutton))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -5012,6 +5132,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.linearLayoutshareMediaButton))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptoursharelinkbutton))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -5029,6 +5150,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonDownloadPDFOnShowVpCaptures))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourpdfbutton))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -5046,6 +5168,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonPositionCertified))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourposcert))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -5063,6 +5186,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonTimeCertified))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourtimecert))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -5087,6 +5211,7 @@ public class ImageCapActivity extends Activity implements
                 .setTarget(findViewById(R.id.linearLayoutConfigCaptureVpsHRZ))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showvpcaptourarsetup))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -5129,6 +5254,7 @@ public class ImageCapActivity extends Activity implements
                 final String millisMoment = sb.substring(vpMediaFileName.length() - 17, vpMediaFileName.length() - 4);
                 final String mediaType = sb.substring(vpMediaFileName.length() - 19, vpMediaFileName.length() - 18);
                 showingMediaType = mediaType;
+                isVpPhotoCapturedWithAR = false;
                 if (mediaType.equalsIgnoreCase("p")) {
                     // When the item is a photo
                     final InputStream fiscaps = MymUtils.getLocalFile(vpMediaFileName, getApplicationContext());
@@ -5164,6 +5290,9 @@ public class ImageCapActivity extends Activity implements
                                         buttonTimeCertified.setVisibility(View.VISIBLE);
                                         buttonTimeCertified.setBackground(circularButtonRed);
                                     }
+                                    if (tags.getAttribute("Model").equalsIgnoreCase("1")) {
+                                        isVpPhotoCapturedWithAR = true;
+                                    }
                                 } catch (Exception e) {
                                     Log.e(TAG, "Problem with Exif tags or drawable setting:" + e.toString());
                                 }
@@ -5194,33 +5323,51 @@ public class ImageCapActivity extends Activity implements
                                 }
                                 vpIdNumber.setVisibility(View.VISIBLE);
                                 vpLocationDesTextView.setVisibility(View.VISIBLE);
-                                // Layout showing VP configuration state
-                                if (isArConfigLoaded) {
+                                // Layout showing VP media capturing state
+                                if (!isVpPhotoCapturedWithAR) {
                                     if (!mymIsRunningOnKitKat) {
                                         linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
                                         linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
-                                        if (vpArIsConfigured[position]) {
-                                            vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
-                                        } else {
-                                            vpAcquiredStatusHRZ.setText(R.string.off);
-                                        }
-                                        if (vpIsAmbiguous[position]) {
-                                            linearLayoutMarkerIdHRZ.setVisibility(View.VISIBLE);
-                                            idMarkerNumberTextViewHRZ.setText(Integer.toString(vpSuperMarkerId[position]));
-                                            buttonAmbiguousVpToggleHRZ.setVisibility(View.VISIBLE);
-                                            buttonAmbiguousVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
-                                            if (vpIsSuperSingle[position]) {
-                                                buttonSuperSingleVpToggleHRZ.setVisibility(View.VISIBLE);
-                                                buttonSuperSingleVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                        vpAcquiredStatusHRZ.setText(R.string.off);
+                                        linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
+                                        buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                        buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                    }
+                                } else {
+                                    if (isArConfigLoaded) {
+                                        if (!mymIsRunningOnKitKat) {
+                                            linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
+                                            linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
+                                            if (isVpPhotoCapturedWithAR) {
+                                                vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
+                                            } else {
+                                                vpAcquiredStatusHRZ.setText(R.string.off);
                                             }
-                                        } else {
+                                            if (vpIsAmbiguous[position]) {
+                                                linearLayoutMarkerIdHRZ.setVisibility(View.VISIBLE);
+                                                idMarkerNumberTextViewHRZ.setText(Integer.toString(vpSuperMarkerId[position]));
+                                                buttonAmbiguousVpToggleHRZ.setVisibility(View.VISIBLE);
+                                                buttonAmbiguousVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                                if (vpIsSuperSingle[position]) {
+                                                    buttonSuperSingleVpToggleHRZ.setVisibility(View.VISIBLE);
+                                                    buttonSuperSingleVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                                }
+                                            } else {
+                                                linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
+                                                buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                                buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                            }
+                                        }
+                                    } else {
+                                        if (!mymIsRunningOnKitKat) {
+                                            linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
+                                            linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
+                                            vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
                                             linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
                                             buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
                                             buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
                                         }
                                     }
-                                } else {
-                                    linearLayoutConfigCaptureVpsHRZ.setVisibility(View.GONE);
                                 }
                                 if (appStartState.equalsIgnoreCase("firstthisversion") || appStartState.equalsIgnoreCase("firstever")) {
                                     startShowVpCapturesTour();
@@ -5243,6 +5390,7 @@ public class ImageCapActivity extends Activity implements
                         String formattedLastDate = sdf.format(lastDate);
                         lastTimeAcquired = getString(R.string.date_vp_capture_shown) + ": " + formattedLastDate;
                         String tempTextView = "";
+                        isVpPhotoCapturedWithAR = false;
                         if (isArConfigLoaded) {
                             tempTextView = vpLocationDesText[lastVpSelectedByUser] + "\n" + lastTimeAcquired;
                         } else {
@@ -5277,33 +5425,51 @@ public class ImageCapActivity extends Activity implements
                                 }
                                 vpLocationDesTextView.setText(desTextView);
                                 vpLocationDesTextView.setVisibility(View.VISIBLE);
-                                // Layout showing VP configuration state
-                                if (isArConfigLoaded) {
+                                // Layout showing VP media capturing state
+                                if (!isVpPhotoCapturedWithAR) {
                                     if (!mymIsRunningOnKitKat) {
                                         linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
                                         linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
-                                        if (vpArIsConfigured[position]) {
-                                            vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
-                                        } else {
-                                            vpAcquiredStatusHRZ.setText(R.string.off);
-                                        }
-                                        if (vpIsAmbiguous[position]) {
-                                            linearLayoutMarkerIdHRZ.setVisibility(View.VISIBLE);
-                                            idMarkerNumberTextViewHRZ.setText(Integer.toString(vpSuperMarkerId[position]));
-                                            buttonAmbiguousVpToggleHRZ.setVisibility(View.VISIBLE);
-                                            buttonAmbiguousVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
-                                            if (vpIsSuperSingle[position]) {
-                                                buttonSuperSingleVpToggleHRZ.setVisibility(View.VISIBLE);
-                                                buttonSuperSingleVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                        vpAcquiredStatusHRZ.setText(R.string.off);
+                                        linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
+                                        buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                        buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                    }
+                                } else {
+                                    if (isArConfigLoaded) {
+                                        if (!mymIsRunningOnKitKat) {
+                                            linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
+                                            linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
+                                            if (isVpPhotoCapturedWithAR) {
+                                                vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
+                                            } else {
+                                                vpAcquiredStatusHRZ.setText(R.string.off);
                                             }
-                                        } else {
+                                            if (vpIsAmbiguous[position]) {
+                                                linearLayoutMarkerIdHRZ.setVisibility(View.VISIBLE);
+                                                idMarkerNumberTextViewHRZ.setText(Integer.toString(vpSuperMarkerId[position]));
+                                                buttonAmbiguousVpToggleHRZ.setVisibility(View.VISIBLE);
+                                                buttonAmbiguousVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                                if (vpIsSuperSingle[position]) {
+                                                    buttonSuperSingleVpToggleHRZ.setVisibility(View.VISIBLE);
+                                                    buttonSuperSingleVpToggleHRZ.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_blue_dark)));
+                                                }
+                                            } else {
+                                                linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
+                                                buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                                buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
+                                            }
+                                        }
+                                    } else {
+                                        if (!mymIsRunningOnKitKat) {
+                                            linearLayoutConfigCaptureVpsHRZ.setVisibility(View.VISIBLE);
+                                            linearLayoutVpArStatusHRZ.setVisibility(View.VISIBLE);
+                                            vpAcquiredStatusHRZ.setText(R.string.vpAcquiredStatus);
                                             linearLayoutMarkerIdHRZ.setVisibility(View.INVISIBLE);
                                             buttonAmbiguousVpToggleHRZ.setVisibility(View.INVISIBLE);
                                             buttonSuperSingleVpToggleHRZ.setVisibility(View.INVISIBLE);
                                         }
                                     }
-                                } else {
-                                    linearLayoutConfigCaptureVpsHRZ.setVisibility(View.GONE);
                                 }
                                 buttonStartVideoInVpCaptures.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -5676,74 +5842,112 @@ public class ImageCapActivity extends Activity implements
         return true;
     }
 
+    private static class CallTimeServerInBackground extends AsyncTask<Void, Void, Boolean> {
+
+        private ImageCapActivity mActivity;
+
+        public CallTimeServerInBackground(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        public void setActivity(ImageCapActivity activity) {
+            mActivity = activity;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            isTimeCertified = false;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Boolean result = false;
+            long now = 0;
+            Long loopStart = System.currentTimeMillis();
+            //Log.d(TAG, "callTimeServerInBackground: Calling SNTP");
+            SntpClient sntpClient = new SntpClient();
+            do {
+                if (isCancelled()) {
+                    Log.i("AsyncTask", "callTimeServerInBackground: cancelled");
+                    break;
+                }
+                if (sntpClient.requestTime("pool.ntp.org", 10000)) {
+                    sntpTime = sntpClient.getNtpTime();
+                    sntpTimeReference = sntpClient.getNtpTimeReference();
+                    now = sntpTime + SystemClock.elapsedRealtime() - sntpTimeReference;
+                    Log.i("SNTP", "SNTP Present Time =" + now);
+                    Log.i("SNTP", "System Present Time =" + System.currentTimeMillis());
+                    result = true;
+                }
+                //if (now != 0)
+                //Log.d(TAG, "callTimeServerInBackground: ntp:now=" + now);
+
+            } while ((now == 0) && ((System.currentTimeMillis() - loopStart) < 10000));
+            //Log.d(TAG, "callTimeServerInBackground: ending the loop querying pool.ntp.org for 10 seconds max:" + (System.currentTimeMillis() - loopStart) + " millis:" + now);
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean result) {
+            super.onPostExecute(result);
+
+            if (mActivity != null) {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result) {
+                            mActivity.timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_green_dark)));
+                            Snackbar mSnackBar = Snackbar.make(mActivity.timeCertifiedButton.getRootView(), mActivity.getText(R.string.usingcerttimeistrue), Snackbar.LENGTH_LONG);
+                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            mainTextView.setTextColor(Color.WHITE);
+                            mSnackBar.show();
+                        } else {
+                            sntpTime = 0;
+                            sntpTimeReference = 0;
+                            mActivity.timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_red_dark)));
+                            Snackbar mSnackBar = Snackbar.make(mActivity.timeCertifiedButton.getRootView(), mActivity.getText(R.string.usingcerttimeisfalse), Snackbar.LENGTH_LONG);
+                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            mainTextView.setTextColor(Color.WHITE);
+                            mSnackBar.show();
+                        }
+                    }
+                });
+            }
+
+        }
+    }
+
+
     private void callTimeServerInBackground() {
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected void onPreExecute() {
+        mCallTimeServerInBackground = new CallTimeServerInBackground(this);
+        mCallTimeServerInBackground.execute();
+    }
 
-            }
 
-            @Override
-            protected Void doInBackground(Void... params) {
-                isTimeCertified = false;
-                long now = 0;
-                Long loopStart = System.currentTimeMillis();
-                //Log.d(TAG, "callTimeServerInBackground: Calling SNTP");
-                SntpClient sntpClient = new SntpClient();
-                do {
-                    if (isCancelled()) {
-                        Log.i("AsyncTask", "callTimeServerInBackground: cancelled");
-                        break;
+    private void updatePendingUpload() {
+
+        if (pendingUploadTransfers == 0) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (uploadPendingText.isShown()) {
+                        uploadPendingText.setText(Integer.toString(pendingUploadTransfers));
+                        uploadPendingLinearLayout.setVisibility(View.INVISIBLE);
                     }
-                    if (sntpClient.requestTime("pool.ntp.org", 10000)) {
-                        sntpTime = sntpClient.getNtpTime();
-                        sntpTimeReference = sntpClient.getNtpTimeReference();
-                        now = sntpTime + SystemClock.elapsedRealtime() - sntpTimeReference;
-                        Log.i("SNTP", "SNTP Present Time =" + now);
-                        Log.i("SNTP", "System Present Time =" + System.currentTimeMillis());
-                        isTimeCertified = true;
-                    }
-                    //if (now != 0)
-                    //Log.d(TAG, "callTimeServerInBackground: ntp:now=" + now);
-
-                } while ((now == 0) && ((System.currentTimeMillis() - loopStart) < 10000));
-                //Log.d(TAG, "callTimeServerInBackground: ending the loop querying pool.ntp.org for 10 seconds max:" + (System.currentTimeMillis() - loopStart) + " millis:" + now);
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                if (isTimeCertified) {
-                    //Log.d(TAG, "callTimeServerInBackground: System.currentTimeMillis() before setTime=" + System.currentTimeMillis());
-                    //Log.d(TAG, "callTimeServerInBackground: System.currentTimeMillis() AFTER setTime=" + MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference));
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_green_dark)));
-                            Snackbar mSnackBar = Snackbar.make(timeCertifiedButton.getRootView(), getText(R.string.usingcerttimeistrue), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
-                            mainTextView.setTextColor(Color.WHITE);
-                            mSnackBar.show();
-                        }
-                    });
-                } else {
-                    sntpTime = 0;
-                    sntpTimeReference = 0;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_red_dark)));
-                            Snackbar mSnackBar = Snackbar.make(timeCertifiedButton.getRootView(), getText(R.string.usingcerttimeisfalse), Snackbar.LENGTH_LONG);
-                            TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
-                            mainTextView.setTextColor(Color.WHITE);
-                            mSnackBar.show();
-                        }
-                    });
                 }
-            }
-        }.execute();
+            });
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    uploadPendingLinearLayout.setVisibility(View.VISIBLE);
+                    uploadPendingText.setText(Integer.toString(pendingUploadTransfers));
+                }
+            });
+        }
     }
 
     private class UploadListener implements TransferListener {
@@ -5769,29 +5973,6 @@ public class ImageCapActivity extends Activity implements
                 if (pendingUploadTransfers < 0) pendingUploadTransfers = 0;
             }
             updatePendingUpload();
-        }
-    }
-
-    private void updatePendingUpload() {
-
-        if (pendingUploadTransfers == 0) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (uploadPendingText.isShown()) {
-                        uploadPendingText.setText(Integer.toString(pendingUploadTransfers));
-                        uploadPendingLinearLayout.setVisibility(View.INVISIBLE);
-                    }
-                }
-            });
-        } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    uploadPendingLinearLayout.setVisibility(View.VISIBLE);
-                    uploadPendingText.setText(Integer.toString(pendingUploadTransfers));
-                }
-            });
         }
     }
 

@@ -11,6 +11,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.media.AudioAttributes;
@@ -156,7 +157,7 @@ public class ConfigActivity extends Activity implements
 
     FloatingActionButton cameraShutterButton;
     FloatingActionButton buttonShowHelpMainScreen;
-    FloatingActionButton buttonShowHelpConfigCapScreen
+    FloatingActionButton buttonShowHelpConfigCapScreen;
 
     TextView vpLocationDesEditTextView;
     TextView vpIdNumber;
@@ -318,18 +319,24 @@ public class ConfigActivity extends Activity implements
         // Retrieve configuration info
         Bundle configBundle = getIntent().getExtras();
 
-        if (configBundle.getString("mymensoraccount") != null) mymensorAccount=configBundle.getString("mymensoraccount");
-        dciNumber = configBundle.getInt("dcinumber",1);
+        if (configBundle.getString("mymensoraccount") != null)
+            mymensorAccount = configBundle.getString("mymensoraccount");
+        dciNumber = configBundle.getInt("dcinumber", 1);
         qtyVps = Constants.maxQtyVps;  //Short.parseShort(getIntent().getExtras().get("QtyVps").toString());
         sntpTime = configBundle.getLong("sntpTime");
         sntpTimeReference = configBundle.getLong("sntpReference");
-        isTimeCertified = configBundle.getBoolean("isTimeCertified",false);
-        lastVpSelectedByUser = configBundle.getInt("lastVpSelectedByUser",1);
-        if (configBundle.getString("origmymacc") != null) origMymAcc=configBundle.getString("origmymacc");
-        if (configBundle.getString("deviceid") != null) deviceId=configBundle.getString("deviceid");
-        if (configBundle.getString("previousactivity") != null) previousActivity=configBundle.getString("previousactivity");
-        if (configBundle.getString("appStartState") != null) appStartState=configBundle.getString("appStartState");
-        if (configBundle.getString("serverConnection") != null) serverConnection=configBundle.getString("serverConnection");
+        isTimeCertified = configBundle.getBoolean("isTimeCertified", false);
+        lastVpSelectedByUser = configBundle.getInt("lastVpSelectedByUser", 1);
+        if (configBundle.getString("origmymacc") != null)
+            origMymAcc = configBundle.getString("origmymacc");
+        if (configBundle.getString("deviceid") != null)
+            deviceId = configBundle.getString("deviceid");
+        if (configBundle.getString("previousactivity") != null)
+            previousActivity = configBundle.getString("previousactivity");
+        if (configBundle.getString("appStartState") != null)
+            appStartState = configBundle.getString("appStartState");
+        if (configBundle.getString("serverConnection") != null)
+            serverConnection = configBundle.getString("serverConnection");
 
         descvpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "dsc" + "/";
         markervpRemotePath = Constants.usersConfigFolder + "/" + mymensorAccount + "/" + "cfg" + "/" + dciNumber + "/" + "vps" + "/" + "mrk" + "/";
@@ -1962,22 +1969,23 @@ public class ConfigActivity extends Activity implements
     }
 
 
-        public void startConfigCaptureScreenTourStep1() {
+    public void startConfigCaptureScreenTourStep1() {
 
-            new MaterialTapTargetPrompt.Builder(this)
-                    .setTarget(findViewById(R.id.linearLayoutVpArStatusInCfgCap))
-                    .setPrimaryText("")
-                    .setSecondaryText(getText(R.string.showcfgcapscrtourarstatus))
-                    .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
-                        @Override
-                        public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
-                            if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
-                                startConfigCaptureScreenTourStep2();
-                            }
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.linearLayoutVpArStatusInCfgCap))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showcfgcapscrtourarstatus))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            startConfigCaptureScreenTourStep2();
                         }
-                    })
-                    .show();
-        }
+                    }
+                })
+                .show();
+    }
 
     public void startConfigCaptureScreenTourStep2() {
 
@@ -1985,6 +1993,7 @@ public class ConfigActivity extends Activity implements
                 .setTarget(findViewById(R.id.linearLayoutAmbiguousVp))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showcfgcapscrtourambtgl))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2002,6 +2011,25 @@ public class ConfigActivity extends Activity implements
                 .setTarget(findViewById(R.id.linearLayoutSuperSingleVp))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showcfgcapscrtoursuptgl))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
+                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+                    @Override
+                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+                        if (state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
+                            startConfigCaptureScreenTourStep3a();
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public void startConfigCaptureScreenTourStep3a() {
+
+        new MaterialTapTargetPrompt.Builder(this)
+                .setTarget(findViewById(R.id.descVPEditText))
+                .setPrimaryText("")
+                .setSecondaryText(getText(R.string.showcfgcapscrtourvpname))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2019,6 +2047,7 @@ public class ConfigActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonRequestPhoto))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showcfgcapscrtourrequestphoto))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2036,6 +2065,7 @@ public class ConfigActivity extends Activity implements
                 .setTarget(findViewById(R.id.cameraShutterButton))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showcfgcapscrtourcamerashutter))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2046,13 +2076,6 @@ public class ConfigActivity extends Activity implements
                 })
                 .show();
     }
-
-
-
-
-
-
-
 
 
     public void startMainConfigScreenTour() {
@@ -2106,6 +2129,7 @@ public class ConfigActivity extends Activity implements
                 .setTarget(findViewById(R.id.vp_list))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showmaincfgscrtourvps))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2123,6 +2147,7 @@ public class ConfigActivity extends Activity implements
                 .setTarget(findViewById(R.id.buttonCallImagecap))
                 .setPrimaryText("")
                 .setSecondaryText(getText(R.string.showmaincfgscrtourbtncallimgcap))
+                .setFocalColour(getResources().getColor(R.color.mymensorblue))
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
                     @Override
                     public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
@@ -2163,7 +2188,7 @@ public class ConfigActivity extends Activity implements
                 @Override
                 public void run() {
                     Log.d(TAG, "Showing vpLocationDescImageFile for VP=" + vpIndex + "(vpLocationDescImageFileContents==null)" + (vpLocationDescImageFileContents == null));
-                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.startconfigofvp)+vpIndex, Snackbar.LENGTH_SHORT);
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.startconfigofvp) + vpIndex, Snackbar.LENGTH_SHORT);
                     TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
@@ -2321,7 +2346,7 @@ public class ConfigActivity extends Activity implements
                         linearLayoutMarkerId.setVisibility(View.INVISIBLE);
                         idMarkerNumberTextView.setText("--");
                     }
-                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.startconfigofvp)+vpIndex, Snackbar.LENGTH_SHORT);
+                    Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.startconfigofvp) + vpIndex, Snackbar.LENGTH_SHORT);
                     TextView mainTextView = (TextView) (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();

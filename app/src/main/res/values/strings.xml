@@ -205,15 +205,15 @@
     <string name="vpissupersingle">The current VP is a super VP</string>
     <string name="showvpcapturestour">Information on Medias Captured Screen</string>
     <string name="showvpcapturestourdescription">Let\'s take a tour of the features of the medias captured screen?</string>
-    <string name="showvpcaptourpagetitle">Here you will find in which VP folder this media is archived, as well as, the time when this media was created.</string>
-    <string name="showvpcaptourfwdbutton">Use this and the oposite back button to navigate in your medias in this VP.</string>
+    <string name="showvpcaptourpagetitle">Here you will find in which VP folder this media is archived, the name you set to this folder, as well as, the time when this media was created.</string>
+    <string name="showvpcaptourfwdbutton">Use this and the oposite back button to go thorugh your local medias in this device in this VP.</string>
     <string name="showvpcaptourdeletebutton">Use this button to delete a media that is stored locally, for example to free your device memory. Note that the server copy remains intact.</string>
-    <string name="showvpcaptoursharecontentbutton">Use this to share the media content, using Android sharing capabilities.</string>
-    <string name="showvpcaptoursharelinkbutton">Use this to share a link to the media stored in MyMensor Servers. Using this you save your data plan!</string>
+    <string name="showvpcaptoursharecontentbutton">Share the media content, using Android sharing capabilities.</string>
+    <string name="showvpcaptoursharelinkbutton">Share a link to the media stored in MyMensor Servers. Using this you save your data plan!</string>
     <string name="showvpcaptourpdfbutton">Download the PDF certificate for the current media directly from MyMensor Servers to your mobile! Then you can use it in the way you see fit!</string>
     <string name="showvpcaptourposcert">Check if media location is certified or not.</string>
     <string name="showvpcaptourtimecert">Check if media time is cerified or not.</string>
-    <string name="showvpcaptourarsetup">Here you can see the details about de AR setup of this VP. If it is AR OFF then there is no AR setup for this particular VP.</string>
+    <string name="showvpcaptourarsetup">Here you can see if this media was captured using AR. If it is AR OFF then no AR was used to capture this media.</string>
     <string name="walkthroughStartTitle">Information on MyMensorAR Main Screen</string>
     <string name="walkthrougharautoarchive">When using AR to capture, the media will be automatically stored in the VP that you have configured.</string>
     <string name="error_trial_expired_cannotinstall">Trial period has expired, cannot install the app with this user. Create a new user or contact support if you want to extend trial for this user.</string>
@@ -234,4 +234,13 @@
     <string name="showmainconfigscreentourdescription">Let\'s take a tour of this screen?</string>
     <string name="showmaincfgscrtourvps">Here you select which VP you want to set up Augmented Reality.</string>
     <string name="showmaincfgscrtourbtncallimgcap">After configuration is done, press this button and return to the image capture portion of the app. You can also do this by pressing back twice.</string>
+    <string name="showcfgcapscrtourarstatus">Here you will find if the AR is configured (OK) in this VP or if it is not configured (OFF).</string>
+    <string name="showcfgcapscrtourambtgl">Here you can turn on (BLUE) or off (GRAY) this VP\'s  ambiguity. If it is on, you will neeed a MyMensor Marker in the scene. Check our videos!</string>
+    <string name="showcfgcapscrtoursuptgl">Use this button to turn on (BLUE) the super VP feature. When using this you will, as well, need to print a MyMensor Super Marker from our WebApp. The Super Marker must be on the scene for the VP to be configured. Check our videos!</string>
+    <string name="showcfgcapscrtourvpname">The last thing you will do, even after capturing the VP standard photo, is to modify the VP name, from the standard numbers to whatever you want!</string>
+    <string name="showcfgcapscrtourrequestphoto">Pressing this button you will be taken to the actual capture of the standard VP photo. In the next screen you will center you subject image and will capture the standard photo.</string>
+    <string name="showcfgcapscrtourcamerashutter">This is the camera shutter button to capture your standard photo to this VP. This button will turn LIGHT BLUE when the app is ready to capture the photo. Try to center the main part of your image inside the target square. If you are using one of our markers they must be inside the image in order for the button to become LIGHT BLUE.</string>
+    <string name="showconfigcapscreentour">Standard VP Photo Capture Configuration Screen</string>
+    <string name="showconfigcapscreentourdescription">Let\'s have a walktrough on this screen?</string>
+    <string name="error_no_server_connection_cannotinstall">Cannot install without server connection, seek a better internet connection.</string>
 </resources>

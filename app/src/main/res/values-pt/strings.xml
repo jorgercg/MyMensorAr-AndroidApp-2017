@@ -189,7 +189,7 @@
     <string name="walkthroughradarscansecond">Coloque o radar sobre as suas áreas pré-configuradas para iniciar a captura com AR. Veja nosso vídeo USANDO A REALIDADE AUMENTADA.</string>
     <string name="confirmcallingwebapp">Chamar a Aplicação Web MyMensor?</string>
     <string name="callingwebapp">Chamando a Aplicação Web MyMensor!</string>
-    <string name="walkthroughcallwebappsecond">Veja na WebApp tudas as capturas que você já fez com o MyMensorAR, veja um mapa que mostra a localização de suas capturas, rotas, tags para transformar suas imagens em dados, todos os controles em sua conta e muito, muito mais!!!</string>
+    <string name="walkthroughcallwebappsecond">Veja na WebApp todas as capturas que você já fez com o MyMensorAR, veja um mapa que mostra a localização de suas capturas, rotas, tags para transformar suas imagens em dados, todos os controles em sua conta e muito, muito mais!!!</string>
     <string name="confirmdownloadpdfcert">Baixar o certificado PDF da mídia atual?</string>
     <string name="downloadpdfcert">Baixando o certificado PDF!</string>
     <string name="webapp">WebApp</string>
@@ -204,15 +204,15 @@
     <string name="vpissupersingle">O VP atual é um super VP</string>
     <string name="showvpcapturestour">Informações sobre a Tela de Mídias Capturadas</string>
     <string name="showvpcapturestourdescription">Vamos passear pelas funcionalidades da tela de mídias capturadas?</string>
-    <string name="showvpcaptourpagetitle">Aqui você encontrará em qual pasta VP esta mídia está arquivada, bem como, o momento em que essa mídia foi criada.</string>
-    <string name="showvpcaptourfwdbutton">Use este e o botão do lado oposto para navegar em suas mídias neste VP.</string>
+    <string name="showvpcaptourpagetitle">Aqui você encontrará em qual pasta VP esta mídia está arquivada, o nome que você atribuiu a esta pasta, bem como, o momento em que essa mídia foi criada.</string>
+    <string name="showvpcaptourfwdbutton">Use este e o botão do lado oposto para correr as suas mídias locais neste dispositivo neste VP.</string>
     <string name="showvpcaptourdeletebutton">Use este botão para excluir uma mídia armazenada localmente, por exemplo, para liberar a memória do dispositivo. Observe que a cópia do servidor permanece intacta.</string>
-    <string name="showvpcaptoursharecontentbutton">Use isso para compartilhar o conteúdo da mídia, usando recursos de compartilhamento do Android.</string>
-    <string name="showvpcaptoursharelinkbutton">Use isso para compartilhar um link para a mídia armazenada nos Servidores do MyMensor. Ao usar isso, você economiza seu plano de dados!</string>
-    <string name="showvpcaptourpdfbutton">Faça o download do certificado PDF da sua mídia atual diretamente dos Servidores MyMensor para o seu celular! Então você pode usá-lo da maneira que você quiser!</string>
+    <string name="showvpcaptoursharecontentbutton">Compartilhe o conteúdo da mídia, usando recursos de compartilhamento do Android.</string>
+    <string name="showvpcaptoursharelinkbutton">Compartilhe um link para a mídia armazenada nos Servidores do MyMensor. Ao usar isso, você economiza seu plano de dados!</string>
+    <string name="showvpcaptourpdfbutton">Faça o download do certificado PDF da sua mídia atual diretamente dos Servidores MyMensor para o seu celular! Então você pode usá-lo da maneira que quiser!</string>
     <string name="showvpcaptourposcert">Verifique se a localização da mídia está certificada ou não</string>
     <string name="showvpcaptourtimecert">Verifique se o horário da mídia está certificado ou não.</string>
-    <string name="showvpcaptourarsetup">Aqui você pode ver os detalhes sobre a configuração AR do VP. Se for AR OFF, não há configuração AR para este VP em particular.</string>
+    <string name="showvpcaptourarsetup">Aqui você pode ver se esta mídia foi capturada utilizando-se AR. Se for AR OFF, não foi utilizado AR na captura.</string>
     <string name="walkthroughStartTitle">Informações sobre a Tela Principal do MyMensorAR</string>
     <string name="walkthrougharautoarchive">Ao usar AR para capturar, a mídia será armazenada automaticamente no VP que você configurou.</string>
     <string name="error_trial_expired_cannotinstall">O período de avaliação expirou, não é possível instalar o aplicativo com esse usuário. Crie um novo usuário ou fale com o suporte se desejar prolongar o teste para este usuário.</string>
@@ -233,4 +233,13 @@
     <string name="showmainconfigscreentourdescription">Vamos conhecer esta tela?</string>
     <string name="showmaincfgscrtourbtncallimgcap">Após a configuração, pressione este botão e volte para a parte de captura de imagem do aplicativo. Você também pode fazer isso pressionando duas vezes o botão de retorno.</string>
     <string name="showmaincfgscrtourvps">Aqui você seleciona qual VP você deseja configurar Realidade Aumentada.</string>
+    <string name="showcfgcapscrtourarstatus">Aqui você encontrará se o AR está configurado (OK) neste VP ou se não estiver configurado (OFF).</string>
+    <string name="showcfgcapscrtourambtgl">Aqui você pode ativar (AZUL) ou desligar (CINZA) a ambigüidade deste VP. Se ON um marcador MyMensor precisa estar na cena. Veja os vídeos!</string>
+    <string name="showcfgcapscrtoursuptgl">Use este botão para ligar (AZUL) o recurso super VP. Ao usar isso, você também precisará imprimir um MyMensor Super Marker do nosso WebApp. O Super Marker deve estar na cena para que o VP seja configurado. Confira nossos vídeos!</string>
+    <string name="showcfgcapscrtourvpname">A última coisa que você fará, mesmo depois de capturar a foto padrão do VP, é modificar o nome do VP, dos números padrão para o que quiser!</string>
+    <string name="showcfgcapscrtourrequestphoto">Pressionando este botão você será levado para a captura real da foto VP padrão. Na próxima tela você centralizará a imagem do objetivo e irá capturar a foto padrão.</string>
+    <string name="showcfgcapscrtourcamerashutter">Este é o botão do obturador da câmera para capturar sua foto padrão para este VP. Este botão se tornará AZUL CLARO quando o app estiver pronto para capturar a foto. Tente centrar a parte principal da sua imagem dentro do quadrado alvo. Se você estiver usando um dos nossos marcadores eles devem estar dentro da imagem para que o botão se torne AZUL CLARO.</string>
+    <string name="showconfigcapscreentour">Tela de Configuração da Captura da Foto Padrão do VP</string>
+    <string name="showconfigcapscreentourdescription">Vamos fazer um passo a passo nesta tela?</string>
+    <string name="error_no_server_connection_cannotinstall">É impossível instalar sem conexão com o servidor, procure uma melhor conexão de internet.</string>
 </resources>

@@ -171,6 +171,8 @@ public class ImageCapActivity extends Activity implements
     private GetRemoteFileMetadata mGetRemoteFileMetadata;
     private SetMultipleImageTrackingConfiguration mSetMultipleImageTrackingConfiguration;
 
+    private String momentoVideo = "";
+
     public boolean vpPhotoAccepted = false;
     public boolean vpPhotoRejected = false;
     public boolean vpPhotoTobeRemarked = false;
@@ -330,6 +332,8 @@ public class ImageCapActivity extends Activity implements
     private boolean vpIsManuallySelected = false;
     private TrackingValues trackingValues;
     private int vpTrackedInPose;
+    private int vpCapturedInPhoto;
+    private int vpCapturedInVideo;
     private String vpPhotoRemark = null;
     private short assetId;
     private boolean[] vpArIsConfigured;
@@ -621,7 +625,7 @@ public class ImageCapActivity extends Activity implements
                 // Get the Item from ListView
                 View view = super.getView(position, convertView, parent);
                 // Initialize a TextView for ListView each Item
-                TextView tv =  view.findViewById(android.R.id.text1);
+                TextView tv = view.findViewById(android.R.id.text1);
                 // Set the text color of TextView (ListView Item)
                 tv.setTextColor(Color.WHITE);
                 //Drawable icon = getResources().getDrawable(R.drawable.ic_check_white_18dp);
@@ -754,7 +758,7 @@ public class ImageCapActivity extends Activity implements
                 if (isOn) {
                     if (isArConfigLoaded) {
                         isArSwitchOn = true;
-                        ( (TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#00e5ff"));
+                        ((TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#00e5ff"));
                         cameraShutterButton.setVisibility(View.INVISIBLE);
                         if (!mymIsRunningOnKitKat) {
                             videoCameraShutterButton.setVisibility(View.INVISIBLE);
@@ -765,19 +769,19 @@ public class ImageCapActivity extends Activity implements
                         showVpCapturesMainScreenButton.setVisibility(View.GONE);
                         vpsListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
                         Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arswitchison), Snackbar.LENGTH_LONG);
-                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     } else {
                         arSwitch.setChecked(false);
                         if (isArConfigLoading) {
                             Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arconfigloading), Snackbar.LENGTH_LONG);
-                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         } else {
                             Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arconfignotavailable), Snackbar.LENGTH_LONG);
-                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
@@ -785,7 +789,7 @@ public class ImageCapActivity extends Activity implements
 
                 } else {
                     isArSwitchOn = false;
-                    ( (TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#616161"));
+                    ((TextView) findViewById(R.id.arSwitchText)).setTextColor(Color.parseColor("#616161"));
                     cameraShutterButton.setVisibility(View.VISIBLE);
                     if (!mymIsRunningOnKitKat) {
                         videoCameraShutterButton.setVisibility(View.VISIBLE);
@@ -806,7 +810,7 @@ public class ImageCapActivity extends Activity implements
                     }
                     vpsListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
                     Snackbar mSnackBar = Snackbar.make(arSwitch.getRootView(), getText(R.string.arswitchisoff), Snackbar.LENGTH_LONG);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -912,7 +916,7 @@ public class ImageCapActivity extends Activity implements
                 @Override
                 public void onClick(View v) {
                     Snackbar mSnackBar = Snackbar.make(v, getText(R.string.vpisambiguous), Snackbar.LENGTH_LONG);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -922,7 +926,7 @@ public class ImageCapActivity extends Activity implements
                 @Override
                 public void onClick(View v) {
                     Snackbar mSnackBar = Snackbar.make(v, getText(R.string.vpissupersingle), Snackbar.LENGTH_LONG);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -936,7 +940,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 stopLocationUpdates();
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_not_certified), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -950,7 +954,7 @@ public class ImageCapActivity extends Activity implements
                 String lastUpdatedOn = sdf.format(mLastUpdateTime);
                 lastUpdatedOn = " (" + lastUpdatedOn + ")";
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_is_certified) + lastUpdatedOn, Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -965,13 +969,13 @@ public class ImageCapActivity extends Activity implements
                     lastUpdatedOn = " (" + lastUpdatedOn + ")";
                     Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_is_certified) + lastUpdatedOn, Snackbar.LENGTH_LONG)
                             .setAction(getText(R.string.turn_off_location_updates), turnOffClickListenerPositionButton);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
                     Snackbar mSnackBar = Snackbar.make(view, getText(R.string.position_not_certified), Snackbar.LENGTH_LONG)
                             .setAction(getText(R.string.turn_on_location_updates), turnOnClickListenerPositionButton);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -992,7 +996,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 callTimeServerInBackground();
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.tryingtocertifytime), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1008,13 +1012,13 @@ public class ImageCapActivity extends Activity implements
                                 public void onClick(View v) {
                                 }
                             });
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
                     Snackbar mSnackBar = Snackbar.make(view, getText(R.string.usingcerttimeisfalse), Snackbar.LENGTH_LONG)
                             .setAction(getText(R.string.certify), actionOnClickListenerTimeButton);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -1035,7 +1039,7 @@ public class ImageCapActivity extends Activity implements
             @Override
             public void onClick(View view) {
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.tryingtoconnecttoserver), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
                 checkConnectionToServer();
@@ -1052,26 +1056,26 @@ public class ImageCapActivity extends Activity implements
                                 public void onClick(View v) {
                                 }
                             });
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 } else {
                     if (serverConnection.equals(Constants.MYM_SERVERCONN_TRIALEXPIRED)) {
                         Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoservertrialexpired), Snackbar.LENGTH_LONG);
-                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     }
                     if (serverConnection.equals(Constants.MYM_SERVERCONN_SUBEXPIRED)) {
                         Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserversubexpired), Snackbar.LENGTH_LONG);
-                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     }
                     if (serverConnection.equals(Constants.MYM_SERVERCONN_NORMAL)) {
                         Snackbar mSnackBar = Snackbar.make(view, getText(R.string.notconnectedtoserver), Snackbar.LENGTH_LONG)
                                 .setAction(getText(R.string.trytoconnect), undoOnClickListenerServerButton);
-                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                     }
@@ -1087,7 +1091,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
 
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.callingconfigactivity), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
 
@@ -1120,14 +1124,14 @@ public class ImageCapActivity extends Activity implements
                 if (lastVpSelectedByUser == 0) {
                     String message = getString(R.string.vp_name) + lastVpSelectedByUser + " " + getString(R.string.vp_notconfigurable);
                     Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), message, Snackbar.LENGTH_LONG);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                     return;
                 }
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmconfigloading), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerCallConfigButton);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1224,7 +1228,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
 
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.callingwebapp), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
 
@@ -1248,7 +1252,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmcallingwebapp), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerCallWebAppMainScreenButton);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1262,7 +1266,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
 
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.downloadpdfcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
                 String fileSha256Hash = "";
@@ -1290,7 +1294,7 @@ public class ImageCapActivity extends Activity implements
             public void onClick(View view) {
                 Snackbar mSnackBar = Snackbar.make(view, getText(R.string.confirmdownloadpdfcert), Snackbar.LENGTH_LONG)
                         .setAction(getText(R.string.confirm), confirmOnClickListenerDownloadPDFOnShowVpCapturesButton);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -1344,7 +1348,7 @@ public class ImageCapActivity extends Activity implements
                                 }
                             }
                         });
-                TextView mainTextView =  (snackbar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (snackbar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 snackbar.show();
             }
@@ -2482,7 +2486,6 @@ public class ImageCapActivity extends Activity implements
         }
     }
 
-    //                .setPrimaryText(getText(R.string.takeaphoto))
 
     public void startAppTour() {
         final android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(this);
@@ -2857,7 +2860,7 @@ public class ImageCapActivity extends Activity implements
                         @Override
                         public void run() {
                             Snackbar mSnackBar = Snackbar.make(mCameraView, getString(R.string.double_bck_exit), Snackbar.LENGTH_LONG);
-                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
@@ -2940,7 +2943,7 @@ public class ImageCapActivity extends Activity implements
                     mProgress.clearAnimation();
                     mProgress.setVisibility(View.GONE);
                     Snackbar mSnackBar = Snackbar.make(vpsListView.getRootView(), getString(R.string.imagecapready), Snackbar.LENGTH_LONG);
-                    TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                    TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                     mainTextView.setTextColor(Color.WHITE);
                     mSnackBar.show();
                 }
@@ -3328,7 +3331,8 @@ public class ImageCapActivity extends Activity implements
 
         if ((!isArSwitchOn) && (askForManualPhoto)) {
             //Log.d(TAG, "Requesting manual photo");
-            takePhoto(rgba);
+            long momentoLong = MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference);
+            takePhoto(vpTrackedInPose, momentoLong, rgba);
         }
 
         // End of AR OFF Photo
@@ -3343,8 +3347,10 @@ public class ImageCapActivity extends Activity implements
                 long momentoLong = MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference);
                 photoTakenTimeMillis[vpTrackedInPose] = momentoLong;
                 String momento = String.valueOf(momentoLong);
-                videoFileName = vpNumber[vpTrackedInPose] + "_v_" + momento + ".mp4";
-                videoThumbnailFileName = vpNumber[vpTrackedInPose] + "_t_" + momento + ".jpg";
+                momentoVideo = momento;
+                vpCapturedInVideo = vpNumber[vpTrackedInPose];
+                videoFileName = vpCapturedInVideo + "_v_" + momento + ".mp4";
+                videoThumbnailFileName = vpCapturedInVideo + "_t_" + momento + ".jpg";
                 videoFileNameLong = getApplicationContext().getFilesDir() + "/" + videoFileName;
                 videoThumbnailFileNameLong = getApplicationContext().getFilesDir() + "/" + videoThumbnailFileName;
                 if (!capturingManualVideo) {
@@ -3388,7 +3394,7 @@ public class ImageCapActivity extends Activity implements
                         videoRecorderPrepared = false;
                         videoRecorderChronometer.stop();
                         releaseMediaRecorder();
-                        captureVideo();
+                        captureVideo(vpCapturedInVideo, momentoVideo);
                     }
                 }
             } else {
@@ -3598,7 +3604,7 @@ public class ImageCapActivity extends Activity implements
 
 
     @TargetApi(21)
-    private void captureVideo() {
+    private void captureVideo(int vpCapInVideo, String momento) {
         final String path = getApplicationContext().getFilesDir().getPath();
         File directory = new File(path);
         String[] fileInDirectory = directory.list(new FilenameFilter() {
@@ -3871,14 +3877,14 @@ public class ImageCapActivity extends Activity implements
                             videoThumbnailHdBitmap.compress(Bitmap.CompressFormat.JPEG, 95, fos);
                             fos.close();
                         } catch (Exception e) {
-                            Log.e(TAG, "videoThumbnailHdBitmap saving to videoThumbnailFileNameLong from descvp0 failed:" + e.toString());
+                            Log.e(TAG, "videoThumbnailHdBitmap saving to videoThumbnailFileNameLong from descvp failed:" + e.toString());
                         }
                     }
                     //Log.d(TAG, "pictureFile.getName()=" + pictureVideoThumbnailFile.getName());
                     //Log.d(TAG, "pictureVideoThumbnailFile.getPath()=" + pictureVideoThumbnailFile.getPath());
                     ObjectMetadata thumbnailMetadata = new ObjectMetadata();
                     Map<String, String> userThumbMetadata = new HashMap<String, String>();
-                    userThumbMetadata.put("vp", "" + (vpTrackedInPose));
+                    userThumbMetadata.put("vp", "" + (vpCapInVideo));
                     userThumbMetadata.put("mymensoraccount", mymensorAccount);
                     //call setUserMetadata on our ObjectMetadata object, passing it our map
                     thumbnailMetadata.setUserMetadata(userThumbMetadata);
@@ -3896,13 +3902,13 @@ public class ImageCapActivity extends Activity implements
                     //Log.d(TAG, "videoFile.getName()=" + videoFile.getName());
                     //Log.d(TAG, "videoFile.getPath()=" + videoFile.getPath());
                     String fileSha256Hash = MymUtils.getFileHash(videoFile);
-                    locPhotoToExif = getLocationToExifStrings(mCurrentLocation, Long.toString(photoTakenTimeMillis[vpTrackedInPose]));
+                    locPhotoToExif = getLocationToExifStrings(mCurrentLocation, momento);
                     ObjectMetadata myObjectMetadata = new ObjectMetadata();
                     //create a map to store user metadata
                     Map<String, String> userMetadata = new HashMap<String, String>();
                     userMetadata.put("loclatitude", locPhotoToExif[8]);
                     userMetadata.put("loclongitude", locPhotoToExif[9]);
-                    userMetadata.put("vp", "" + (vpTrackedInPose));
+                    userMetadata.put("vp", "" + (vpCapInVideo));
                     userMetadata.put("mymensoraccount", mymensorAccount);
                     userMetadata.put("origmymacc", origMymAcc);
                     userMetadata.put("deviceid", deviceId);
@@ -3914,13 +3920,15 @@ public class ImageCapActivity extends Activity implements
                     userMetadata.put("loccertified", locPhotoToExif[12]);
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
                     sdf.setTimeZone(TimeZone.getDefault());
-                    String formattedDateTime = sdf.format(photoTakenTimeMillis[vpTrackedInPose]);
+                    String formattedDateTime = sdf.format(new Date(Long.parseLong(momento)));
                     userMetadata.put("datetime", formattedDateTime);
                     userMetadata.put("phototakenmillis", locPhotoToExif[11]);
                     userMetadata.put("timecertified", locPhotoToExif[10]);
                     userMetadata.put("isarswitchOn", locPhotoToExif[13]);
                     userMetadata.put("sha-256", fileSha256Hash);
-                    userMetadata.put("remark", vpPhotoRemark1000);
+                    if (vpPhotoRemark1000 != null) {
+                        userMetadata.put("remark", vpPhotoRemark1000);
+                    }
                     //call setUserMetadata on our ObjectMetadata object, passing it our map
                     myObjectMetadata.setUserMetadata(userMetadata);
                     //uploading the objects
@@ -3939,12 +3947,7 @@ public class ImageCapActivity extends Activity implements
                     updatePendingUpload();
                     vpPhotoAccepted = false;
                     if (observer == null) {
-                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getState().toString());
-                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getAbsoluteFilePath());
-                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getBucket());
-                        //Log.d(TAG, "takePhoto: AWS s3 Observer: " + observer.getKey());
-                        //Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
-                        vpChecked[vpTrackedInPose] = false;
+                        vpChecked[vpCapInVideo] = false;
                         if (isArSwitchOn) {
                             setVpsChecked();
                             saveVpsChecked(false);
@@ -3952,7 +3955,7 @@ public class ImageCapActivity extends Activity implements
                     }
                 } else {
                     //Log.d(TAG, "Failure to save video to remote storage: videoFile.exists()==false");
-                    vpChecked[vpTrackedInPose] = false;
+                    vpChecked[vpCapInVideo] = false;
                     if (isArSwitchOn) {
                         setVpsChecked();
                         saveVpsChecked(false);
@@ -3973,7 +3976,7 @@ public class ImageCapActivity extends Activity implements
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failure to save video to remote storage:" + e.toString());
-                vpChecked[vpTrackedInPose] = false;
+                vpChecked[vpCapInVideo] = false;
                 if (isArSwitchOn) {
                     setVpsChecked();
                     saveVpsChecked(false);
@@ -4028,7 +4031,7 @@ public class ImageCapActivity extends Activity implements
                     connectedToServerButton.setVisibility(View.VISIBLE);
                 }
             });
-            vpChecked[vpTrackedInPose] = false;
+            vpChecked[vpCapInVideo] = false;
             if (isArSwitchOn) {
                 setVpsChecked();
                 saveVpsChecked(false);
@@ -4036,8 +4039,6 @@ public class ImageCapActivity extends Activity implements
             lastVpPhotoRejected = true;
             vpPhotoRejected = false;
             vpPhotoRequestInProgress = false;
-            //Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> calling setMarkerlessTrackingConfiguration");
-            //Log.d(TAG, "takePhoto: vpPhotoRejected: vpPhotoRequestInProgress = " + vpPhotoRequestInProgress);
             if ((!waitingUntilMultipleImageTrackingIsSet) && (isArSwitchOn)) {
                 setMultipleImageTrackingConfiguration();
             }
@@ -4091,7 +4092,10 @@ public class ImageCapActivity extends Activity implements
                     } else {
                         //Log.d(TAG, "Calling takePhoto: doubleCheckingProcedureFinalized=" + doubleCheckingProcedureFinalized);
                         inPosRotScore = 0;
-                        if (!vpChecked[vpTrackedInPose]) takePhoto(rgba);
+                        if (!vpChecked[vpTrackedInPose]) {
+                            long momentoLong = MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference);
+                            takePhoto(vpTrackedInPose, momentoLong, rgba);
+                        }
                     }
                 }
             }
@@ -4101,20 +4105,19 @@ public class ImageCapActivity extends Activity implements
 
     }
 
-    private void takePhoto(Mat rgba) {
+    private void takePhoto(final int vpCapturedInPhoto, long momentoLong, Mat rgba) {
         Bitmap bitmapImage = null;
-        long momentoLong = MymUtils.timeNow(isTimeCertified, sntpTime, sntpTimeReference);
-        photoTakenTimeMillis[vpTrackedInPose] = momentoLong;
+        photoTakenTimeMillis[vpCapturedInPhoto] = momentoLong;
         if (askForManualPhoto) askForManualPhoto = false;
         final String momento = String.valueOf(momentoLong);
         String pictureFileName;
-        pictureFileName = vpNumber[vpTrackedInPose] + "_p_" + momento + ".jpg";
+        pictureFileName = vpCapturedInPhoto + "_p_" + momento + ".jpg";
         File pictureFile = new File(getApplicationContext().getFilesDir(), pictureFileName);
 
         //Log.d(TAG, "takePhoto: a new camera frame image is delivered " + momento);
         //Log.d(TAG, "takePhoto: pictureFileName including account: " + pictureFileName);
         if (isArSwitchOn) {
-            if ((vpIsAmbiguous[vpTrackedInPose]) && (vpIsDisambiguated))
+            if ((vpIsAmbiguous[vpCapturedInPhoto]) && (vpIsDisambiguated))
                 waitingToCaptureVpAfterDisambiguationProcedureSuccessful = false;
             if (doubleCheckingProcedureFinalized) {
                 doubleCheckingProcedureStarted = false;
@@ -4124,9 +4127,6 @@ public class ImageCapActivity extends Activity implements
         if (rgba != null) {
             bitmapImage = Bitmap.createBitmap(rgba.cols(), rgba.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(rgba, bitmapImage);
-            final int width = bitmapImage.getWidth();
-            final int height = bitmapImage.getHeight();
-            //Log.d(TAG, "takePhoto: Camera frame width: " + width + " height: " + height);
         }
         if (bitmapImage != null) {
             // Turning tracking OFF
@@ -4227,7 +4227,7 @@ public class ImageCapActivity extends Activity implements
                         rejectVpPhotoButton.setVisibility(View.GONE);
                         buttonRemarkVpPhoto.setVisibility(View.GONE);
                         vpsListView.setVisibility(View.VISIBLE);
-                        vpChecked[vpTrackedInPose] = true;
+                        vpChecked[vpCapturedInPhoto] = true;
                         locPhotoToExif = getLocationToExifStrings(mCurrentLocation, momento);
                         if (pendingUploadTransfers > 0)
                             uploadPendingLinearLayout.setVisibility(View.VISIBLE);
@@ -4285,7 +4285,7 @@ public class ImageCapActivity extends Activity implements
                     Map<String, String> userMetadata = new HashMap<String, String>();
                     userMetadata.put("loclatitude", locPhotoToExif[8]);
                     userMetadata.put("loclongitude", locPhotoToExif[9]);
-                    userMetadata.put("vp", "" + (vpTrackedInPose));
+                    userMetadata.put("vp", "" + (vpCapturedInPhoto));
                     userMetadata.put("mymensoraccount", mymensorAccount);
                     userMetadata.put("origmymacc", origMymAcc);
                     userMetadata.put("deviceid", deviceId);
@@ -4297,13 +4297,15 @@ public class ImageCapActivity extends Activity implements
                     userMetadata.put("loccertified", locPhotoToExif[12]);
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
                     sdf.setTimeZone(TimeZone.getDefault());
-                    String formattedDateTime = sdf.format(photoTakenTimeMillis[vpTrackedInPose]);
+                    String formattedDateTime = sdf.format(new Date(momentoLong));
                     userMetadata.put("datetime", formattedDateTime);
                     userMetadata.put("phototakenmillis", locPhotoToExif[11]);
                     userMetadata.put("timecertified", locPhotoToExif[10]);
                     userMetadata.put("isarswitchOn", locPhotoToExif[13]);
                     userMetadata.put("sha-256", fileSha256Hash);
-                    userMetadata.put("remark", vpPhotoRemark1000);
+                    if (vpPhotoRemark1000 != null) {
+                        userMetadata.put("remark", vpPhotoRemark1000);
+                    }
                     //call setUserMetadata on our ObjectMetadata object, passing it our map
                     myObjectMetadata.setUserMetadata(userMetadata);
                     //uploading the objects
@@ -4341,7 +4343,7 @@ public class ImageCapActivity extends Activity implements
                     });
                 } catch (Exception e) {
                     Log.e(TAG, "takePhoto: Error when writing captured image to Remote Storage:" + e.toString());
-                    vpChecked[vpTrackedInPose] = false;
+                    vpChecked[vpCapturedInPhoto] = false;
                     if (isArSwitchOn) {
                         setVpsChecked();
                         saveVpsChecked(false);
@@ -4359,9 +4361,7 @@ public class ImageCapActivity extends Activity implements
             if (vpPhotoRejected) {
                 //Log.d(TAG, "takePhoto: vpPhotoRejected!!!!");
                 try {
-                    if (pictureFile.delete()) {
-                        //Log.d(TAG, "takePhoto: vpPhotoRejected >>>>> " + pictureFile.getName() + " deleted successfully");
-                    }
+                    pictureFile.delete();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -4405,7 +4405,7 @@ public class ImageCapActivity extends Activity implements
                         vpIsDisambiguated = false;
                     }
                 }
-                vpChecked[vpTrackedInPose] = false;
+                vpChecked[vpCapturedInPhoto] = false;
                 if (isArSwitchOn) {
                     setVpsChecked();
                     saveVpsChecked(false);
@@ -4819,19 +4819,19 @@ public class ImageCapActivity extends Activity implements
             //Log.d(TAG, "onButtonClick: buttonPositionCertified");
             if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonGreen) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonRed) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposnotcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonPositionCertified).getBackground() == circularButtonGray) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithposcertunk), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -4841,19 +4841,19 @@ public class ImageCapActivity extends Activity implements
             //Log.d(TAG, "onButtonClick: buttonTimeCertified");
             if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonGreen) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimecert), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonRed) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimenotcert), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
             if (v.findViewById(R.id.buttonTimeCertified).getBackground() == circularButtonGray) {
                 Snackbar mSnackBar = Snackbar.make(v, getText(R.string.mediacapwithtimecertunk), Snackbar.LENGTH_LONG);
-                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                 mainTextView.setTextColor(Color.WHITE);
                 mSnackBar.show();
             }
@@ -4887,7 +4887,7 @@ public class ImageCapActivity extends Activity implements
                         public void run() {
                             String message = getString(R.string.local_file_deleted);
                             Snackbar mSnackBar = Snackbar.make(view, message, Snackbar.LENGTH_LONG);
-                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
@@ -5477,7 +5477,7 @@ public class ImageCapActivity extends Activity implements
                                             public boolean onError(MediaPlayer mp, int what, int extra) {
                                                 String message = getString(R.string.error_while_playing_video);
                                                 Snackbar mSnackBar = Snackbar.make(videoView, message, Snackbar.LENGTH_LONG);
-                                                TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                                                TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                                                 mainTextView.setTextColor(Color.WHITE);
                                                 mSnackBar.show();
                                                 returnToInitialScreen();
@@ -5524,7 +5524,7 @@ public class ImageCapActivity extends Activity implements
                     public void run() {
                         String message = getString(R.string.no_photo_captured_in_this_vp);
                         Snackbar mSnackBar = Snackbar.make(imageView, message, Snackbar.LENGTH_LONG);
-                        TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                        TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                         mainTextView.setTextColor(Color.WHITE);
                         mSnackBar.show();
                         returnToInitialScreen();
@@ -5538,7 +5538,6 @@ public class ImageCapActivity extends Activity implements
 
 
     private boolean loadConfigurationFile() {
-        vpTrackedInPose = 1;
         short[] vpMarkerlessMarkerWidth = new short[qtyVps];
         short[] vpMarkerlessMarkerHeigth = new short[qtyVps];
 
@@ -5892,7 +5891,7 @@ public class ImageCapActivity extends Activity implements
                         if (result) {
                             mActivity.timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_green_dark)));
                             Snackbar mSnackBar = Snackbar.make(mActivity.timeCertifiedButton.getRootView(), mActivity.getText(R.string.usingcerttimeistrue), Snackbar.LENGTH_LONG);
-                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         } else {
@@ -5900,7 +5899,7 @@ public class ImageCapActivity extends Activity implements
                             sntpTimeReference = 0;
                             mActivity.timeCertifiedButton.setBackgroundTintList(ColorStateList.valueOf(mActivity.getResources().getColor(android.R.color.holo_red_dark)));
                             Snackbar mSnackBar = Snackbar.make(mActivity.timeCertifiedButton.getRootView(), mActivity.getText(R.string.usingcerttimeisfalse), Snackbar.LENGTH_LONG);
-                            TextView mainTextView =  (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                            TextView mainTextView = (mSnackBar.getView()).findViewById(android.support.design.R.id.snackbar_text);
                             mainTextView.setTextColor(Color.WHITE);
                             mSnackBar.show();
                         }
